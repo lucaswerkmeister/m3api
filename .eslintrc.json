@@ -1,0 +1,10 @@
+{
+	"extends": [
+		"wikimedia/common",
+		"wikimedia/language/es2019",
+		"wikimedia/node"
+	],
+	"rules": {
+		"comma-dangle": [ "error", "always-multiline" ]
+	}
+}

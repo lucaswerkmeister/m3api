@@ -26,9 +26,9 @@ class Session {
 			baseURL: apiUrl,
 			headers: {
 				common: {
-					'user-agent': userAgent
-						? `${userAgent} ${defaultUserAgent}`
-						: defaultUserAgent,
+					'user-agent': userAgent ?
+						`${userAgent} ${defaultUserAgent}` :
+						defaultUserAgent,
 				},
 			},
 		} );
@@ -47,7 +47,7 @@ class Session {
 		this.throwErrors( response.data );
 		return response.data;
 	}
-	
+
 	async * requestAndContinue( params, method = 'GET' ) {
 		const baseParams = this.transformParams( {
 			...this.defaultParams,
@@ -81,7 +81,7 @@ class Session {
 	}
 
 	transformParamValue( value ) {
-		if ( Array.isArray( value ) ){
+		if ( Array.isArray( value ) ) {
 			if ( value.some( ( element ) => /[|]/.test( element ) ) ) {
 				return '\x1f' + value.join( '\x1f' );
 			} else {
