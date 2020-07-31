@@ -2,6 +2,8 @@
 
 const axios = require( 'axios' );
 
+const defaultUserAgent = 'myapi/0.1.0 (myapi@lucaswerkmeister.de)';
+
 class ApiErrors extends Error {
 
 	constructor( errors, ...params ) {
@@ -19,9 +21,16 @@ class ApiErrors extends Error {
 
 class Session {
 
-	constructor( apiUrl, defaultParams = {} ) {
+	constructor( apiUrl, defaultParams = {}, userAgent = '' ) {
 		this.session = axios.create( {
 			baseURL: apiUrl,
+			headers: {
+				common: {
+					'user-agent': userAgent
+						? `${userAgent} ${defaultUserAgent}`
+						: defaultUserAgent,
+				},
+			},
 		} );
 		this.defaultParams = defaultParams;
 	}
@@ -38,7 +47,7 @@ class Session {
 		this.throwErrors( response.data );
 		return response.data;
 	}
-
+	
 	async * requestAndContinue( params, method = 'GET' ) {
 		const baseParams = this.transformParams( {
 			...this.defaultParams,
