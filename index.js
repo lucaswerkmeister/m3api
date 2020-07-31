@@ -4,6 +4,9 @@ const axios = require( 'axios' );
 
 const defaultUserAgent = 'myapi/0.1.0 (myapi@lucaswerkmeister.de)';
 
+/**
+ * An Error wrapping one or more API errors.
+ */
 class ApiErrors extends Error {
 
 	constructor( errors, ...params ) {
@@ -19,8 +22,20 @@ class ApiErrors extends Error {
 
 }
 
+/**
+ * A session to make API requests.
+ */
 class Session {
 
+	/**
+	 * @param {string} apiUrl The URL to the api.php endpoint,
+	 * such as https://en.wikipedia.org/w/api.php
+	 * @param {Object} [defaultParams] Parameters to include in every API request.
+	 * You are strongly encouraged to specify formatversion: 2 here;
+	 * other useful global parameters include uselang, errorformat, maxlag
+	 * @param {string} [userAgent] The user agent to send,
+	 * see https://meta.wikimedia.org/wiki/User-Agent_policy
+	 */
 	constructor( apiUrl, defaultParams = {}, userAgent = '' ) {
 		this.session = axios.create( {
 			baseURL: apiUrl,
@@ -35,6 +50,16 @@ class Session {
 		this.defaultParams = defaultParams;
 	}
 
+	/**
+	 * Make an API request.
+	 *
+	 * @param {Object} params The parameters.
+	 * Values may be strings, numbers, arrays thereof, booleans, null, or undefined.
+	 * Parameters with values false, null, or undefined are completely removed.
+	 * @param {string} [method] The method, either GET (default) or POST.
+	 * @return {Object}
+	 * @throws {ApiErrors}
+	 */
 	async request( params, method = 'GET' ) {
 		const response = await this.session.request( {
 			method,
@@ -48,6 +73,15 @@ class Session {
 		return response.data;
 	}
 
+	/**
+	 * Make a series of API requests, following API continuation.
+	 *
+	 * @param {Object} params Same as for request.
+	 * Continuation parameters will be added automatically.
+	 * @param {string} [method] Same as for request.
+	 * @return {Object}
+	 * @throws {ApiErrors}
+	 */
 	async * requestAndContinue( params, method = 'GET' ) {
 		const baseParams = this.transformParams( {
 			...this.defaultParams,
@@ -69,6 +103,11 @@ class Session {
 		} while ( Object.keys( continueParams ).length > 0 );
 	}
 
+	/**
+	 * @private
+	 * @param {Object} params
+	 * @return {Object}
+	 */
 	transformParams( params ) {
 		const transformedParams = {};
 		for ( const [ key, value ] of Object.entries( params ) ) {
@@ -80,6 +119,11 @@ class Session {
 		return transformedParams;
 	}
 
+	/**
+	 * @private
+	 * @param {*} value
+	 * @return {string|undefined}
+	 */
 	transformParamValue( value ) {
 		if ( Array.isArray( value ) ) {
 			if ( value.some( ( element ) => /[|]/.test( element ) ) ) {
@@ -100,6 +144,11 @@ class Session {
 		return value;
 	}
 
+	/**
+	 * @private
+	 * @param {Object} response
+	 * @throws {ApiErrors}
+	 */
 	throwErrors( response ) {
 		if ( 'error' in response ) {
 			throw new ApiErrors( [ response.error ] );
