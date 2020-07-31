@@ -39,6 +39,27 @@ class Session {
 		return response.data;
 	}
 
+	async * requestAndContinue( params, method = 'GET' ) {
+		const baseParams = this.transformParams( {
+			...this.defaultParams,
+			...params,
+			format: 'json',
+		} );
+		let continueParams = {};
+		do {
+			const response = await this.session.request( {
+				method,
+				[ method === 'GET' ? 'params' : 'data' ]: {
+					...baseParams,
+					...continueParams,
+				},
+			} );
+			this.throwErrors( response.data );
+			continueParams = response.data.continue || {};
+			yield response.data;
+		} while ( Object.keys( continueParams ).length > 0 );
+	}
+
 	transformParams( params ) {
 		const transformedParams = {};
 		for ( const [ key, value ] of Object.entries( params ) ) {
