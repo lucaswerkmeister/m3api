@@ -4,7 +4,7 @@
 	"description": "Minimal modern MediaWiki API wrapper.",
 	"main": "index.js",
 	"scripts": {
-		"test": "eslint ."
+		"test": "eslint . && jest ."
 	},
 	"keywords": [
 		"mediawiki"
@@ -19,6 +19,7 @@
 	},
 	"devDependencies": {
 		"eslint": "^7.5.0",
-		"eslint-config-wikimedia": "^0.16.2"
+		"eslint-config-wikimedia": "^0.16.2",
+		"jest": "^26.2.2"
 	}
 }
