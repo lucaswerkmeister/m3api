@@ -1,20 +1,21 @@
-/* eslint-env jest */
+/* eslint-env mocha */
 
 'use strict';
 
-const { ApiErrors, Session } = require( './index' );
+const { ApiErrors, Session } = require( '../../index' );
+const { expect } = require( 'chai' );
 
 describe( 'ApiErrors', () => {
 
-	test( 'uses first error code as message', () => {
+	it( 'uses first error code as message', () => {
 		const errors = [ { code: 'code1' }, { code: 'code2' } ];
 		const apiErrors = new ApiErrors( errors );
-		expect( apiErrors.message ).toBe( 'code1' );
+		expect( apiErrors.message ).to.equal( 'code1' );
 	} );
 
-	test( 'sets name', () => {
+	it( 'sets name', () => {
 		const apiErrors = new ApiErrors( [ { code: 'code' } ] );
-		expect( apiErrors.name ).toBe( 'ApiErrors' );
+		expect( apiErrors.name ).to.equal( 'ApiErrors' );
 	} );
 
 } );
@@ -23,7 +24,7 @@ describe( 'Session', () => {
 
 	const session = new Session( 'https://en.wikipedia.org/w/api.php' );
 
-	test.each( [
+	for ( const [ value, expected ] of [
 		[ 'a string', 'a string' ],
 		[ 1, '1' ],
 		[ 0, '0' ],
@@ -34,12 +35,14 @@ describe( 'Session', () => {
 		[ false, undefined ],
 		[ null, undefined ],
 		[ undefined, undefined ],
-	] )( 'transformParamValue: %s => %s', ( value, expected ) => {
-		const actual = session.transformParamValue( value );
-		expect( actual ).toBe( expected );
-	} );
+	] ) {
+		it( `transformParamValue: ${value} => ${expected}`, () => {
+			const actual = session.transformParamValue( value );
+			expect( actual ).to.equal( expected );
+		} );
+	}
 
-	test( 'transformParams', () => {
+	it( 'transformParams', () => {
 		expect( session.transformParams( {
 			string: 'a string',
 			one: 1,
@@ -51,7 +54,7 @@ describe( 'Session', () => {
 			false: false,
 			null: null,
 			undefined: undefined,
-		} ) ).toStrictEqual( {
+		} ) ).to.eql( {
 			string: 'a string',
 			one: '1',
 			zero: '0',
