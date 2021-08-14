@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { ApiErrors, Session } from '../../index.js';
+import { ApiErrors, Session } from '../../core.js';
 import { expect } from 'chai';
 
 describe( 'ApiErrors', () => {

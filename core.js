@@ -1,6 +1,5 @@
-import axios from 'axios';
-
-const defaultUserAgent = 'm3api/0.1.0 (m3api@lucaswerkmeister.de)';
+/* eslint no-unused-vars: [ "error", { "args": "none" } ] */
+// Session has abstract methods with parameters only used in subclasses
 
 /**
  * @private
@@ -50,16 +49,6 @@ class Session {
 	 * see https://meta.wikimedia.org/wiki/User-Agent_policy
 	 */
 	constructor( apiUrl, defaultParams = {}, userAgent = '' ) {
-		this.session = axios.create( {
-			baseURL: apiUrl,
-			headers: {
-				common: {
-					'user-agent': userAgent ?
-						`${userAgent} ${defaultUserAgent}` :
-						defaultUserAgent,
-				},
-			},
-		} );
 		this.defaultParams = defaultParams;
 	}
 
@@ -152,29 +141,27 @@ class Session {
 	}
 
 	/**
+	 * Actually make a GET request.
+	 *
+	 * @abstract
 	 * @protected
 	 * @param {Object} params
-	 * @return {Object}
+	 * @return {Promise<Object>}
 	 */
-	async internalGet( params ) {
-		const response = await this.session.request( {
-			method: 'GET',
-			params,
-		} );
-		return response.data;
+	internalGet( params ) {
+		throw new Error( 'Abstract method internalGet not implemented!' );
 	}
 
 	/**
+	 * Actually make a POST request.
+	 *
+	 * @abstract
 	 * @protected
 	 * @param {Object} params
 	 * @return {Object}
 	 */
-	async internalPost( params ) {
-		const response = await this.session.request( {
-			method: 'POST',
-			data: params,
-		} );
-		return response.data;
+	internalPost( params ) {
+		throw new Error( 'Abstract method internalPost not implemented!' );
 	}
 
 	/**

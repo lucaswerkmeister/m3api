@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
-import { Session } from '../../index.js';
+import NodeSession from '../../node.js';
 import { expect } from 'chai';
 
-describe( 'Session (integration)', () => {
+describe( 'NodeSession', () => {
 
 	it( 'siteinfo, array siprops, default formatversion', async () => {
-		const session = new Session( 'https://en.wikipedia.org/w/api.php', {
+		const session = new NodeSession( 'https://en.wikipedia.org/w/api.php', {
 			formatversion: 2,
 		} );
 		const response = await session.request( {

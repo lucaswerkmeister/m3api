@@ -2,7 +2,7 @@
 	"name": "m3api",
 	"version": "0.1.0",
 	"description": "Minimal modern MediaWiki API wrapper.",
-	"main": "index.js",
+	"main": "node.js",
 	"type": "module",
 	"scripts": {
 		"test": "eslint . && mocha"
