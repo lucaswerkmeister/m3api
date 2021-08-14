@@ -1,6 +1,4 @@
-'use strict';
-
-const axios = require( 'axios' );
+import axios from 'axios';
 
 const defaultUserAgent = 'm3api/0.1.0 (m3api@lucaswerkmeister.de)';
 
@@ -160,7 +158,7 @@ class Session {
 
 }
 
-module.exports = {
+export {
 	ApiErrors,
 	Session,
 };

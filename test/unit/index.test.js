@@ -1,9 +1,7 @@
 /* eslint-env mocha */
 
-'use strict';
-
-const { ApiErrors, Session } = require( '../../index' );
-const { expect } = require( 'chai' );
+import { ApiErrors, Session } from '../../index.js';
+import { expect } from 'chai';
 
 describe( 'ApiErrors', () => {
 
