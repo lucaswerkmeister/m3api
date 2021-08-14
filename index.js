@@ -2,7 +2,7 @@
 
 const axios = require( 'axios' );
 
-const defaultUserAgent = 'myapi/0.1.0 (myapi@lucaswerkmeister.de)';
+const defaultUserAgent = 'm3api/0.1.0 (m3api@lucaswerkmeister.de)';
 
 /**
  * An Error wrapping one or more API errors.
