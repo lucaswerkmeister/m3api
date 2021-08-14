@@ -3,6 +3,21 @@ import axios from 'axios';
 const defaultUserAgent = 'm3api/0.1.0 (m3api@lucaswerkmeister.de)';
 
 /**
+ * @private
+ * @param {string} method
+ * @return {string}
+ */
+function methodName( method ) {
+	if ( method === 'GET' ) {
+		return 'internalGet';
+	} else if ( method === 'POST' ) {
+		return 'internalPost';
+	} else {
+		throw new Error( `Unknown request method: ${method}` );
+	}
+}
+
+/**
  * An Error wrapping one or more API errors.
  */
 class ApiErrors extends Error {
@@ -59,16 +74,13 @@ class Session {
 	 * @throws {ApiErrors}
 	 */
 	async request( params, method = 'GET' ) {
-		const response = await this.session.request( {
-			method,
-			[ method === 'GET' ? 'params' : 'data' ]: this.transformParams( {
-				...this.defaultParams,
-				...params,
-				format: 'json',
-			} ),
-		} );
-		this.throwErrors( response.data );
-		return response.data;
+		const response = await this[ methodName( method ) ]( this.transformParams( {
+			...this.defaultParams,
+			...params,
+			format: 'json',
+		} ) );
+		this.throwErrors( response );
+		return response;
 	}
 
 	/**
@@ -88,16 +100,13 @@ class Session {
 		} );
 		let continueParams = {};
 		do {
-			const response = await this.session.request( {
-				method,
-				[ method === 'GET' ? 'params' : 'data' ]: {
-					...baseParams,
-					...continueParams,
-				},
+			const response = await this[ methodName( method ) ]( {
+				...baseParams,
+				...continueParams,
 			} );
-			this.throwErrors( response.data );
-			continueParams = response.data.continue || {};
-			yield response.data;
+			this.throwErrors( response );
+			continueParams = response.continue || {};
+			yield response;
 		} while ( Object.keys( continueParams ).length > 0 );
 	}
 
@@ -140,6 +149,32 @@ class Session {
 			return undefined;
 		}
 		return value;
+	}
+
+	/**
+	 * @protected
+	 * @param {Object} params
+	 * @return {Object}
+	 */
+	async internalGet( params ) {
+		const response = await this.session.request( {
+			method: 'GET',
+			params,
+		} );
+		return response.data;
+	}
+
+	/**
+	 * @protected
+	 * @param {Object} params
+	 * @return {Object}
+	 */
+	async internalPost( params ) {
+		const response = await this.session.request( {
+			method: 'POST',
+			data: params,
+		} );
+		return response.data;
 	}
 
 	/**
