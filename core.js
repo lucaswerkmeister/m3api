@@ -3,17 +3,20 @@
 
 /**
  * @private
- * @param {string} method
- * @return {string}
+ * @param {Object} params
+ * @return {Array.<Object>} [urlParams, bodyParams]
  */
-function methodName( method ) {
-	if ( method === 'GET' ) {
-		return 'internalGet';
-	} else if ( method === 'POST' ) {
-		return 'internalPost';
-	} else {
-		throw new Error( `Unknown request method: ${method}` );
+function splitPostParameters( params ) {
+	const urlParams = {};
+	const bodyParams = {};
+	for ( const [ key, value ] of Object.entries( params ) ) {
+		if ( key === 'origin' ) {
+			urlParams[ key ] = value;
+		} else {
+			bodyParams[ key ] = value;
+		}
 	}
+	return [ urlParams, bodyParams ];
 }
 
 /**
@@ -63,7 +66,7 @@ class Session {
 	 * @throws {ApiErrors}
 	 */
 	async request( params, method = 'GET' ) {
-		const response = await this[ methodName( method ) ]( this.transformParams( {
+		const response = await this.internalRequest( method, this.transformParams( {
 			...this.defaultParams,
 			...params,
 			format: 'json',
@@ -89,7 +92,7 @@ class Session {
 		} );
 		let continueParams = {};
 		do {
-			const response = await this[ methodName( method ) ]( {
+			const response = await this.internalRequest( method, {
 				...baseParams,
 				...continueParams,
 			} );
@@ -141,6 +144,23 @@ class Session {
 	}
 
 	/**
+	 * @private
+	 * @param {string} method
+	 * @param {Object} params
+	 * @return {Object}
+	 */
+	internalRequest( method, params ) {
+		if ( method === 'GET' ) {
+			return this.internalGet( params );
+		} else if ( method === 'POST' ) {
+			const [ urlParams, bodyParams ] = splitPostParameters( params );
+			return this.internalPost( urlParams, bodyParams );
+		} else {
+			throw new Error( `Unknown request method: ${method}` );
+		}
+	}
+
+	/**
 	 * Actually make a GET request.
 	 *
 	 * @abstract
@@ -157,10 +177,11 @@ class Session {
 	 *
 	 * @abstract
 	 * @protected
-	 * @param {Object} params
+	 * @param {Object} urlParams
+	 * @param {Object} bodyParams
 	 * @return {Object}
 	 */
-	internalPost( params ) {
+	internalPost( urlParams, bodyParams ) {
 		throw new Error( 'Abstract method internalPost not implemented!' );
 	}
 

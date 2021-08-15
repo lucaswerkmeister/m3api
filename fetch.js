@@ -25,10 +25,12 @@ class FetchSession extends Session {
 		return response.json();
 	}
 
-	async internalPost( params ) {
-		const response = await fetch( this.baseUrl, {
+	async internalPost( urlParams, bodyParams ) {
+		const url = new URL( this.baseUrl );
+		url.search = new URLSearchParams( urlParams );
+		const response = await fetch( url, {
 			method: 'POST',
-			body: new URLSearchParams( params ),
+			body: new URLSearchParams( bodyParams ),
 			headers: this.headers,
 		} );
 		return response.json();
