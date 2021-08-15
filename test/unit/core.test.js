@@ -63,4 +63,20 @@ describe( 'Session', () => {
 		} );
 	} );
 
+	describe( 'throwErrors', () => {
+
+		it( 'formatversion=1', () => {
+			expect( () => session.throwErrors( {
+				error: { code: 'errorcode' },
+			} ) ).to.throw( ApiErrors, 'errorcode' );
+		} );
+
+		it( 'formatversion=2', () => {
+			expect( () => session.throwErrors( {
+				errors: [ { code: 'errorcode' }, { code: 'other' } ],
+			} ) ).to.throw( ApiErrors, 'errorcode' );
+		} );
+
+	} );
+
 } );
