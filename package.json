@@ -5,7 +5,7 @@
 	"main": "node.js",
 	"type": "module",
 	"scripts": {
-		"test": "eslint . && mocha"
+		"test": "eslint . && mocha test/unit/ && mocha test/integration/node.test.js && mocha-headless test/integration/browser.test.js"
 	},
 	"keywords": [
 		"mediawiki"
@@ -22,7 +22,8 @@
 		"chai": "^4.3.4",
 		"eslint": "^7.5.0",
 		"eslint-config-wikimedia": "^0.16.2",
-		"mocha": "^9.0.3"
+		"mocha": "^9.0.3",
+		"mocha-headless": "^8.0.0"
 	},
 	"mocha": {
 		"recursive": true
