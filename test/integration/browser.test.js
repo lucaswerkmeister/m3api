@@ -21,18 +21,16 @@ describe( 'BrowserSession', () => {
 		expect( response.query.statistics.pages ).to.be.above( 0 );
 	} );
 
-	it( 'purge', async () => {
+	it( 'validatepassword', async function () {
 		const session = new BrowserSession( 'https://en.wikipedia.org/w/api.php', {
 			formatversion: 2,
 			origin: '*',
 		} );
 		const response = await session.request( {
-			action: 'purge',
-			titles: [ 'Special:BlankPage' ],
+			action: 'validatepassword',
+			password: [ 0, 0, 0 ].map( () => ( Math.random() + 1 ).toString( 36 ).slice( 2 ) ).join( '' ),
 		}, 'POST' );
-		expect( response.batchcomplete ).to.equal( true );
-		expect( response.purge ).to.have.lengthOf( 1 );
-		expect( response.purge[ 0 ].special ).to.equal( true );
+		expect( response.validatepassword.validity ).to.equal( 'Good' );
 	} );
 
 } );

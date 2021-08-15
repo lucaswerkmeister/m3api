@@ -13,7 +13,7 @@
 	"author": "Lucas Werkmeister <mail@lucaswerkmeister.de>",
 	"license": "ISC",
 	"engines": {
-		"node": "^10.21.0"
+		"node": ">=14.0.0"
 	},
 	"dependencies": {
 		"axios": "^0.21.1"
