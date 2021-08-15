@@ -30,7 +30,7 @@ class AxiosSession extends Session {
 	async internalPost( params ) {
 		const response = await this.session.request( {
 			method: 'POST',
-			data: params,
+			data: new URLSearchParams( params ),
 		} );
 		return response.data;
 	}
