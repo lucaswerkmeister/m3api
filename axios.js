@@ -1,4 +1,6 @@
 import axios from 'axios';
+import axiosCookieJarSupport from 'axios-cookiejar-support';
+import tough from 'tough-cookie';
 import { Session } from './core.js';
 
 const defaultUserAgent = 'm3api/0.1.0 (m3api@lucaswerkmeister.de)';
@@ -16,6 +18,11 @@ class AxiosSession extends Session {
 						defaultUserAgent,
 				},
 			},
+		} );
+		axiosCookieJarSupport.default( this.session );
+		Object.assign( this.session.defaults, { // must happen after axiosCookieJarSupport
+			jar: new tough.CookieJar(),
+			withCredentials: true,
 		} );
 	}
 
