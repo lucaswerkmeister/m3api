@@ -22,23 +22,25 @@ describe( 'Session', () => {
 
 	const session = new Session( 'https://en.wikipedia.org/w/api.php' );
 
-	for ( const [ value, expected ] of [
-		[ 'a string', 'a string' ],
-		[ 1, '1' ],
-		[ 0, '0' ],
-		[ [ 'an', 'array' ], 'an|array' ],
-		[ [], '' ],
-		[ [ 'an', 'array', 'with', '|' ], '\x1fan\x1farray\x1fwith\x1f|' ],
-		[ true, '' ],
-		[ false, undefined ],
-		[ null, undefined ],
-		[ undefined, undefined ],
-	] ) {
-		it( `transformParamValue: ${value} => ${expected}`, () => {
-			const actual = session.transformParamValue( value );
-			expect( actual ).to.equal( expected );
-		} );
-	}
+	describe( 'transformParamValue', () => {
+		for ( const [ value, expected ] of [
+			[ 'a string', 'a string' ],
+			[ 1, '1' ],
+			[ 0, '0' ],
+			[ [ 'an', 'array' ], 'an|array' ],
+			[ [], '' ],
+			[ [ 'an', 'array', 'with', '|' ], '\x1fan\x1farray\x1fwith\x1f|' ],
+			[ true, '' ],
+			[ false, undefined ],
+			[ null, undefined ],
+			[ undefined, undefined ],
+		] ) {
+			it( `${value} => ${expected}`, () => {
+				const actual = session.transformParamValue( value );
+				expect( actual ).to.equal( expected );
+			} );
+		}
+	} );
 
 	it( 'transformParams', () => {
 		expect( session.transformParams( {
