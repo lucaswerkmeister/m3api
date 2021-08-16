@@ -89,7 +89,8 @@ Other features not demonstrated above:
 
 - m3api detects any error(s) returned by the API,
   and throws them as an `ApiErrors` instance
-  (the class can be imported from the `core.js` module).
+  (the class can be imported as a non-default export
+  of the `browser.js` and `node.js` modules).
   The first error code is used as the message,
   and all the error objects can be accessed as `.errors`.
   (The shape of those objects will depend on the request `errorformat`.)
