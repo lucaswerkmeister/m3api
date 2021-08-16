@@ -28,7 +28,7 @@ describe( 'NodeSession', () => {
 		const response = await session.request( {
 			action: 'validatepassword',
 			password: [ 0, 0, 0 ].map( () => ( Math.random() + 1 ).toString( 36 ).slice( 2 ) ).join( '' ),
-		}, 'POST' );
+		}, { method: 'POST' } );
 		expect( response.validatepassword.validity ).to.equal( 'Good' );
 	} );
 
@@ -50,7 +50,7 @@ describe( 'NodeSession', () => {
 			lgname: process.env.MEDIAWIKI_USERNAME,
 			lgpassword: process.env.MEDIAWIKI_PASSWORD,
 			lgtoken: logintoken,
-		}, 'POST' );
+		}, { method: 'POST' } );
 		const { query: { tokens: { csrftoken } } } = await session.request( {
 			action: 'query',
 			meta: [ 'tokens' ],
@@ -65,7 +65,7 @@ describe( 'NodeSession', () => {
 			token: csrftoken,
 			bot: true,
 			assert: 'user',
-		}, 'POST' );
+		}, { method: 'POST' } );
 		const { query: { pages: [ page ] } } = await session.request( {
 			action: 'query',
 			titles: [ title ],

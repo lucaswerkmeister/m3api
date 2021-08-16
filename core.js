@@ -61,11 +61,18 @@ class Session {
 	 * @param {Object} params The parameters.
 	 * Values may be strings, numbers, arrays thereof, booleans, null, or undefined.
 	 * Parameters with values false, null, or undefined are completely removed.
-	 * @param {string} [method] The method, either GET (default) or POST.
+	 * @param {Object} [options] Other options for the request.
+	 * @param {string} [options.method] The method, either GET (default) or POST.
 	 * @return {Object}
 	 * @throws {ApiErrors}
 	 */
-	async request( params, method = 'GET' ) {
+	async request( params, options = {} ) {
+		const {
+			method,
+		} = Object.assign( {
+			method: 'GET',
+		}, options );
+
 		const response = await this.internalRequest( method, this.transformParams( {
 			...this.defaultParams,
 			...params,
@@ -80,11 +87,17 @@ class Session {
 	 *
 	 * @param {Object} params Same as for request.
 	 * Continuation parameters will be added automatically.
-	 * @param {string} [method] Same as for request.
+	 * @param {Object} [options] Same as for request.
 	 * @return {Object}
 	 * @throws {ApiErrors}
 	 */
-	async * requestAndContinue( params, method = 'GET' ) {
+	async * requestAndContinue( params, options = {} ) {
+		const {
+			method,
+		} = Object.assign( {
+			method: 'GET',
+		}, options );
+
 		const baseParams = this.transformParams( {
 			...this.defaultParams,
 			...params,

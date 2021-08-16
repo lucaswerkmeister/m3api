@@ -215,7 +215,7 @@ describe( 'Session', () => {
 				gaplimit: 1,
 			};
 			let iteration = 0;
-			for await ( const response of session.requestAndContinue( params, 'POST' ) ) {
+			for await ( const response of session.requestAndContinue( params, { method: 'POST' } ) ) {
 				const currentIteration = ++iteration;
 				if ( currentIteration === 1 ) {
 					expect( response ).to.eql( firstResponse );
