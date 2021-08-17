@@ -3,7 +3,7 @@ import axiosCookieJarSupport from 'axios-cookiejar-support';
 import tough from 'tough-cookie';
 import { Session } from './core.js';
 
-const defaultUserAgent = 'm3api/0.1.0 (m3api@lucaswerkmeister.de)';
+const defaultUserAgent = 'm3api/0.1.1 (m3api@lucaswerkmeister.de)';
 
 class AxiosSession extends Session {
 
