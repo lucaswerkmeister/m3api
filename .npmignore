@@ -1,0 +1,6 @@
+# copied from .gitignore (which this overrides)
+/.env
+
+# additional exclusions irrelevant for published packages
+/.github/
+/test/
