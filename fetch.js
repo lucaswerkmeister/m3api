@@ -2,7 +2,7 @@
 
 import { Session } from './core.js';
 
-const defaultUserAgent = 'm3api/0.1.2 (m3api@lucaswerkmeister.de)';
+const defaultUserAgent = 'm3api/0.1.2 (https://www.npmjs.com/package/m3api)';
 
 class FetchSession extends Session {
 
