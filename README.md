@@ -30,54 +30,53 @@ Here’s an example demonstrating some ways to use m3api:
 // e.g. ./node_modules/m3api/node.js if installed via npm
 import Session from './node.js';
 
-( async () => { // almost-toplevel await ;)
+// note: this example uses top-level await for simplicity,
+// you may need an async wrapper function
 
-	// create a session from an api.php URL
-	const session = new Session( 'https://en.wikipedia.org/w/api.php', {
-		// these default parameters will be added to all requests
-		formatversion: 2,
-		errorformat: 'plaintext',
-	} );
+// create a session from an api.php URL
+const session = new Session( 'https://en.wikipedia.org/w/api.php', {
+	// these default parameters will be added to all requests
+	formatversion: 2,
+	errorformat: 'plaintext',
+} );
 
-	// a sample request to the siteinfo API
-	const siteinfoResponse = await session.request( {
-		action: 'query',
-		meta: 'siteinfo',
-		// array parameters are automatically converted
-		siprop: [ 'general', 'statistics' ],
-	} );
-	// one way to handle the response: destructure it
-	const { query: {
-		general: { sitename },
-		statistics: { edits },
-	} } = siteinfoResponse;
-	console.log( `Welcome to ${sitename}, home to ${edits} edits!` );
+// a sample request to the siteinfo API
+const siteinfoResponse = await session.request( {
+	action: 'query',
+	meta: 'siteinfo',
+	// array parameters are automatically converted
+	siprop: [ 'general', 'statistics' ],
+} );
+// one way to handle the response: destructure it
+const { query: {
+	general: { sitename },
+	statistics: { edits },
+} } = siteinfoResponse;
+console.log( `Welcome to ${sitename}, home to ${edits} edits!` );
 
-	// a slightly contrived example for continuation
-	console.log( 'Here are ten local file pages linking to web.archive.org:' );
-	// due to miser mode, each request may only return few results,
-	// so we need continuation in order to get ten results in total
-	let n = 0;
-	outer: for await ( const urlResponse of session.requestAndContinue( {
-		// requestAndContinue returns an async iterable of responses
-		action: 'query',
-		list: 'exturlusage',
-		euprotocol: 'https',
-		euquery: 'web.archive.org',
-		eunamespace: [ 6 ], // File:
-		eulimit: 'max',
-		euprop: [ 'title' ],
-	} ) ) {
-		for ( const page of urlResponse.query.exturlusage ) {
-			console.log( page.title );
-			if ( ++n >= 10 ) {
-				break outer;
-				// once we stop iterating, no more requests are made
-			}
+// a slightly contrived example for continuation
+console.log( 'Here are ten local file pages linking to web.archive.org:' );
+// due to miser mode, each request may only return few results,
+// so we need continuation in order to get ten results in total
+let n = 0;
+outer: for await ( const urlResponse of session.requestAndContinue( {
+	// requestAndContinue returns an async iterable of responses
+	action: 'query',
+	list: 'exturlusage',
+	euprotocol: 'https',
+	euquery: 'web.archive.org',
+	eunamespace: [ 6 ], // File:
+	eulimit: 'max',
+	euprop: [ 'title' ],
+} ) ) {
+	for ( const page of urlResponse.query.exturlusage ) {
+		console.log( page.title );
+		if ( ++n >= 10 ) {
+			break outer;
+			// once we stop iterating, no more requests are made
 		}
 	}
-
-} )().catch( console.error );
+}
 ```
 
 This code works in Node.js, but also in the browser with only two changes:
