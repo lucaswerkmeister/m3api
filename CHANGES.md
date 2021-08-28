@@ -13,6 +13,8 @@ First proper update over a previous release.
   The `internalGet` and `internalPost` methods now return additional data.
   This is only relevant for you if you wrote a custom network implementation;
   if you just import `browser.js` or `node.js`, it doesn’t matter.
+- Automatically retry requests when encountering a Retry-After response header.
+  By default, retry once; adjust or disable with the `maxRetries` request option.
 - A non-200 HTTP response status is now detected and throws an error.
 - Improved the default user agent.
 - Added package metadata.

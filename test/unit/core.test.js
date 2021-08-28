@@ -3,6 +3,7 @@
 import { ApiErrors, Session } from '../../core.js';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import FakeTimers from '@sinonjs/fake-timers';
 chai.use( chaiAsPromised );
 
 describe( 'ApiErrors', () => {
@@ -74,6 +75,7 @@ describe( 'Session', () => {
 				async internalGet() {
 					return {
 						status: 502,
+						headers: {},
 						body: 'irrelevant',
 					};
 				}
@@ -84,6 +86,109 @@ describe( 'Session', () => {
 				.to.be.rejectedWith( '502' );
 		} );
 
+		describe( 'automatic retry', () => {
+
+			let clock;
+			beforeEach( () => {
+				clock = FakeTimers.install();
+			} );
+			afterEach( () => {
+				clock.uninstall();
+				expect( clock.countTimers() ).to.equal( 0 );
+			} );
+
+			it( 'default', async () => {
+				let call = 0;
+				class TestSession extends Session {
+					async internalGet( params ) {
+						expect( params ).to.eql( { format: 'json' } );
+						const currentCall = ++call;
+						if ( currentCall === 1 ) {
+							return {
+								status: 200,
+								headers: { 'retry-after': '5' },
+								body: 'irrelevant',
+							};
+						} else if ( currentCall === 2 ) {
+							return {
+								status: 200,
+								headers: {},
+								body: { response: true },
+							};
+						} else {
+							throw new Error( `Unexpected call #${currentCall}` );
+						}
+					}
+				}
+
+				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+				const promise = session.request( {} );
+				clock.tickAsync( 5000 );
+				const response = await promise;
+				expect( response ).to.eql( { response: true } );
+				expect( call ).to.equal( 2 );
+			} );
+
+			it( 'maxRetries 5 (actual retries 3)', async () => {
+				let call = 0;
+				class TestSession extends Session {
+					async internalGet( params ) {
+						expect( params ).to.eql( { format: 'json' } );
+						const currentCall = ++call;
+						if ( currentCall <= 3 ) {
+							return {
+								status: 200,
+								headers: { 'retry-after': '5' },
+								body: 'irrelevant',
+							};
+						} else if ( currentCall === 4 ) {
+							return {
+								status: 200,
+								headers: {},
+								body: { response: true },
+							};
+						} else {
+							throw new Error( `Unexpected call #${currentCall}` );
+						}
+					}
+				}
+
+				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+				const promise = session.request( {}, { maxRetries: 5 } );
+				for ( let i = 0; i < 3; i++ ) {
+					clock.tickAsync( 5000 );
+				}
+				const response = await promise;
+				expect( response ).to.eql( { response: true } );
+				expect( call ).to.equal( 4 );
+			} );
+
+			it( 'disabled', async () => {
+				let called = false;
+				class TestSession extends Session {
+					async internalGet( params ) {
+						expect( params ).to.eql( { format: 'json' } );
+						if ( called === false ) {
+							called = true;
+							return {
+								status: 200,
+								headers: { 'retry-after': '5' },
+								body: { response: true },
+							};
+						} else {
+							throw new Error( 'Unexpected additional call' );
+						}
+					}
+				}
+
+				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+				const response = await session.request( {}, { maxRetries: 0 } );
+				expect( response ).to.eql( { response: true } );
+				expect( called ).to.equal( true );
+			} );
+
+		} );
+
 	} );
 
 	describe( 'requestAndContinue', () => {
@@ -91,6 +196,7 @@ describe( 'Session', () => {
 		function transformResponse( response ) {
 			return {
 				status: 200,
+				headers: {},
 				body: response,
 			};
 		}

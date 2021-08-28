@@ -5,8 +5,14 @@ import { Session } from './core.js';
 const defaultUserAgent = 'm3api/0.1.2 (https://www.npmjs.com/package/m3api)';
 
 async function transformResponse( response ) {
+	const headers = {};
+	for ( const [ name, value ] of response.headers.entries() ) {
+		headers[ name ] = value;
+	}
+
 	return {
 		status: response.status,
+		headers,
 		body: await response.json(),
 	};
 }

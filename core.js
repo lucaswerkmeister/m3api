@@ -63,21 +63,26 @@ class Session {
 	 * Parameters with values false, null, or undefined are completely removed.
 	 * @param {Object} [options] Other options for the request.
 	 * @param {string} [options.method] The method, either GET (default) or POST.
+	 * @param {number} [options.maxRetries] The maximum number of automatic retries,
+	 * i.e. times the request will be repeated if the response contains a Retry-After header.
+	 * Defaults to 1; set to 0 to disable automatic retries.
 	 * @return {Object}
 	 * @throws {ApiErrors}
 	 */
 	async request( params, options = {} ) {
 		const {
 			method,
+			maxRetries,
 		} = Object.assign( {
 			method: 'GET',
+			maxRetries: 1,
 		}, options );
 
 		const response = await this.internalRequest( method, this.transformParams( {
 			...this.defaultParams,
 			...params,
 			format: 'json',
-		} ) );
+		} ), maxRetries );
 		this.throwErrors( response );
 		return response;
 	}
@@ -94,8 +99,10 @@ class Session {
 	async * requestAndContinue( params, options = {} ) {
 		const {
 			method,
+			maxRetries,
 		} = Object.assign( {
 			method: 'GET',
+			maxRetries: 1,
 		}, options );
 
 		const baseParams = this.transformParams( {
@@ -108,7 +115,7 @@ class Session {
 			const response = await this.internalRequest( method, {
 				...baseParams,
 				...continueParams,
-			} );
+			}, maxRetries );
 			this.throwErrors( response );
 			continueParams = response.continue || {};
 			yield response;
@@ -160,9 +167,10 @@ class Session {
 	 * @private
 	 * @param {string} method
 	 * @param {Object} params
+	 * @param {number} maxRetries
 	 * @return {Object}
 	 */
-	async internalRequest( method, params ) {
+	async internalRequest( method, params, maxRetries ) {
 		let result;
 		if ( method === 'GET' ) {
 			result = this.internalGet( params );
@@ -174,11 +182,21 @@ class Session {
 		}
 		const {
 			status,
+			headers,
 			body,
 		} = await result;
+
+		if ( maxRetries > 0 && 'retry-after' in headers ) {
+			await new Promise( ( resolve ) => {
+				setTimeout( resolve, 1000 * parseInt( headers[ 'retry-after' ] ) );
+			} );
+			return this.internalRequest( method, params, maxRetries - 1 );
+		}
+
 		if ( status !== 200 ) {
 			throw new Error( `API request returned non-200 HTTP status code: ${status}` );
 		}
+
 		return body;
 	}
 
@@ -188,7 +206,8 @@ class Session {
 	 * @abstract
 	 * @protected
 	 * @param {Object} params
-	 * @return {Promise<Object>} Object with members status (number)
+	 * @return {Promise<Object>} Object with members status (number),
+	 * headers (object mapping lowercase names to string values, without set-cookie),
 	 * and body (JSON-decoded).
 	 */
 	internalGet( params ) {

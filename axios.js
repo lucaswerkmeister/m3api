@@ -6,8 +6,12 @@ import { Session } from './core.js';
 const defaultUserAgent = 'm3api/0.1.2 (https://www.npmjs.com/package/m3api)';
 
 function transformResponse( response ) {
+	const headers = { ...response.headers };
+	delete headers[ 'set-cookie' ];
+
 	return {
 		status: response.status,
+		headers,
 		body: response.data,
 	};
 }

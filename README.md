@@ -98,7 +98,14 @@ Other features not demonstrated above:
   pass an object with a `method` value as the second parameter:
   e.g. `request( { ... }, { method: 'POST' } )`.
   (`requestAndContinue` also supports this.)
-  Other options may be added to this object later.
+
+- If the API response contains a Retry-After header
+  (most common case: you specified the `maxlag` parameter and lag is currently higher),
+  the request will automatically be retried once by default
+  (after waiting for the amount of time specified in the header).
+  You can change this with the `maxRetries` request option:
+  e.g. `request( { ... }, { maxRetries: 3 } )`.
+  Set `maxRetries` to 0 to disable this feature entirely.
 
 - Apart from strings, numbers, and arrays thereof,
   parameter values can also be booleans, `null`, or `undefined`.
