@@ -162,15 +162,24 @@ class Session {
 	 * @param {Object} params
 	 * @return {Object}
 	 */
-	internalRequest( method, params ) {
+	async internalRequest( method, params ) {
+		let result;
 		if ( method === 'GET' ) {
-			return this.internalGet( params );
+			result = this.internalGet( params );
 		} else if ( method === 'POST' ) {
 			const [ urlParams, bodyParams ] = splitPostParameters( params );
-			return this.internalPost( urlParams, bodyParams );
+			result = this.internalPost( urlParams, bodyParams );
 		} else {
 			throw new Error( `Unknown request method: ${method}` );
 		}
+		const {
+			status,
+			body,
+		} = await result;
+		if ( status !== 200 ) {
+			throw new Error( `API request returned non-200 HTTP status code: ${status}` );
+		}
+		return body;
 	}
 
 	/**
@@ -179,7 +188,8 @@ class Session {
 	 * @abstract
 	 * @protected
 	 * @param {Object} params
-	 * @return {Promise<Object>}
+	 * @return {Promise<Object>} Object with members status (number)
+	 * and body (JSON-decoded).
 	 */
 	internalGet( params ) {
 		throw new Error( 'Abstract method internalGet not implemented!' );
@@ -192,7 +202,7 @@ class Session {
 	 * @protected
 	 * @param {Object} urlParams
 	 * @param {Object} bodyParams
-	 * @return {Object}
+	 * @return {Promise<Object>} Same as for internalGet.
 	 */
 	internalPost( urlParams, bodyParams ) {
 		throw new Error( 'Abstract method internalPost not implemented!' );

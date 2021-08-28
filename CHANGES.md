@@ -5,10 +5,15 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## v0.1.3 (upcoming)
+## v0.2.0 (upcoming)
 
 First proper update over a previous release.
 
+- BREAKING CHANGE (internal):
+  The `internalGet` and `internalPost` methods now return additional data.
+  This is only relevant for you if you wrote a custom network implementation;
+  if you just import `browser.js` or `node.js`, it doesn’t matter.
+- A non-200 HTTP response status is now detected and throws an error.
 - Improved the default user agent.
 - Added package metadata.
 

@@ -1,7 +1,9 @@
 /* eslint-env mocha */
 
 import { ApiErrors, Session } from '../../core.js';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+chai.use( chaiAsPromised );
 
 describe( 'ApiErrors', () => {
 
@@ -65,7 +67,33 @@ describe( 'Session', () => {
 		} );
 	} );
 
+	describe( 'request', () => {
+
+		it( 'throws on non-200 status', async () => {
+			class TestSession extends Session {
+				async internalGet() {
+					return {
+						status: 502,
+						body: 'irrelevant',
+					};
+				}
+			}
+
+			const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+			await expect( session.request( { action: 'query' } ) )
+				.to.be.rejectedWith( '502' );
+		} );
+
+	} );
+
 	describe( 'requestAndContinue', () => {
+
+		function transformResponse( response ) {
+			return {
+				status: 200,
+				body: response,
+			};
+		}
 
 		it( 'query (GET)', async () => {
 			const firstResponse = {
@@ -108,7 +136,7 @@ describe( 'Session', () => {
 							format: 'json',
 							formatversion: '2',
 						} );
-						return firstResponse;
+						return transformResponse( firstResponse );
 					} else if ( currentCall === 2 ) {
 						expect( params ).to.eql( {
 							action: 'query',
@@ -119,7 +147,7 @@ describe( 'Session', () => {
 							format: 'json',
 							formatversion: '2',
 						} );
-						return secondResponse;
+						return transformResponse( secondResponse );
 					} else {
 						throw new Error( `Unexpected call #${currentCall}` );
 					}
@@ -188,7 +216,7 @@ describe( 'Session', () => {
 							format: 'json',
 							formatversion: '2',
 						} );
-						return firstResponse;
+						return transformResponse( firstResponse );
 					} else if ( currentCall === 2 ) {
 						expect( bodyParams ).to.eql( {
 							action: 'purge',
@@ -199,7 +227,7 @@ describe( 'Session', () => {
 							format: 'json',
 							formatversion: '2',
 						} );
-						return secondResponse;
+						return transformResponse( secondResponse );
 					} else {
 						throw new Error( `Unexpected call #${currentCall}` );
 					}

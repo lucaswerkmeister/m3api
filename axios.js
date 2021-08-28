@@ -5,6 +5,13 @@ import { Session } from './core.js';
 
 const defaultUserAgent = 'm3api/0.1.2 (https://www.npmjs.com/package/m3api)';
 
+function transformResponse( response ) {
+	return {
+		status: response.status,
+		body: response.data,
+	};
+}
+
 class AxiosSession extends Session {
 
 	constructor( apiUrl, defaultParams = {}, userAgent = '' ) {
@@ -31,7 +38,7 @@ class AxiosSession extends Session {
 			method: 'GET',
 			params,
 		} );
-		return response.data;
+		return transformResponse( response );
 	}
 
 	async internalPost( urlParams, bodyParams ) {
@@ -40,7 +47,7 @@ class AxiosSession extends Session {
 			params: urlParams,
 			data: new URLSearchParams( bodyParams ),
 		} );
-		return response.data;
+		return transformResponse( response );
 	}
 
 }

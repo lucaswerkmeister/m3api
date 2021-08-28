@@ -4,6 +4,13 @@ import { Session } from './core.js';
 
 const defaultUserAgent = 'm3api/0.1.2 (https://www.npmjs.com/package/m3api)';
 
+async function transformResponse( response ) {
+	return {
+		status: response.status,
+		body: await response.json(),
+	};
+}
+
 class FetchSession extends Session {
 
 	constructor( apiUrl, defaultParams = {}, userAgent = '' ) {
@@ -22,7 +29,7 @@ class FetchSession extends Session {
 		const response = await fetch( url, {
 			headers: this.headers,
 		} );
-		return response.json();
+		return transformResponse( response );
 	}
 
 	async internalPost( urlParams, bodyParams ) {
@@ -33,7 +40,7 @@ class FetchSession extends Session {
 			body: new URLSearchParams( bodyParams ),
 			headers: this.headers,
 		} );
-		return response.json();
+		return transformResponse( response );
 	}
 
 }
