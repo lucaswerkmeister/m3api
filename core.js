@@ -97,26 +97,12 @@ class Session {
 	 * @throws {ApiErrors}
 	 */
 	async * requestAndContinue( params, options = {} ) {
-		const {
-			method,
-			maxRetries,
-		} = Object.assign( {
-			method: 'GET',
-			maxRetries: 1,
-		}, options );
-
-		const baseParams = this.transformParams( {
-			...this.defaultParams,
-			...params,
-			format: 'json',
-		} );
 		let continueParams = {};
 		do {
-			const response = await this.internalRequest( method, {
-				...baseParams,
+			const response = await this.request( {
+				...params,
 				...continueParams,
-			}, maxRetries );
-			this.throwErrors( response );
+			}, options );
 			continueParams = response.continue || {};
 			yield response;
 		} while ( Object.keys( continueParams ).length > 0 );
