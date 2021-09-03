@@ -97,15 +97,15 @@ class Session {
 	 * @throws {ApiErrors}
 	 */
 	async * requestAndContinue( params, options = {} ) {
-		let continueParams = {};
+		let continueParams;
 		do {
 			const response = await this.request( {
 				...params,
 				...continueParams,
 			}, options );
-			continueParams = response.continue || {};
+			continueParams = response.continue;
 			yield response;
-		} while ( Object.keys( continueParams ).length > 0 );
+		} while ( continueParams !== undefined );
 	}
 
 	/**
