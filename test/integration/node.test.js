@@ -4,7 +4,9 @@ import NodeSession from '../../node.js';
 import { expect } from 'chai';
 import 'dotenv/config';
 
-describe( 'NodeSession', () => {
+describe( 'NodeSession', function () {
+
+	this.timeout( 60000 );
 
 	it( 'siteinfo, array siprops, default formatversion', async () => {
 		const session = new NodeSession( 'https://en.wikipedia.org/w/api.php', {
@@ -36,7 +38,6 @@ describe( 'NodeSession', () => {
 		if ( !( 'MEDIAWIKI_USERNAME' in process.env && 'MEDIAWIKI_PASSWORD' in process.env ) ) {
 			return this.skip();
 		}
-		this.timeout( 10000 ); // this test makes a lot of requests
 		const session = new NodeSession( 'https://en.wikipedia.beta.wmflabs.org/w/api.php', {
 			formatversion: 2,
 		} );

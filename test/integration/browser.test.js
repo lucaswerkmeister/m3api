@@ -3,7 +3,9 @@
 import BrowserSession from '../../browser.js';
 import '../../node_modules/chai/chai.js'; /* globals expect */
 
-describe( 'BrowserSession', () => {
+describe( 'BrowserSession', function () {
+
+	this.timeout( 60000 );
 
 	it( 'siteinfo, array siprops, default formatversion+origin', async () => {
 		const session = new BrowserSession( 'https://en.wikipedia.org/w/api.php', {
