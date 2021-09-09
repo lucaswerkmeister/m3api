@@ -3,7 +3,7 @@ import axiosCookieJarSupport from 'axios-cookiejar-support';
 import tough from 'tough-cookie';
 import { Session } from './core.js';
 
-const defaultUserAgent = 'm3api/0.1.2 (https://www.npmjs.com/package/m3api)';
+const defaultUserAgent = 'm3api/0.2.0 (https://www.npmjs.com/package/m3api)';
 
 function transformResponse( response ) {
 	const headers = { ...response.headers };
