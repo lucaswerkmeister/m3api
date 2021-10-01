@@ -1,8 +1,12 @@
 {
+	"plugins": [
+		"chai-friendly"
+	],
 	"extends": [
 		"wikimedia/common",
 		"wikimedia/language/es2019",
-		"wikimedia/node"
+		"wikimedia/node",
+		"plugin:chai-friendly/recommended"
 	],
 	"rules": {
 		"comma-dangle": [ "error", "always-multiline" ]
