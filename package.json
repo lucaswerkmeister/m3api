@@ -6,6 +6,7 @@
 	"type": "module",
 	"scripts": {
 		"test": "npm-run-all test:*",
+		"test-quick": "npm-run-all test:lint test:unit",
 		"test:lint": "eslint .",
 		"test:unit": "mocha test/unit/",
 		"test:node": "mocha test/integration/node.test.js",
