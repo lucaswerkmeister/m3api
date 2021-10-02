@@ -110,6 +110,110 @@ describe( 'CombiningSession', () => {
 		expect( response2 ).to.equal( response.body );
 	} );
 
+	it( 'combines two requests with set parameters', async () => {
+		const session = singleGetSession( {
+			meta: 'siteinfo|userinfo',
+		} );
+		const promise1 = session.request( { meta: new Set( [ 'siteinfo' ] ) } );
+		const promise2 = session.request( { meta: new Set( [ 'userinfo' ] ) } );
+		const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+		expect( response1 ).to.equal( response.body );
+		expect( response2 ).to.equal( response.body );
+	} );
+
+	it( 'combines empty set with nonempty set', async () => {
+		const session = singleGetSession( {
+			meta: 'siteinfo',
+		} );
+		const promise1 = session.request( { meta: new Set() } );
+		const promise2 = session.request( { meta: new Set( [ 'siteinfo' ] ) } );
+		const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+		expect( response1 ).to.equal( response.body );
+		expect( response2 ).to.equal( response.body );
+	} );
+
+	it( 'combines nonempty set with empty set', async () => {
+		const session = singleGetSession( {
+			meta: 'siteinfo',
+		} );
+		const promise1 = session.request( { meta: new Set( [ 'siteinfo' ] ) } );
+		const promise2 = session.request( { meta: new Set() } );
+		const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+		expect( response1 ).to.equal( response.body );
+		expect( response2 ).to.equal( response.body );
+	} );
+
+	it( 'combines longer sets', async () => {
+		const session = singleGetSession( {
+			alpha: 'a|b|c|d|e|f|g|h',
+		} );
+		const promise1 = session.request( { alpha: new Set( [ 'a', 'b', 'c', 'd', 'e' ] ) } );
+		const promise2 = session.request( { alpha: new Set( [ 'd', 'e', 'f', 'g', 'h' ] ) } );
+		const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+		expect( response1 ).to.equal( response.body );
+		expect( response2 ).to.equal( response.body );
+	} );
+
+	it( 'combines sets from more than two requests', async () => {
+		const session = singleGetSession( {
+			meta: 'siteinfo|userinfo|tokens',
+			siprop: 'general|statistics',
+			uiprop: 'editcount',
+			type: 'csrf|patrol|rollback',
+		} );
+		const promise1 = session.request( {
+			meta: new Set( [ 'siteinfo' ] ),
+			siprop: new Set( [ 'general' ] ),
+		} );
+		const promise2 = session.request( {
+			meta: new Set( [ 'siteinfo' ] ),
+			siprop: new Set( [ 'statistics' ] ),
+		} );
+		const promise3 = session.request( {
+			meta: new Set( [ 'userinfo' ] ),
+		} );
+		const promise4 = session.request( {
+			meta: new Set( [ 'userinfo' ] ),
+			uiprop: new Set( [ 'editcount' ] ),
+		} );
+		const promise5 = session.request( {
+			meta: new Set( [ 'tokens' ] ),
+			type: new Set( [ 'csrf' ] ),
+		} );
+		const promise6 = session.request( {
+			meta: new Set( [ 'tokens' ] ),
+			type: new Set( [ 'patrol' ] ),
+		} );
+		const promise7 = session.request( {
+			meta: new Set( [ 'tokens' ] ),
+			type: new Set( [ 'rollback' ] ),
+		} );
+		const [
+			response1,
+			response2,
+			response3,
+			response4,
+			response5,
+			response6,
+			response7,
+		] = await Promise.all( [
+			promise1,
+			promise2,
+			promise3,
+			promise4,
+			promise5,
+			promise6,
+			promise7,
+		] );
+		expect( response1 ).to.equal( response.body );
+		expect( response2 ).to.equal( response.body );
+		expect( response3 ).to.equal( response.body );
+		expect( response4 ).to.equal( response.body );
+		expect( response5 ).to.equal( response.body );
+		expect( response6 ).to.equal( response.body );
+		expect( response7 ).to.equal( response.body );
+	} );
+
 	it( 'propagates errors', async () => {
 		const error = new Error();
 		class TestSession extends Session {
@@ -173,7 +277,7 @@ describe( 'CombiningSession', () => {
 		expect( await session.request( params2 ) ).to.equal( response2.body );
 	} );
 
-	it( 'supports concurrent incompatible requests', async () => {
+	it( 'supports concurrent incompatible requests, different strings', async () => {
 		const params1 = { action: 'foo' };
 		const response1 = successfulResponse( { foo: 'FOO' } );
 		const params2 = { action: 'bar' };
@@ -181,6 +285,74 @@ describe( 'CombiningSession', () => {
 		const session = sequentialGetSession( [
 			{ expectedParams: params1, response: response1 },
 			{ expectedParams: params2, response: response2 },
+		] );
+		const promise1 = session.request( params1 );
+		const promise2 = session.request( params2 );
+		const responses = await Promise.all( [ promise1, promise2 ] );
+		expect( responses[ 0 ] ).to.equal( response1.body );
+		expect( responses[ 1 ] ).to.equal( response2.body );
+	} );
+
+	it( 'supports concurrent incompatible requests, string and set', async () => {
+		const params1 = { action: 'foo' };
+		const response1 = successfulResponse( { foo: 'FOO' } );
+		const params2 = { action: new Set( [ 'foo' ] ) };
+		const response2 = successfulResponse( { foo: 'FOO' } );
+		const expectedParams = params1; // same for both
+		const session = sequentialGetSession( [
+			{ expectedParams, response: response1 },
+			{ expectedParams, response: response2 },
+		] );
+		const promise1 = session.request( params1 );
+		const promise2 = session.request( params2 );
+		const responses = await Promise.all( [ promise1, promise2 ] );
+		expect( responses[ 0 ] ).to.equal( response1.body );
+		expect( responses[ 1 ] ).to.equal( response2.body );
+	} );
+
+	it( 'supports concurrent incompatible requests, string and array', async () => {
+		const params1 = { action: 'foo' };
+		const response1 = successfulResponse( { foo: 'FOO' } );
+		const params2 = { action: [ 'foo' ] };
+		const response2 = successfulResponse( { foo: 'FOO' } );
+		const expectedParams = params1; // same for both
+		const session = sequentialGetSession( [
+			{ expectedParams, response: response1 },
+			{ expectedParams, response: response2 },
+		] );
+		const promise1 = session.request( params1 );
+		const promise2 = session.request( params2 );
+		const responses = await Promise.all( [ promise1, promise2 ] );
+		expect( responses[ 0 ] ).to.equal( response1.body );
+		expect( responses[ 1 ] ).to.equal( response2.body );
+	} );
+
+	it( 'supports concurrent incompatible requests, array and set', async () => {
+		const params1 = { action: [ 'foo' ] };
+		const response1 = successfulResponse( { foo: 'FOO' } );
+		const params2 = { action: new Set( [ 'foo' ] ) };
+		const response2 = successfulResponse( { foo: 'FOO' } );
+		const expectedParams = { action: 'foo' }; // same for both
+		const session = sequentialGetSession( [
+			{ expectedParams, response: response1 },
+			{ expectedParams, response: response2 },
+		] );
+		const promise1 = session.request( params1 );
+		const promise2 = session.request( params2 );
+		const responses = await Promise.all( [ promise1, promise2 ] );
+		expect( responses[ 0 ] ).to.equal( response1.body );
+		expect( responses[ 1 ] ).to.equal( response2.body );
+	} );
+
+	it( 'supports concurrent incompatible requests, array and array', async () => {
+		const params1 = { action: [ 'foo' ] };
+		const response1 = successfulResponse( { foo: 'FOO' } );
+		const params2 = { action: [ 'foo' ] };
+		const response2 = successfulResponse( { foo: 'FOO' } );
+		const expectedParams = { action: 'foo' }; // same for both
+		const session = sequentialGetSession( [
+			{ expectedParams, response: response1 },
+			{ expectedParams, response: response2 },
 		] );
 		const promise1 = session.request( params1 );
 		const promise2 = session.request( params2 );

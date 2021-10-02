@@ -107,11 +107,11 @@ Other features not demonstrated above:
   e.g. `request( { ... }, { maxRetries: 3 } )`.
   Set `maxRetries` to 0 to disable this feature entirely.
 
-- Apart from strings, numbers, and arrays thereof,
+- Apart from strings, numbers, and arrays and sets thereof,
   parameter values can also be booleans, `null`, or `undefined`.
   `false`, `null` and `undefined` parameters are omitted from the request,
   according to their standard meaning in the MediaWiki API.
-  `true`, the empty string and the empty array are all _not_ omitted,
+  `true`, the empty string, the empty array and the empty set are all _not_ omitted,
   but instead use the empty string as the parameter value;
   for example, you can use `props: []` to override a nonempty default value.
 

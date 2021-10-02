@@ -130,6 +130,9 @@ class Session {
 	 * @return {string|undefined}
 	 */
 	transformParamValue( value ) {
+		if ( value instanceof Set ) {
+			value = [ ...value ];
+		}
 		if ( Array.isArray( value ) ) {
 			return this.transformParamArray( value );
 		} else {

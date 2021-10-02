@@ -71,7 +71,12 @@ class CombiningSession extends Session {
 				params[ key ] = valueA;
 				continue;
 			}
-			// TODO add support for Sets
+			if ( valueA instanceof Set && valueB instanceof Set ) {
+				const valueAB = new Set( valueA );
+				valueB.forEach( valueAB.add, valueAB );
+				params[ key ] = valueAB;
+				continue;
+			}
 			return null;
 		}
 		for ( let [ key, valueA ] of Object.entries( paramsA ) ) {
