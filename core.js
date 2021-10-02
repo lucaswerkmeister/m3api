@@ -252,7 +252,25 @@ class Session {
 
 }
 
+/**
+ * Convenience function to create a Set.
+ *
+ * The two invocations
+ *
+ *     new Set( [ 'a', 'b' ] )
+ *     set( 'a', 'b' )
+ *
+ * are equivalent, but the second one is shorter and easier to type.
+ *
+ * @param {...*} elements
+ * @return {Set}
+ */
+function set( ...elements ) {
+	return new Set( elements );
+}
+
 export {
 	ApiErrors,
 	Session,
+	set,
 };

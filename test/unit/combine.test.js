@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { mixCombiningSessionInto } from '../../combine.js';
-import { Session } from '../../core.js';
+import { Session, set } from '../../core.js';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 chai.use( chaiAsPromised );
@@ -114,8 +114,8 @@ describe( 'CombiningSession', () => {
 		const session = singleGetSession( {
 			meta: 'siteinfo|userinfo',
 		} );
-		const promise1 = session.request( { meta: new Set( [ 'siteinfo' ] ) } );
-		const promise2 = session.request( { meta: new Set( [ 'userinfo' ] ) } );
+		const promise1 = session.request( { meta: set( 'siteinfo' ) } );
+		const promise2 = session.request( { meta: set( 'userinfo' ) } );
 		const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
 		expect( response1 ).to.equal( response.body );
 		expect( response2 ).to.equal( response.body );
@@ -125,8 +125,8 @@ describe( 'CombiningSession', () => {
 		const session = singleGetSession( {
 			meta: 'siteinfo',
 		} );
-		const promise1 = session.request( { meta: new Set() } );
-		const promise2 = session.request( { meta: new Set( [ 'siteinfo' ] ) } );
+		const promise1 = session.request( { meta: set() } );
+		const promise2 = session.request( { meta: set( 'siteinfo' ) } );
 		const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
 		expect( response1 ).to.equal( response.body );
 		expect( response2 ).to.equal( response.body );
@@ -136,8 +136,8 @@ describe( 'CombiningSession', () => {
 		const session = singleGetSession( {
 			meta: 'siteinfo',
 		} );
-		const promise1 = session.request( { meta: new Set( [ 'siteinfo' ] ) } );
-		const promise2 = session.request( { meta: new Set() } );
+		const promise1 = session.request( { meta: set( 'siteinfo' ) } );
+		const promise2 = session.request( { meta: set() } );
 		const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
 		expect( response1 ).to.equal( response.body );
 		expect( response2 ).to.equal( response.body );
@@ -147,8 +147,8 @@ describe( 'CombiningSession', () => {
 		const session = singleGetSession( {
 			alpha: 'a|b|c|d|e|f|g|h',
 		} );
-		const promise1 = session.request( { alpha: new Set( [ 'a', 'b', 'c', 'd', 'e' ] ) } );
-		const promise2 = session.request( { alpha: new Set( [ 'd', 'e', 'f', 'g', 'h' ] ) } );
+		const promise1 = session.request( { alpha: set( 'a', 'b', 'c', 'd', 'e' ) } );
+		const promise2 = session.request( { alpha: set( 'd', 'e', 'f', 'g', 'h' ) } );
 		const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
 		expect( response1 ).to.equal( response.body );
 		expect( response2 ).to.equal( response.body );
@@ -162,31 +162,31 @@ describe( 'CombiningSession', () => {
 			type: 'csrf|patrol|rollback',
 		} );
 		const promise1 = session.request( {
-			meta: new Set( [ 'siteinfo' ] ),
-			siprop: new Set( [ 'general' ] ),
+			meta: set( 'siteinfo' ),
+			siprop: set( 'general' ),
 		} );
 		const promise2 = session.request( {
-			meta: new Set( [ 'siteinfo' ] ),
-			siprop: new Set( [ 'statistics' ] ),
+			meta: set( 'siteinfo' ),
+			siprop: set( 'statistics' ),
 		} );
 		const promise3 = session.request( {
-			meta: new Set( [ 'userinfo' ] ),
+			meta: set( 'userinfo' ),
 		} );
 		const promise4 = session.request( {
-			meta: new Set( [ 'userinfo' ] ),
-			uiprop: new Set( [ 'editcount' ] ),
+			meta: set( 'userinfo' ),
+			uiprop: set( 'editcount' ),
 		} );
 		const promise5 = session.request( {
-			meta: new Set( [ 'tokens' ] ),
-			type: new Set( [ 'csrf' ] ),
+			meta: set( 'tokens' ),
+			type: set( 'csrf' ),
 		} );
 		const promise6 = session.request( {
-			meta: new Set( [ 'tokens' ] ),
-			type: new Set( [ 'patrol' ] ),
+			meta: set( 'tokens' ),
+			type: set( 'patrol' ),
 		} );
 		const promise7 = session.request( {
-			meta: new Set( [ 'tokens' ] ),
-			type: new Set( [ 'rollback' ] ),
+			meta: set( 'tokens' ),
+			type: set( 'rollback' ),
 		} );
 		const [
 			response1,
@@ -296,7 +296,7 @@ describe( 'CombiningSession', () => {
 	it( 'supports concurrent incompatible requests, string and set', async () => {
 		const params1 = { action: 'foo' };
 		const response1 = successfulResponse( { foo: 'FOO' } );
-		const params2 = { action: new Set( [ 'foo' ] ) };
+		const params2 = { action: set( 'foo' ) };
 		const response2 = successfulResponse( { foo: 'FOO' } );
 		const expectedParams = params1; // same for both
 		const session = sequentialGetSession( [
@@ -330,7 +330,7 @@ describe( 'CombiningSession', () => {
 	it( 'supports concurrent incompatible requests, array and set', async () => {
 		const params1 = { action: [ 'foo' ] };
 		const response1 = successfulResponse( { foo: 'FOO' } );
-		const params2 = { action: new Set( [ 'foo' ] ) };
+		const params2 = { action: set( 'foo' ) };
 		const response2 = successfulResponse( { foo: 'FOO' } );
 		const expectedParams = { action: 'foo' }; // same for both
 		const session = sequentialGetSession( [

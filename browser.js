@@ -6,4 +6,7 @@ export default class BrowserSession extends FetchSession {
 
 mixCombiningSessionInto( BrowserSession );
 
-export { ApiErrors } from './core.js';
+export {
+	ApiErrors,
+	set,
+} from './core.js';

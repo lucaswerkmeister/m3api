@@ -6,4 +6,7 @@ export default class NodeSession extends AxiosSession {
 
 mixCombiningSessionInto( NodeSession );
 
-export { ApiErrors } from './core.js';
+export {
+	ApiErrors,
+	set,
+} from './core.js';
