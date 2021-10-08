@@ -97,7 +97,7 @@ class Session {
 	 * @throws {ApiErrors}
 	 */
 	async * requestAndContinue( params, options = {} ) {
-		let continueParams;
+		let continueParams = { continue: undefined };
 		do {
 			const response = await this.request( {
 				...params,

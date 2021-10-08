@@ -488,6 +488,22 @@ describe( 'CombiningSession', () => {
 			}
 		}
 
+		it( 'requestAndContinue + request with manual continue', async () => {
+			const params1 = {};
+			const response1 = successfulResponse( { batchcomplete: true } );
+			const params2 = { continue: '' };
+			const response2 = successfulResponse( { batchcomplete: false } );
+			const session = sequentialGetSession( [
+				{ expectedParams: params1, response: response1 },
+				{ expectedParams: params2, response: response2 },
+			] );
+			const promise1 = session.requestAndContinue( params1 ).next();
+			const promise2 = session.request( params2 );
+			const responses = await Promise.all( [ promise1, promise2 ] );
+			expect( responses[ 0 ].value ).to.equal( response1.body );
+			expect( responses[ 1 ] ).to.equal( response2.body );
+		} );
+
 	} );
 
 } );
