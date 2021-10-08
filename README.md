@@ -28,7 +28,7 @@ Here’s an example demonstrating some ways to use m3api:
 ```js
 // you may need to change the import path,
 // e.g. ./node_modules/m3api/node.js if installed via npm
-import Session from './node.js';
+import Session, { set } from './node.js';
 
 // note: this example uses top-level await for simplicity,
 // you may need an async wrapper function
@@ -53,6 +53,33 @@ const { query: {
 	statistics: { edits },
 } } = siteinfoResponse;
 console.log( `Welcome to ${sitename}, home to ${edits} edits!` );
+
+// another way to get the same result
+async function getSiteName( session ) {
+	const response = await session.request( {
+		action: 'query',
+		// set parameters may be combined with other requests
+		meta: set( 'siteinfo' ),
+		siprop: set( 'general' ),
+	} );
+	return response.query.general.sitename;
+}
+async function getSiteEdits( session ) {
+	const response = await session.request( {
+		action: 'query',
+		meta: set( 'siteinfo' ),
+		siprop: set( 'statistics' ),
+	} );
+	return response.query.statistics.edits;
+}
+// the following two concurrent API requests will be automatically combined,
+// sending a single request with siprop=general|statistics,
+// because they are compatible (set parameters get merged, others are equal)
+const [ sitename_, edits_ ] = await Promise.all( [
+	getSiteName( session ),
+	getSiteEdits( session ),
+] );
+console.log( `Welcome back to ${sitename_}, home to ${edits_} edits!` );
 
 // a slightly contrived example for continuation
 console.log( 'Here are ten local file pages linking to web.archive.org:' );
