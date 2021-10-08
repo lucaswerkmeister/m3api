@@ -58,6 +58,17 @@ class CombiningSession extends Session {
 	 * @param {Object|null} A new set of combined params, if possible, else null.
 	 */
 	combineParams( paramsA, paramsB ) {
+		// never combine generator/continue with titles/pageids/revids
+		const hasParam = ( params, key ) => this.transformParamScalar( params[ key ] ) !== undefined;
+		const hasParams = ( params, ...keys ) => keys.some( ( key ) => hasParam( params, key ) );
+		if ( hasParams( paramsA, 'generator', 'continue' )
+			&& hasParams( paramsB, 'titles', 'pageids', 'revids' )
+			|| hasParams( paramsB, 'generator', 'continue' )
+			&& hasParams( paramsA, 'titles', 'pageids', 'revids' )
+		) {
+			return null;
+		}
+
 		const params = {};
 		for ( let [ key, valueB ] of Object.entries( paramsB ) ) {
 			if ( !Object.prototype.hasOwnProperty.call( paramsA, key ) ) {

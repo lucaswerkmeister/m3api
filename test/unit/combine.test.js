@@ -448,6 +448,46 @@ describe( 'CombiningSession', () => {
 			expect( responses[ 1 ] ).to.equal( response2.body );
 		} );
 
+		for ( const first of [ 'generator', 'continue' ] ) {
+			for ( const second of [ 'titles', 'pageids', 'revids' ] ) {
+				it( `${first} + ${second}`, async () => {
+					const params1 = { [ first ]: '' };
+					const response1 = successfulResponse( { kind: 'first' } );
+					const params2 = { [ second ]: '' };
+					const response2 = successfulResponse( { kind: 'second' } );
+					const session = sequentialGetSession( [
+						{ expectedParams: params1, response: response1 },
+						{ expectedParams: params2, response: response2 },
+					] );
+					const promise1 = session.request( params1 );
+					const promise2 = session.request( params2 );
+					const responses = await Promise.all( [ promise1, promise2 ] );
+					expect( responses[ 0 ] ).to.equal( response1.body );
+					expect( responses[ 1 ] ).to.equal( response2.body );
+				} );
+			}
+		}
+
+		for ( const first of [ 'titles', 'pageids', 'revids' ] ) {
+			for ( const second of [ 'generator', 'continue' ] ) {
+				it( `${first} + ${second}`, async () => {
+					const params1 = { [ first ]: '' };
+					const response1 = successfulResponse( { kind: 'first' } );
+					const params2 = { [ second ]: '' };
+					const response2 = successfulResponse( { kind: 'second' } );
+					const session = sequentialGetSession( [
+						{ expectedParams: params1, response: response1 },
+						{ expectedParams: params2, response: response2 },
+					] );
+					const promise1 = session.request( params1 );
+					const promise2 = session.request( params2 );
+					const responses = await Promise.all( [ promise1, promise2 ] );
+					expect( responses[ 0 ] ).to.equal( response1.body );
+					expect( responses[ 1 ] ).to.equal( response2.body );
+				} );
+			}
+		}
+
 	} );
 
 } );
