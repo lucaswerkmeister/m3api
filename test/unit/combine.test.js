@@ -361,4 +361,52 @@ describe( 'CombiningSession', () => {
 		expect( responses[ 1 ] ).to.equal( response2.body );
 	} );
 
+	it( 'supports concurrent incompatible requests, true and false', async () => {
+		const params1 = { redirects: true };
+		const response1 = successfulResponse( { redirect: true } );
+		const params2 = { redirects: false };
+		const response2 = successfulResponse( { redirect: false } );
+		const session = sequentialGetSession( [
+			{ expectedParams: { redirects: '' }, response: response1 },
+			{ expectedParams: {}, response: response2 },
+		] );
+		const promise1 = session.request( params1 );
+		const promise2 = session.request( params2 );
+		const responses = await Promise.all( [ promise1, promise2 ] );
+		expect( responses[ 0 ] ).to.equal( response1.body );
+		expect( responses[ 1 ] ).to.equal( response2.body );
+	} );
+
+	it( 'supports concurrent incompatible requests, string and undefined', async () => {
+		const params1 = { siprop: 'statistics' };
+		const response1 = successfulResponse( { statistics: 1 } );
+		const params2 = { siprop: undefined };
+		const response2 = successfulResponse( { statistics: 0 } );
+		const session = sequentialGetSession( [
+			{ expectedParams: params1, response: response1 },
+			{ expectedParams: {}, response: response2 },
+		] );
+		const promise1 = session.request( params1 );
+		const promise2 = session.request( params2 );
+		const responses = await Promise.all( [ promise1, promise2 ] );
+		expect( responses[ 0 ] ).to.equal( response1.body );
+		expect( responses[ 1 ] ).to.equal( response2.body );
+	} );
+
+	it( 'supports concurrent incompatible requests, set and null', async () => {
+		const params1 = { siprop: set( 'statistics' ) };
+		const response1 = successfulResponse( { statistics: 1 } );
+		const params2 = { siprop: undefined };
+		const response2 = successfulResponse( { statistics: 0 } );
+		const session = sequentialGetSession( [
+			{ expectedParams: { siprop: 'statistics' }, response: response1 },
+			{ expectedParams: {}, response: response2 },
+		] );
+		const promise1 = session.request( params1 );
+		const promise2 = session.request( params2 );
+		const responses = await Promise.all( [ promise1, promise2 ] );
+		expect( responses[ 0 ] ).to.equal( response1.body );
+		expect( responses[ 1 ] ).to.equal( response2.body );
+	} );
+
 } );
