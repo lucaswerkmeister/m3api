@@ -216,6 +216,35 @@ describe( 'CombiningSession', () => {
 			expect( response7 ).to.equal( response.body );
 		} );
 
+		it( 'requestAndContinue + requestAndContinue', async () => {
+			const session = singleGetSession( {
+				list: 'allpages|allrevisions',
+			} );
+			const promise1 = session.requestAndContinue( { list: set( 'allpages' ) } ).next();
+			const promise2 = session.requestAndContinue( { list: set( 'allrevisions' ) } ).next();
+			const [
+				{ value: response1 },
+				{ value: response2 },
+			] = await Promise.all( [ promise1, promise2 ] );
+			expect( response1 ).to.equal( response.body );
+			expect( response2 ).to.equal( response.body );
+		} );
+
+		it( 'requestAndContinue + request', async () => {
+			const session = singleGetSession( {
+				meta: 'siteinfo',
+				list: 'allpages',
+			} );
+			const promise1 = session.requestAndContinue( { meta: set( 'siteinfo' ) } ).next();
+			const promise2 = session.request( { list: set( 'allpages' ) } );
+			const [
+				{ value: response1 },
+				response2,
+			] = await Promise.all( [ promise1, promise2 ] );
+			expect( response1 ).to.equal( response.body );
+			expect( response2 ).to.equal( response.body );
+		} );
+
 	} );
 
 	it( 'propagates errors', async () => {

@@ -11,7 +11,7 @@ class CombiningSession extends Session {
 	 * you also have to add it to mixCombiningSessionInto().
 	 */
 
-	request( params, options ) {
+	request( params, options = {} ) {
 		const pendingRequests = this.pendingRequests || ( this.pendingRequests = new Set() );
 		const newRequest = { params, options };
 		for ( const pendingRequest of pendingRequests ) {
