@@ -32,7 +32,7 @@
 		"tough-cookie": "^4.0.0"
 	},
 	"devDependencies": {
-		"@sinonjs/fake-timers": "^7.1.2",
+		"@sinonjs/fake-timers": "^8.0.1",
 		"chai": "^4.3.4",
 		"chai-as-promised": "^7.1.1",
 		"dotenv": "^10.0.0",
