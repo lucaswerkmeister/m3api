@@ -89,12 +89,12 @@ let n = 0;
 outer: for await ( const urlResponse of session.requestAndContinue( {
 	// requestAndContinue returns an async iterable of responses
 	action: 'query',
-	list: 'exturlusage',
+	list: set( 'exturlusage' ),
 	euprotocol: 'https',
 	euquery: 'web.archive.org',
 	eunamespace: [ 6 ], // File:
 	eulimit: 'max',
-	euprop: [ 'title' ],
+	euprop: set( 'title' ),
 } ) ) {
 	for ( const page of urlResponse.query.exturlusage ) {
 		console.log( page.title );
@@ -143,6 +143,100 @@ Other features not demonstrated above:
   for example, you can use `props: []` to override a nonempty default value.
 
 For more details, see also the code-level documentation (JSdoc comments).
+
+### Automatically combining requests
+
+One m3api feature deserves a more detailed discussion:
+how it automatically combines concurrent, compatible API requests.
+
+- API requests are **concurrent** if they are made within the same JS call stack,
+  or (in other words) in the same “callback”.
+  Technically, as soon as m3api receives a request,
+  it queues a microtask (using `Promise.resolve()`) to dispatch it,
+  and only other requests which arrive before that microtask runs have a chance to be combined with it.
+- API requests are **compatible** if they have the same options,
+  and all the parameters they have in common are compatible.
+  Parameters are compatible if they’re identical
+  (after simple transformations like `2` → `"2"`),
+  or if they’re both sets, in which case they’re merged for the combined request.
+  (The `set( ... )` function, which can be imported from `node.js` and `browser.js`,
+  is just a shortcut for `new Set( [ ... ] )`.)
+
+To take advantage of this feature,
+it’s recommended to use `set( ... )` instead of `[ ... ]` for most “list-like” API paremeters,
+even if you’re only specifying a single set element,
+as long as that parameter is safe to merge with other requests.
+For example, consider this request from the usage example above:
+
+```js
+session.requestAndContinue( {
+	// requestAndContinue returns an async iterable of responses
+	action: 'query',
+	list: set( 'exturlusage' ),
+	euprotocol: 'https',
+	euquery: 'web.archive.org',
+	eunamespace: [ 6 ], // File:
+	eulimit: 'max',
+	euprop: set( 'title' ),
+} )
+```
+
+Let’s go through those parameters in turn:
+
+- `action: 'query'`: There can only be one action at a time,
+  so this parameter has a single value.
+- `list: set( 'exturlusage' )`: The query API supports multiple lists at once,
+  and it doesn’t matter to us if there are other lists in the response
+  (they’ll be tucked away under a different key in the result),
+  so we specify this as a set.
+  If another request has e.g. `list: set( 'allpages' )`,
+  then the remaining parameters of that request will probably start with `ap*`
+  (the `list=allpages` API parameter prefix),
+  so they won’t conflict with our `eu*` parameters.
+- `euprotocol: 'https'`: Must be a single value.
+- `euquery: 'web.archive.org'`: Must be a single value.
+- `eunamespace: [ 6 ]`: Here we specify an array, not a set.
+  The parameter can take multiple values in the API,
+  but we want results limited to just the file namespace,
+  and if this parameter was a set,
+  we might get results from other namespaces due to merged requests.
+  The alternative would be to specify this as `eunamespace: set( 6 )`,
+  but then to check the namespace of each result we get,
+  so that we skip results from other namespaces,
+  and only process the ones we really wanted.
+- `eulimit: 'max'`: Must be a single value.
+- `euprop: set( 'title' )`: Here we use a set again,
+  because we don’t mind if other requests add extra properties to each result,
+  as long as the title itself is included.
+  Note that the default value for this parameter is `ids|title|url`,
+  so if we didn’t specify it at all,
+  we would probably get the data we need as well;
+  however, if our request was then combined with another request,
+  and that request had `euprop: set( 'ids' )`,
+  then we wouldn’t get the title in our request.
+
+The last point is worth elaborating on:
+**don’t just rely on default parameter values if your requests may be combined with others.**
+This is most important when you’re writing library code
+(similar to the `getSiteName` and `getSiteEdits` functions in the usage example above),
+where you don’t know which other requests may be made at any time;
+if you’re directly making API requests from an application,
+you may know that no other concurrent requests will be made at a certain time,
+and could get away with relying on default parameters.
+
+To avoid just relying on default parameter values, you have several options:
+
+1. Explicitly specify a value for the parameter,
+   either the default or (as with `title` vs. `ids|title|url` above) a part of it.
+2. Explicitly specify the parameter as `null` or `undefined`.
+   This means that the parameter won’t be sent with the request
+   (i.e. the server-side default will be used),
+   but makes the request incompatible with any other request that has a different value for the parameter.
+   (This is similar to using an array instead of a set, as we saw for `eunamespace` above:
+   both strategies inhibit merging with some other requests.)
+3. Process the response in a way that works regardless of parameter value.
+   This is not always possible, but as an example, with a bit of extra code,
+   you may be able to process both `formatversion=1` and `formatversion=2` responses.
 
 ## License
 
