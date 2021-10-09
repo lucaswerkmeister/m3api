@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import BrowserSession from '../../browser.js';
+import BrowserSession, { set } from '../../browser.js';
 import '../../node_modules/chai/chai.js'; /* globals expect */
 
 describe( 'BrowserSession', function () {
@@ -14,8 +14,8 @@ describe( 'BrowserSession', function () {
 		} );
 		const response = await session.request( {
 			action: 'query',
-			meta: 'siteinfo',
-			siprop: [ 'general', 'namespaces', 'statistics' ],
+			meta: set( 'siteinfo' ),
+			siprop: set( 'general', 'namespaces', 'statistics' ),
 		} );
 		expect( response.batchcomplete ).to.equal( true ); // would be '' in formatversion 1
 		expect( response.query.general.wikiid ).to.equal( 'enwiki' );
