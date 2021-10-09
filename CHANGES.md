@@ -15,6 +15,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   This would likely have required custom server software,
   since common servers like Apache and nginx limit the maximum header length,
   and the performance impact appears to be negligible at 8K characters.
+- Updated other dependencies.
 
 ## v0.2.0 (2021-09-09)
 
