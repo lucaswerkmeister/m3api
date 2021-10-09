@@ -103,10 +103,11 @@ describe( 'CombiningSession', () => {
 
 		it( 'differently typed scalar parameters', async () => {
 			const session = singleGetSession( {
-				formatversion: '2',
+				two: '2',
+				yes: '',
 			} );
-			const promise1 = session.request( { formatversion: 2 } );
-			const promise2 = session.request( { formatversion: '2' } );
+			const promise1 = session.request( { two: 2, yes: true, no: false } );
+			const promise2 = session.request( { two: '2', yes: '', no: null } );
 			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
 			expect( response1 ).to.equal( response.body );
 			expect( response2 ).to.equal( response.body );
@@ -151,6 +152,17 @@ describe( 'CombiningSession', () => {
 			} );
 			const promise1 = session.request( { alpha: set( 'a', 'b', 'c', 'd', 'e' ) } );
 			const promise2 = session.request( { alpha: set( 'd', 'e', 'f', 'g', 'h' ) } );
+			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+			expect( response1 ).to.equal( response.body );
+			expect( response2 ).to.equal( response.body );
+		} );
+
+		it( 'sets with differently typed scalars', async () => {
+			const session = singleGetSession( {
+				two: '2',
+			} );
+			const promise1 = session.request( { two: set( 2 ) } );
+			const promise2 = session.request( { two: set( '2' ) } );
 			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
 			expect( response1 ).to.equal( response.body );
 			expect( response2 ).to.equal( response.body );

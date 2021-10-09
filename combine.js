@@ -83,8 +83,12 @@ class CombiningSession extends Session {
 				continue;
 			}
 			if ( valueA instanceof Set && valueB instanceof Set ) {
-				const valueAB = new Set( valueA );
-				valueB.forEach( valueAB.add, valueAB );
+				const valueAB = new Set();
+				for ( const value of [ valueA, valueB ] ) {
+					for ( const element of value ) {
+						valueAB.add( this.transformParamScalar( element ) );
+					}
+				}
 				params[ key ] = valueAB;
 				continue;
 			}
