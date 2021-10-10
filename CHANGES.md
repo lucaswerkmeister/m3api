@@ -5,9 +5,21 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## v0.2.1 (upcoming)
+## next (not yet released)
 
-(No changes yet.)
+No changes yet.
+
+## v0.2.1 (2021-10-09)
+
+- Updated axios, avoiding [CVE-2021-3749][].
+  The potential impact of this security vulnerability should have been fairly low:
+  when using the axios backend (but not the fetch backend),
+  a malicious API server could have provoked long processing times,
+  by sending response headers with long sequences of interior whitespace.
+  This would likely have required custom server software,
+  since common servers like Apache and nginx limit the maximum header length,
+  and the performance impact appears to be negligible at 8K characters.
+- Updated other dependencies.
 
 ## v0.2.0 (2021-09-09)
 
@@ -44,3 +56,5 @@ I ran `npm publish` in my working tree with some extra files in it and didn’t 
 so I unpublished the package from npm again and also deleted the Git tag.
 The Git commit for this version was probably 00e278a13b50cc903b6fb3d530033098d3a21c90,
 but I see no reason to recreate the tag now.
+
+[CVE-2021-3749]: https://github.com/advisories/GHSA-cph5-m8f7-6c5x
