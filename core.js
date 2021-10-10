@@ -97,7 +97,7 @@ class Session {
 	 * @throws {ApiErrors}
 	 */
 	async * requestAndContinue( params, options = {} ) {
-		let continueParams;
+		let continueParams = { continue: undefined };
 		do {
 			const response = await this.request( {
 				...params,
@@ -130,13 +130,36 @@ class Session {
 	 * @return {string|undefined}
 	 */
 	transformParamValue( value ) {
-		if ( Array.isArray( value ) ) {
-			if ( value.some( ( element ) => /[|]/.test( element ) ) ) {
-				return '\x1f' + value.join( '\x1f' );
-			} else {
-				return value.join( '|' );
-			}
+		if ( value instanceof Set ) {
+			value = [ ...value ];
 		}
+		if ( Array.isArray( value ) ) {
+			return this.transformParamArray( value );
+		} else {
+			return this.transformParamScalar( value );
+		}
+	}
+
+	/**
+	 * @private
+	 * @param {(string|number)[]} value
+	 * @return {string}
+	 */
+	transformParamArray( value ) {
+		if ( value.some( ( element ) => /[|]/.test( element ) ) ) {
+			return '\x1f' + value.join( '\x1f' );
+		} else {
+			return value.join( '|' );
+		}
+	}
+
+	/**
+	 * @private
+	 * @param {*} value
+	 * @return {*} string|undefined for string|number|boolean|null|undefined value,
+	 * the value unmodified otherwise
+	 */
+	transformParamScalar( value ) {
 		if ( typeof value === 'number' ) {
 			return String( value );
 		}
@@ -229,7 +252,25 @@ class Session {
 
 }
 
+/**
+ * Convenience function to create a Set.
+ *
+ * The two invocations
+ *
+ *     new Set( [ 'a', 'b' ] )
+ *     set( 'a', 'b' )
+ *
+ * are equivalent, but the second one is shorter and easier to type.
+ *
+ * @param {...*} elements
+ * @return {Set}
+ */
+function set( ...elements ) {
+	return new Set( elements );
+}
+
 export {
 	ApiErrors,
 	Session,
+	set,
 };

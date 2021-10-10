@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import NodeSession from '../../node.js';
+import NodeSession, { set } from '../../node.js';
 import { expect } from 'chai';
 import 'dotenv/config';
 
@@ -14,8 +14,8 @@ describe( 'NodeSession', function () {
 		} );
 		const response = await session.request( {
 			action: 'query',
-			meta: 'siteinfo',
-			siprop: [ 'general', 'namespaces', 'statistics' ],
+			meta: set( 'siteinfo' ),
+			siprop: set( 'general', 'namespaces', 'statistics' ),
 		} );
 		expect( response.batchcomplete ).to.equal( true ); // would be '' in formatversion 1
 		expect( response.query.general.wikiid ).to.equal( 'enwiki' );
@@ -43,8 +43,8 @@ describe( 'NodeSession', function () {
 		} );
 		const { query: { tokens: { logintoken } } } = await session.request( {
 			action: 'query',
-			meta: [ 'tokens' ],
-			type: [ 'login' ],
+			meta: set( 'tokens' ),
+			type: set( 'login' ),
 		} );
 		const { login: { lgusername: username } } = await session.request( {
 			action: 'login',
@@ -54,8 +54,8 @@ describe( 'NodeSession', function () {
 		}, { method: 'POST' } );
 		const { query: { tokens: { csrftoken } } } = await session.request( {
 			action: 'query',
-			meta: [ 'tokens' ],
-			type: [ 'csrf' ],
+			meta: set( 'tokens' ),
+			type: set( 'csrf' ),
 		} );
 		const title = `User:${username}/m3api test`;
 		const text = `Test content (${new Date().toISOString()}).`;
@@ -69,10 +69,10 @@ describe( 'NodeSession', function () {
 		}, { method: 'POST' } );
 		const { query: { pages: [ page ] } } = await session.request( {
 			action: 'query',
-			titles: [ title ],
-			prop: [ 'revisions' ],
-			rvprop: [ 'content' ],
-			rvslots: [ 'main' ],
+			titles: [ title ], // not set(), we destructure assuming a single page
+			prop: set( 'revisions' ),
+			rvprop: set( 'content' ),
+			rvslots: set( 'main' ),
 		} );
 		const { revisions: [ { slots: { main: { content } } } ] } = page;
 		expect( content ).to.equal( text );

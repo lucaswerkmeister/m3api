@@ -7,7 +7,13 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- m3api now automatically combines concurrent compatible API requests.
+  To make use of this feature, import the `set()` helper as a named import,
+  and then use `set( ... )` instead of `[ ... ]` for list-like parameters
+  where additional values from other requests can be safely added,
+  such as `action=query`’s `prop`, `list` and `meta` parameters.
+  For more information, see the updated README,
+  especially the new “automatically combining requests” section.
 
 ## v0.2.1 (2021-10-09)
 
