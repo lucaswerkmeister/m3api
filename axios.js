@@ -1,5 +1,5 @@
 import axios from 'axios';
-import axiosCookieJarSupport from 'axios-cookiejar-support';
+import { wrapper as axiosCookieJarSupport } from 'axios-cookiejar-support';
 import tough from 'tough-cookie';
 import { Session } from './core.js';
 
@@ -30,10 +30,9 @@ class AxiosSession extends Session {
 				},
 			},
 		} );
-		axiosCookieJarSupport.default( this.session );
+		axiosCookieJarSupport( this.session );
 		Object.assign( this.session.defaults, { // must happen after axiosCookieJarSupport
 			jar: new tough.CookieJar(),
-			withCredentials: true,
 		} );
 	}
 
