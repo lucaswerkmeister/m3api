@@ -2,7 +2,7 @@
 
 import { Session } from './core.js';
 
-const defaultUserAgent = 'm3api/0.2.1 (https://www.npmjs.com/package/m3api)';
+const defaultUserAgent = 'm3api/0.3.0 (https://www.npmjs.com/package/m3api)';
 
 async function transformResponse( response ) {
 	const headers = {};

@@ -5,7 +5,7 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## next (not yet released)
+## v0.3.0 (2021-10-10)
 
 - m3api now automatically combines concurrent compatible API requests.
   To make use of this feature, import the `set()` helper as a named import,
