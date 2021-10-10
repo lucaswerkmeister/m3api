@@ -5,6 +5,10 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
+## next (not yet released)
+
+No changes yet.
+
 ## v0.2.1 (2021-10-09)
 
 - Updated axios, avoiding [CVE-2021-3749][].
