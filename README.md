@@ -170,7 +170,6 @@ For example, consider this request from the usage example above:
 
 ```js
 session.requestAndContinue( {
-	// requestAndContinue returns an async iterable of responses
 	action: 'query',
 	list: set( 'exturlusage' ),
 	euprotocol: 'https',
