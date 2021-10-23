@@ -1,6 +1,10 @@
 /* eslint-env mocha */
 
-import { ApiErrors, Session } from '../../core.js';
+import {
+	ApiErrors,
+	Session,
+	set,
+} from '../../core.js';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import FakeTimers from '@sinonjs/fake-timers';
@@ -389,6 +393,26 @@ describe( 'Session', () => {
 			} ) ).to.throw( ApiErrors, 'errorcode' );
 		} );
 
+	} );
+
+} );
+
+describe( 'set', () => {
+
+	it( 'one argument', () => {
+		expect( set( 'a' ) ).to.eql( new Set( [ 'a' ] ) );
+	} );
+
+	it( 'several arguments', () => {
+		expect( set( 'a', 'b' ) ).to.eql( new Set( [ 'a', 'b' ] ) );
+	} );
+
+	it( 'redundant arguments', () => {
+		expect( set( 'a', 'b', 'a' ) ).to.eql( new Set( [ 'a', 'b' ] ) );
+	} );
+
+	it( 'no arguments', () => {
+		expect( set() ).to.eql( new Set() );
 	} );
 
 } );
