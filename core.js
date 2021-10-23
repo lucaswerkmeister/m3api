@@ -59,7 +59,7 @@ class Session {
 	 * Make an API request.
 	 *
 	 * @param {Object} params The parameters.
-	 * Values may be strings, numbers, arrays thereof, booleans, null, or undefined.
+	 * Values may be strings, numbers, arrays or sets thereof, booleans, null, or undefined.
 	 * Parameters with values false, null, or undefined are completely removed.
 	 * @param {Object} [options] Other options for the request.
 	 * @param {string} [options.method] The method, either GET (default) or POST.
