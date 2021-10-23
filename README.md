@@ -142,6 +142,12 @@ Other features not demonstrated above:
   but instead use the empty string as the parameter value;
   for example, you can use `props: []` to override a nonempty default value.
 
+- The `responseBoolean` helper can be used to get a boolean from a response object.
+  For example, `responseBoolean( response.query.general, 'rtl' )` returns `true`
+  if `response.query.general` had `rtl: ""` (`formatversion=1`) or `rtl: true` (`formatversion=2`).
+  This is mostly useful in library code, when you don’t know the `formatversion` of the response;
+  you can import the helper from `core.js` (but not `browser.js` or `node.js`).
+
 For more details, see also the code-level documentation (JSdoc comments).
 
 ### Automatically combining requests
@@ -235,7 +241,8 @@ To avoid just relying on default parameter values, you have several options:
    both strategies inhibit merging with some other requests.)
 3. Process the response in a way that works regardless of parameter value.
    This is not always possible, but as an example, with a bit of extra code,
-   you may be able to process both `formatversion=1` and `formatversion=2` responses.
+   you may be able to process both `formatversion=1` and `formatversion=2` responses
+   (see also the `responseBoolean` helper function).
 
 ## License
 

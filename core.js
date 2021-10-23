@@ -253,6 +253,26 @@ class Session {
 }
 
 /**
+ * Convenience function to get a boolean from an API response object.
+ *
+ * Works for formatversion=1 booleans
+ * (absent means false, empty string means true)
+ * as well as formatversion=2 booleans
+ * (absent or false means false, true means true).
+ * Mostly useful in library code,
+ * when you don’t know the formatversion of the response.
+ * (If you control the request parameters, just use formatversion=2.)
+ *
+ * @param {Object} object An object from an API response.
+ * (Typically not the whole response, but a member like response.query.general.)
+ * @param {string} key The key of the boolean in the response object.
+ * @return {boolean}
+ */
+function responseBoolean( object, key ) {
+	return ( object[ key ] && '' ) === '';
+}
+
+/**
  * Convenience function to create a Set.
  *
  * The two invocations
@@ -272,5 +292,6 @@ function set( ...elements ) {
 export {
 	ApiErrors,
 	Session,
+	responseBoolean,
 	set,
 };

@@ -3,6 +3,7 @@
 import {
 	ApiErrors,
 	Session,
+	responseBoolean,
 	set,
 } from '../../core.js';
 import chai, { expect } from 'chai';
@@ -394,6 +395,21 @@ describe( 'Session', () => {
 		} );
 
 	} );
+
+} );
+
+describe( 'responseBoolean', () => {
+
+	for ( const [ name, object, expected ] of [
+		[ 'formatversion=1 false', {}, false ],
+		[ 'formatversion=1 true', { key: '' }, true ],
+		[ 'formatversion=2 false', { key: false }, false ],
+		[ 'formatversion=2 true', { key: true }, true ],
+	] ) {
+		it( name, () => {
+			expect( responseBoolean( object, 'key' ) ).to.equal( expected );
+		} );
+	}
 
 } );
 
