@@ -100,6 +100,74 @@ describe( 'Session', () => {
 				.to.be.rejectedWith( '502' );
 		} );
 
+		describe( 'user agent', () => {
+
+			it( 'from default options', async () => {
+				let called = false;
+				class TestSession extends Session {
+					async internalGet( params, userAgent ) {
+						expect( userAgent ).to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
+						expect( called, 'not called yet' ).to.be.false;
+						called = true;
+						return {
+							status: 200,
+							headers: {},
+							body: { response: true },
+						};
+					}
+				}
+
+				const session = new TestSession( 'https://en.wikipedia.org/w/api.php', {}, {
+					userAgent: 'user-agent',
+				} );
+				await session.request( {} );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'from request options', async () => {
+				let called = false;
+				class TestSession extends Session {
+					async internalGet( params, userAgent ) {
+						expect( userAgent ).to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
+						expect( called, 'not called yet' ).to.be.false;
+						called = true;
+						return {
+							status: 200,
+							headers: {},
+							body: { response: true },
+						};
+					}
+				}
+
+				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+				await session.request( {}, {
+					userAgent: 'user-agent',
+				} );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'default', async () => {
+				let called = false;
+				class TestSession extends Session {
+					async internalGet( params, userAgent ) {
+						expect( userAgent ).to.match( /^m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
+						expect( called, 'not called yet' ).to.be.false;
+						called = true;
+						return {
+							status: 200,
+							headers: {},
+							body: { response: true },
+						};
+					}
+				}
+
+				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+				await session.request( {} );
+				expect( called ).to.be.true;
+			} );
+
+		} );
+
 		describe( 'automatic retry', () => {
 
 			let clock;
@@ -195,8 +263,10 @@ describe( 'Session', () => {
 					}
 				}
 
-				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
-				const response = await session.request( {}, { maxRetries: 0 } );
+				const session = new TestSession( 'https://en.wikipedia.org/w/api.php', {}, {
+					maxRetries: 0,
+				} );
+				const response = await session.request( {} );
 				expect( response ).to.eql( { response: true } );
 				expect( called ).to.equal( true );
 			} );

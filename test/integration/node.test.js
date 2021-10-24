@@ -11,6 +11,8 @@ describe( 'NodeSession', function () {
 	it( 'siteinfo, array siprops, default formatversion', async () => {
 		const session = new NodeSession( 'https://en.wikipedia.org/w/api.php', {
 			formatversion: 2,
+		}, {
+			userAgent: 'm3api-integration-tests',
 		} );
 		const response = await session.request( {
 			action: 'query',
@@ -26,6 +28,8 @@ describe( 'NodeSession', function () {
 	it( 'validatepassword', async function () {
 		const session = new NodeSession( 'https://en.wikipedia.org/w/api.php', {
 			formatversion: 2,
+		}, {
+			userAgent: 'm3api-integration-tests',
 		} );
 		const response = await session.request( {
 			action: 'validatepassword',
@@ -40,6 +44,8 @@ describe( 'NodeSession', function () {
 		}
 		const session = new NodeSession( 'https://en.wikipedia.beta.wmflabs.org/w/api.php', {
 			formatversion: 2,
+		}, {
+			userAgent: 'm3api-integration-tests',
 		} );
 		const { query: { tokens: { logintoken } } } = await session.request( {
 			action: 'query',

@@ -1,6 +1,8 @@
 /* eslint no-unused-vars: [ "error", { "args": "none" } ] */
 // Session has abstract methods with parameters only used in subclasses
 
+const defaultUserAgent = 'm3api/0.3.0 (https://www.npmjs.com/package/m3api)';
+
 /**
  * @private
  * @param {Object} params
@@ -46,13 +48,24 @@ class Session {
 	 * @param {string} apiUrl The URL to the api.php endpoint,
 	 * such as https://en.wikipedia.org/w/api.php
 	 * @param {Object} [defaultParams] Parameters to include in every API request.
+	 * See {@link #request} for supported value types.
 	 * You are strongly encouraged to specify formatversion: 2 here;
-	 * other useful global parameters include uselang, errorformat, maxlag
-	 * @param {string} [userAgent] The user agent to send,
-	 * see https://meta.wikimedia.org/wiki/User-Agent_policy
+	 * other useful global parameters include uselang, errorformat, maxlag.
+	 * @param {Object} [defaultOptions] Options to set for each request.
+	 * See {@link #request} for supported options.
+	 * You are strongly encouraged to specify a userAgent according to the
+	 * {@link https://meta.wikimedia.org/wiki/User-Agent_policy User-Agent policy}.
 	 */
-	constructor( apiUrl, defaultParams = {}, userAgent = '' ) {
+	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
 		this.defaultParams = defaultParams;
+		if ( typeof defaultOptions === 'string' ) {
+			console.warn(
+				'The third Session constructor parameter should now be an object. ' +
+					"Change your code to pass { userAgent: '...' } instead.",
+			);
+			defaultOptions = { userAgent: defaultOptions };
+		}
+		this.defaultOptions = defaultOptions;
 	}
 
 	/**
@@ -61,11 +74,17 @@ class Session {
 	 * @param {Object} params The parameters.
 	 * Values may be strings, numbers, arrays or sets thereof, booleans, null, or undefined.
 	 * Parameters with values false, null, or undefined are completely removed.
+	 * Default parameters from the constructor are added to these,
+	 * with per-request parameters overriding default parameters in case of collision.
 	 * @param {Object} [options] Other options for the request.
+	 * Default options from the constructor are added to these,
+	 * with per-request options overriding default options in case of collision.
 	 * @param {string} [options.method] The method, either GET (default) or POST.
 	 * @param {number} [options.maxRetries] The maximum number of automatic retries,
 	 * i.e. times the request will be repeated if the response contains a Retry-After header.
 	 * Defaults to 1; set to 0 to disable automatic retries.
+	 * @param {string} [options.userAgent] The User-Agent header to send.
+	 * (Usually specified as a default option in the constructor.)
 	 * @return {Object}
 	 * @throws {ApiErrors}
 	 */
@@ -73,16 +92,20 @@ class Session {
 		const {
 			method,
 			maxRetries,
+			userAgent,
 		} = Object.assign( {
 			method: 'GET',
 			maxRetries: 1,
-		}, options );
+		}, this.defaultOptions, options );
+		const fullUserAgent = userAgent ?
+			`${userAgent} ${defaultUserAgent}` :
+			defaultUserAgent;
 
 		const response = await this.internalRequest( method, this.transformParams( {
 			...this.defaultParams,
 			...params,
 			format: 'json',
-		} ), maxRetries );
+		} ), fullUserAgent, maxRetries );
 		this.throwErrors( response );
 		return response;
 	}
@@ -176,16 +199,17 @@ class Session {
 	 * @private
 	 * @param {string} method
 	 * @param {Object} params
+	 * @param {string} userAgent
 	 * @param {number} maxRetries
 	 * @return {Object}
 	 */
-	async internalRequest( method, params, maxRetries ) {
+	async internalRequest( method, params, userAgent, maxRetries ) {
 		let result;
 		if ( method === 'GET' ) {
-			result = this.internalGet( params );
+			result = this.internalGet( params, userAgent );
 		} else if ( method === 'POST' ) {
 			const [ urlParams, bodyParams ] = splitPostParameters( params );
-			result = this.internalPost( urlParams, bodyParams );
+			result = this.internalPost( urlParams, bodyParams, userAgent );
 		} else {
 			throw new Error( `Unknown request method: ${method}` );
 		}
@@ -199,7 +223,7 @@ class Session {
 			await new Promise( ( resolve ) => {
 				setTimeout( resolve, 1000 * parseInt( headers[ 'retry-after' ] ) );
 			} );
-			return this.internalRequest( method, params, maxRetries - 1 );
+			return this.internalRequest( method, params, userAgent, maxRetries - 1 );
 		}
 
 		if ( status !== 200 ) {
@@ -215,11 +239,12 @@ class Session {
 	 * @abstract
 	 * @protected
 	 * @param {Object} params
+	 * @param {string} userAgent
 	 * @return {Promise<Object>} Object with members status (number),
 	 * headers (object mapping lowercase names to string values, without set-cookie),
 	 * and body (JSON-decoded).
 	 */
-	internalGet( params ) {
+	internalGet( params, userAgent ) {
 		throw new Error( 'Abstract method internalGet not implemented!' );
 	}
 
@@ -230,9 +255,10 @@ class Session {
 	 * @protected
 	 * @param {Object} urlParams
 	 * @param {Object} bodyParams
+	 * @param {string} userAgent
 	 * @return {Promise<Object>} Same as for internalGet.
 	 */
-	internalPost( urlParams, bodyParams ) {
+	internalPost( urlParams, bodyParams, userAgent ) {
 		throw new Error( 'Abstract method internalPost not implemented!' );
 	}
 

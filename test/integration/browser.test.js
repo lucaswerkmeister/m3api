@@ -11,6 +11,8 @@ describe( 'BrowserSession', function () {
 		const session = new BrowserSession( 'https://en.wikipedia.org/w/api.php', {
 			formatversion: 2,
 			origin: '*',
+		}, {
+			userAgent: 'm3api-integration-tests',
 		} );
 		const response = await session.request( {
 			action: 'query',
@@ -27,6 +29,8 @@ describe( 'BrowserSession', function () {
 		const session = new BrowserSession( 'https://en.wikipedia.org/w/api.php', {
 			formatversion: 2,
 			origin: '*',
+		}, {
+			userAgent: 'm3api-integration-tests',
 		} );
 		const response = await session.request( {
 			action: 'validatepassword',

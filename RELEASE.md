@@ -10,7 +10,7 @@ For the release notes (for users), see [CHANGES.md](./CHANGES.md).
 2. Reviewing `CHANGES.md`, decide on the new version number
    (i.e. whether the changes warrant a patch, minor, or major release).
 
-3. Update the version number in `package.json`, `fetch.json`, `axios.json`,
+3. Update the version number in `package.json` and `core.json`,
    and add it with the current date to `CHANGES.md`;
    run `npm install` to update `package-lock.json`;
    then commit the changes with a message like “Bump version to *version*”.

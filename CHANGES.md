@@ -7,6 +7,19 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
+- BREAKING CHANGE:
+  The third constructor parameter is now an object with default request options,
+  and the user agent string is just one option, under the `userAgent` key.
+  Convert constructor calls like `new Session( ..., {}, 'user-agent' )`
+  to `new Session( ..., {}, { userAgent: 'user-agent' } )` instead.
+- BREAKING CHANGE (internal):
+  The `internalGet` and `internalPost` methods now receive an additional parameter,
+  the user agent string, which should be used instead of the constructor option.
+  This is only relevant for you if you wrote a custom network implementation;
+  if you just import `browser.js` or `node.js`, it doesn’t matter.
+- Thanks to the constructor change mentioned above,
+  the `userAgent` request option can now specified for an individual request if you want to,
+  and conversely other options like `maxRetries` can be defaulted in the constructor.
 - Added the `responseBoolean` utility function,
   to get a boolean out of a response object regardless of `formatversion`.
 
