@@ -9,9 +9,9 @@
 		"test-quick": "npm-run-all test:lint test:unit",
 		"test:lint": "eslint .",
 		"test:unit": "mocha test/unit/",
-		"test:node": "mocha test/integration/node.test.js",
+		"test:node": "NODE_ENV=development mocha test/integration/node.test.js",
 		"test:browser": "mocha-headless test/integration/browser.test.js",
-		"test:readme": "sed -n '/```/,/```/ { /```$/q; /```/n; p; }' README.md | node --input-type=module --harmony-top-level-await"
+		"test:readme": "sed -n '/```/,/```/ { /```$/q; /```/n; p; }' README.md | NODE_ENV=development node --input-type=module --harmony-top-level-await"
 	},
 	"homepage": "https://github.com/lucaswerkmeister/m3api#readme",
 	"bugs": "https://github.com/lucaswerkmeister/m3api/issues",

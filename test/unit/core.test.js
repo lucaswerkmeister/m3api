@@ -2,6 +2,7 @@
 
 import {
 	ApiErrors,
+	ApiWarnings,
 	Session,
 	responseBoolean,
 	set,
@@ -462,6 +463,150 @@ describe( 'Session', () => {
 			expect( () => session.throwErrors( {
 				errors: [ { code: 'errorcode' }, { code: 'other' } ],
 			} ) ).to.throw( ApiErrors, 'errorcode' );
+		} );
+
+	} );
+
+	describe( 'handleWarnings', () => {
+
+		it( 'errorformat=bc, formatversion=1', () => {
+			let called = false;
+			function warn( warnings ) {
+				expect( called, 'not called yet' ).to.be.false;
+				called = true;
+				expect( warnings ).to.be.an.instanceof( ApiWarnings );
+				expect( warnings.message ).to.equal(
+					'Because "rvslots" was not specified…',
+				);
+				expect( warnings.warnings ).to.eql( [
+					{
+						'*': 'Because "rvslots" was not specified…',
+						module: 'revisions',
+					},
+					{
+						'*': 'Subscribe to the mediawiki-api-announce…',
+						module: 'main',
+					},
+				] );
+			}
+			session.handleWarnings( { warnings: {
+				main: {
+					'*': 'Subscribe to the mediawiki-api-announce…',
+				},
+				revisions: {
+					'*': 'Because "rvslots" was not specified…',
+				},
+			} }, warn );
+			expect( called ).to.be.true;
+		} );
+
+		it( 'errorformat=bc, formatversion=2', () => {
+			let called = false;
+			function warn( warnings ) {
+				expect( called, 'not called yet' ).to.be.false;
+				called = true;
+				expect( warnings ).to.be.an.instanceof( ApiWarnings );
+				expect( warnings.message ).to.equal(
+					'Because "rvslots" was not specified…',
+				);
+				expect( warnings.warnings ).to.eql( [
+					{
+						warnings: 'Because "rvslots" was not specified…',
+						module: 'revisions',
+					},
+					{
+						warnings: 'Subscribe to the mediawiki-api-announce…',
+						module: 'main',
+					},
+				] );
+			}
+			session.handleWarnings( { warnings: {
+				main: {
+					warnings: 'Subscribe to the mediawiki-api-announce…',
+				},
+				revisions: {
+					warnings: 'Because "rvslots" was not specified…',
+				},
+			} }, warn );
+			expect( called ).to.be.true;
+		} );
+
+		it( 'errorformat=plaintext, formatversion=1', () => {
+			let called = false;
+			function warn( warnings ) {
+				expect( called, 'not called yet' ).to.be.false;
+				called = true;
+				expect( warnings ).to.be.an.instanceof( ApiWarnings );
+				expect( warnings.message ).to.equal(
+					'deprecation',
+				);
+				expect( warnings.warnings ).to.eql( [
+					{
+						code: 'deprecation',
+						data: { feature: 'action=query&prop=revisions&!rvslots' },
+						module: 'query+revisions',
+						'*': 'Because "rvslots" was not specified…',
+					},
+					{
+						code: 'deprecation-help',
+						module: 'main',
+						'*': 'Subscribe to the mediawiki-api-announce…',
+					},
+				] );
+			}
+			session.handleWarnings( { warnings: [
+				{
+					code: 'deprecation',
+					data: { feature: 'action=query&prop=revisions&!rvslots' },
+					module: 'query+revisions',
+					'*': 'Because "rvslots" was not specified…',
+				},
+				{
+					code: 'deprecation-help',
+					module: 'main',
+					'*': 'Subscribe to the mediawiki-api-announce…',
+				},
+			] }, warn );
+			expect( called ).to.be.true;
+		} );
+
+		it( 'errorformat=plaintext, formatversion=2', () => {
+			let called = false;
+			function warn( warnings ) {
+				expect( called, 'not called yet' ).to.be.false;
+				called = true;
+				expect( warnings ).to.be.an.instanceof( ApiWarnings );
+				expect( warnings.message ).to.equal(
+					'deprecation',
+				);
+				expect( warnings.warnings ).to.eql( [
+					{
+						code: 'deprecation',
+						text: 'Because "rvslots" was not specified…',
+						data: { feature: 'action=query&prop=revisions&!rvslots' },
+						module: 'query+revisions',
+					},
+					{
+						code: 'deprecation-help',
+						text: 'Subscribe to the mediawiki-api-announce…',
+						module: 'main',
+					},
+				] );
+			}
+			session.handleWarnings( { warnings: [
+				{
+					code: 'deprecation',
+					text: 'Because "rvslots" was not specified…',
+					data: { feature: 'action=query&prop=revisions&!rvslots' },
+					module: 'query+revisions',
+				},
+				{
+					code: 'deprecation-help',
+					text: 'Subscribe to the mediawiki-api-announce…',
+					module: 'main',
+				},
+			] }, warn );
+			expect( called ).to.be.true;
 		} );
 
 	} );

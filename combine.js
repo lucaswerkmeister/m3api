@@ -38,7 +38,9 @@ class CombiningSession extends Session {
 	 * @return {Object|null} requestA (modified) if the requests are compatible, else null.
 	 */
 	combineRequests( requestA, requestB ) {
-		if ( JSON.stringify( requestA.options ) !== JSON.stringify( requestB.options ) ){
+		const { warn: warnA, ...optionsA } = requestA.options,
+			{ warn: warnB, ...optionsB } = requestB.options;
+		if ( JSON.stringify( optionsA ) !== JSON.stringify( optionsB ) ){
 			return null;
 		}
 		const combinedParams = this.combineParams( requestA.params, requestB.params );
@@ -46,6 +48,13 @@ class CombiningSession extends Session {
 			return null;
 		}
 		requestA.params = combinedParams;
+		requestA.options = {
+			warn( ...args ) {
+				warnA( ...args );
+				return warnB( ...args ); // `return` so it’s a tail call :)
+			},
+			...optionsA,
+		};
 		return requestA;
 	}
 

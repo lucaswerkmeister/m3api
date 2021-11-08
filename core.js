@@ -40,6 +40,27 @@ class ApiErrors extends Error {
 }
 
 /**
+ * An Error wrapping one or more API warnings.
+ */
+class ApiWarnings extends Error {
+
+	constructor( warnings, ...params ) {
+		super(
+			warnings[ 0 ].code || warnings[ 0 ].warnings || warnings[ 0 ][ '*' ],
+			...params,
+		);
+
+		if ( Error.captureStackTrace ) {
+			Error.captureStackTrace( this, ApiWarnings );
+		}
+
+		this.name = 'ApiWarnings';
+		this.warnings = warnings;
+	}
+
+}
+
+/**
  * A session to make API requests.
  */
 class Session {
@@ -85,6 +106,10 @@ class Session {
 	 * Defaults to 1; set to 0 to disable automatic retries.
 	 * @param {string} [options.userAgent] The User-Agent header to send.
 	 * (Usually specified as a default option in the constructor.)
+	 * @param {Function} [options.warn] A handler for warnings from this API request.
+	 * Called with a single instance of a subclass of Error, such as {@link ApiWarnings}.
+	 * The default is console.warn in the browser, and in Node.js if NODE_ENV is 'development',
+	 * or a no-op function (ignore warnings) in Node.js otherwise.
 	 * @return {Object}
 	 * @throws {ApiErrors}
 	 */
@@ -93,6 +118,7 @@ class Session {
 			method,
 			maxRetries,
 			userAgent,
+			warn,
 		} = Object.assign( {
 			method: 'GET',
 			maxRetries: 1,
@@ -107,6 +133,7 @@ class Session {
 			format: 'json',
 		} ), fullUserAgent, maxRetries );
 		this.throwErrors( response );
+		this.handleWarnings( response, warn );
 		return response;
 	}
 
@@ -276,6 +303,31 @@ class Session {
 		}
 	}
 
+	/**
+	 * @private
+	 * @param {Object} response
+	 * @param {Function} warn
+	 */
+	handleWarnings( response, warn ) {
+		let warnings = response.warnings;
+		if ( !warnings ) {
+			return;
+		}
+		if ( !Array.isArray( warnings ) ) {
+			const bcWarnings = Object.entries( warnings );
+			if ( bcWarnings[ 0 ][ 0 ] === 'main' ) {
+				// move to end of list
+				bcWarnings.push( bcWarnings.shift() );
+			}
+			warnings = [];
+			for ( const [ module, warning ] of bcWarnings ) {
+				warning.module = module;
+				warnings.push( warning );
+			}
+		}
+		warn( new ApiWarnings( warnings ) );
+	}
+
 }
 
 /**
@@ -317,6 +369,7 @@ function set( ...elements ) {
 
 export {
 	ApiErrors,
+	ApiWarnings,
 	Session,
 	responseBoolean,
 	set,

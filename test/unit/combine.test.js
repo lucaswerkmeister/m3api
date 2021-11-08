@@ -23,9 +23,10 @@ describe( 'CombiningSession', () => {
 	 *
 	 * @param {Object} expectedParams The expected parameters of the call.
 	 * For convenience, format='json' is added automatically.
+	 * @param {Object} [response_] The response object, default to `response`.
 	 * @return {Session}
 	 */
-	function singleGetSession( expectedParams ) {
+	function singleGetSession( expectedParams, response_ = response ) {
 		expectedParams.format = 'json';
 		let called = false;
 		class TestSession extends Session {
@@ -33,7 +34,7 @@ describe( 'CombiningSession', () => {
 				expect( called, 'internalGet already called' ).to.be.false;
 				called = true;
 				expect( params ).to.eql( expectedParams );
-				return response;
+				return response_;
 			}
 		}
 		mixCombiningSessionInto( TestSession );
@@ -271,6 +272,47 @@ describe( 'CombiningSession', () => {
 		const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
 		await expect( session.request() )
 			.to.be.rejectedWith( error );
+	} );
+
+	it( 'propagates warnings', async () => {
+		const params = { rvprop: 'content' };
+		const response = successfulResponse( {
+			warnings: {
+				main: { warnings: 'Subscribe to…' },
+				revisions: { warnings: 'Because…' },
+			},
+		} );
+		let called1 = false;
+		let warnings;
+		function warn1( warnings_ ) {
+			expect( called1, 'warn1 already called' ).to.be.false;
+			called1 = true;
+			expect( warnings_.warnings[ 0 ].module ).to.equal( 'revisions' );
+			warnings = warnings_;
+		}
+		let called2 = false;
+		function warn2( warnings_ ) {
+			expect( called2, 'warn2 already called' ).to.be.false;
+			called2 = true;
+			expect( warnings_ ).to.equal( warnings );
+		}
+		let called3 = false;
+		function warn3( warnings_ ) {
+			expect( called3, 'warn3 already called' ).to.be.false;
+			called3 = true;
+			expect( warnings_ ).to.equal( warnings );
+		}
+		const session = singleGetSession( params, response );
+		const promise1 = session.request( params, { warn: warn1 } );
+		const promise2 = session.request( params, { warn: warn2 } );
+		const promise3 = session.request( params, { warn: warn3 } );
+		const [ response1, response2, response3 ] = await Promise.all( [ promise1, promise2, promise3 ] );
+		expect( response1 ).to.equal( response.body );
+		expect( response2 ).to.equal( response.body );
+		expect( response3 ).to.equal( response.body );
+		expect( called1 ).to.be.true;
+		expect( called2 ).to.be.true;
+		expect( called3 ).to.be.true;
 	} );
 
 	/**
@@ -514,6 +556,29 @@ describe( 'CombiningSession', () => {
 			const responses = await Promise.all( [ promise1, promise2 ] );
 			expect( responses[ 0 ].value ).to.equal( response1.body );
 			expect( responses[ 1 ] ).to.equal( response2.body );
+		} );
+
+		describe( 'different options', () => {
+			for ( const [ optionName, optionA, optionB ] of [
+				[ 'method', 'GET', 'POST' ],
+				[ 'maxRetries', 0, 1 ],
+				[ 'userAgent', 'foo', 'bar' ],
+			] ) {
+				it( optionName, async () => {
+					const params = { action: 'foo' };
+					const response = successfulResponse( { foo: 'foo' } );
+					const session = sequentialGetSession( [
+						{ expectedParams: params, response },
+						{ expectedParams: params, response },
+					] );
+					session.internalPost = ( _, params ) => session.internalGet( params );
+					const promise1 = session.request( params, { [ optionName ]: optionA } );
+					const promise2 = session.request( params, { [ optionName ]: optionB } );
+					const responses = await Promise.all( [ promise1, promise2 ] );
+					expect( responses[ 0 ] ).to.equal( response.body );
+					expect( responses[ 1 ] ).to.equal( response.body );
+				} );
+			}
 		} );
 
 	} );

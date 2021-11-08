@@ -8,5 +8,6 @@ mixCombiningSessionInto( BrowserSession );
 
 export {
 	ApiErrors,
+	ApiWarnings,
 	set,
 } from './core.js';

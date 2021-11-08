@@ -20,6 +20,14 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 - Thanks to the constructor change mentioned above,
   the `userAgent` request option can now specified for an individual request if you want to,
   and conversely other options like `maxRetries` can be defaulted in the constructor.
+- Added the `warn` request option,
+  which can be used to handle warnings from a request.
+  In the browser, and with NODE_ENV = “development” in Node.js,
+  warnings are sent to the console by default.
+  If you use the Node.js backend, but not for a CLI application,
+  consider logging warnings regardless of environment
+  by adding `warn: console.warn` to the default request options
+  (or use a custom warning handler).
 - Added the `responseBoolean` utility function,
   to get a boolean out of a response object regardless of `formatversion`.
 
