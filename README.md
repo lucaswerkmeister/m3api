@@ -41,7 +41,7 @@ const session = new Session( 'https://en.wikipedia.org/w/api.php', {
 }, {
 	// these default options will apply to all requests
 	userAgent: 'm3api-README-example',
-});
+} );
 
 // a sample request to the siteinfo API
 const siteinfoResponse = await session.request( {
