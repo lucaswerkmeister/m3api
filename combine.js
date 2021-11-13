@@ -33,7 +33,7 @@ class CombiningSession extends Session {
 	 * Try to merge the a new request into an existing one.
 	 *
 	 * @param {Object} requestA The existing request.
-	 * If the requests are compatible, this request’s params will be modified.
+	 * If the requests are compatible, this request’s params and options will be replaced.
 	 * @param {Object} requestB The new request. (Not modified.)
 	 * @return {Object|null} requestA (modified) if the requests are compatible, else null.
 	 */
