@@ -331,7 +331,7 @@ class Session {
 }
 
 /**
- * Convenience function to get a boolean from an API response object.
+ * Convenience function to get a boolean from an API response value.
  *
  * Works for formatversion=1 booleans
  * (absent means false, empty string means true)
@@ -341,13 +341,12 @@ class Session {
  * when you don’t know the formatversion of the response.
  * (If you control the request parameters, just use formatversion=2.)
  *
- * @param {Object} object An object from an API response.
- * (Typically not the whole response, but a member like response.query.general.)
- * @param {string} key The key of the boolean in the response object.
+ * @param {boolean|''|undefined} value A value from an API response
+ * (e.g. response.query.general.rtl).
  * @return {boolean}
  */
-function responseBoolean( object, key ) {
-	return ( object[ key ] && '' ) === '';
+function responseBoolean( value ) {
+	return ( value && '' ) === '';
 }
 
 /**

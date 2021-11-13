@@ -156,7 +156,7 @@ Other features not demonstrated above:
   for example, you can use `props: []` to override a nonempty default value.
 
 - The `responseBoolean` helper can be used to get a boolean from a response object.
-  For example, `responseBoolean( response.query.general, 'rtl' )` returns `true`
+  For example, `responseBoolean( response.query.general.rtl )` returns `true`
   if `response.query.general` had `rtl: ""` (`formatversion=1`) or `rtl: true` (`formatversion=2`).
   This is mostly useful in library code, when you don’t know the `formatversion` of the response;
   you can import the helper from `core.js` (but not `browser.js` or `node.js`).

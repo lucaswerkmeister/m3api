@@ -622,7 +622,7 @@ describe( 'responseBoolean', () => {
 		[ 'formatversion=2 true', { key: true }, true ],
 	] ) {
 		it( name, () => {
-			expect( responseBoolean( object, 'key' ) ).to.equal( expected );
+			expect( responseBoolean( object.key ) ).to.equal( expected );
 		} );
 	}
 

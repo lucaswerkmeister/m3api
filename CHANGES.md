@@ -29,7 +29,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   by adding `warn: console.warn` to the default request options
   (or use a custom warning handler).
 - Added the `responseBoolean` utility function,
-  to get a boolean out of a response object regardless of `formatversion`.
+  to get a boolean out of a response value regardless of `formatversion`.
 
 ## v0.3.0 (2021-10-10)
 
