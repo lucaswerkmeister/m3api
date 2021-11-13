@@ -79,13 +79,6 @@ class Session {
 	 */
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
 		this.defaultParams = defaultParams;
-		if ( typeof defaultOptions === 'string' ) {
-			console.warn(
-				'The third Session constructor parameter should now be an object. ' +
-					"Change your code to pass { userAgent: '...' } instead.",
-			);
-			defaultOptions = { userAgent: defaultOptions };
-		}
 		this.defaultOptions = defaultOptions;
 	}
 
