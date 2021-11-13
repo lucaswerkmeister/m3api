@@ -5,7 +5,7 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## next (not yet released)
+## v0.4.0 (2021-11-13)
 
 - BREAKING CHANGE:
   The third constructor parameter is now an object with default request options,

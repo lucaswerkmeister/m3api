@@ -1,7 +1,7 @@
 /* eslint no-unused-vars: [ "error", { "args": "none" } ] */
 // Session has abstract methods with parameters only used in subclasses
 
-const defaultUserAgent = 'm3api/0.3.0 (https://www.npmjs.com/package/m3api)';
+const defaultUserAgent = 'm3api/0.4.0 (https://www.npmjs.com/package/m3api)';
 
 /**
  * @private
