@@ -306,7 +306,15 @@ describe( 'CombiningSession', () => {
 		const promise1 = session.request( params, { warn: warn1 } );
 		const promise2 = session.request( params, { warn: warn2 } );
 		const promise3 = session.request( params, { warn: warn3 } );
-		const [ response1, response2, response3 ] = await Promise.all( [ promise1, promise2, promise3 ] );
+		const [
+			response1,
+			response2,
+			response3,
+		] = await Promise.all( [
+			promise1,
+			promise2,
+			promise3,
+		] );
 		expect( response1 ).to.equal( response.body );
 		expect( response2 ).to.equal( response.body );
 		expect( response3 ).to.equal( response.body );
