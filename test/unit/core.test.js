@@ -3,6 +3,7 @@
 import {
 	ApiErrors,
 	ApiWarnings,
+	DefaultUserAgentWarning,
 	Session,
 	responseBoolean,
 	set,
@@ -171,24 +172,80 @@ describe( 'Session', () => {
 				expect( called ).to.be.true;
 			} );
 
-			it( 'default', async () => {
-				let called = false;
-				class TestSession extends BaseTestSession {
-					async internalGet( params, userAgent ) {
-						expect( userAgent ).to.match( /^m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
-						expect( called, 'not called yet' ).to.be.false;
-						called = true;
-						return {
-							status: 200,
-							headers: {},
-							body: { response: true },
-						};
-					}
-				}
+			describe( 'default', () => {
 
-				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
-				await session.request( {}, { userAgent: undefined } );
-				expect( called ).to.be.true;
+				it( 'value', async () => {
+					let called = false;
+					class TestSession extends BaseTestSession {
+						async internalGet( params, userAgent ) {
+							expect( userAgent ).to.match( /^m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return {
+								status: 200,
+								headers: {},
+								body: { response: true },
+							};
+						}
+					}
+
+					const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+					await session.request( {}, { userAgent: undefined, warn: () => {} } );
+					expect( called ).to.be.true;
+				} );
+
+				it( 'warns once per session', async () => {
+					let warnCalled = false;
+					function warn( warning ) {
+						expect( warning ).to.be.instanceof( DefaultUserAgentWarning );
+						expect( warnCalled, 'warn() not called yet' ).to.be.false;
+						warnCalled = true;
+					}
+
+					class TestSession extends BaseTestSession {
+						async internalGet() {
+							return {
+								status: 200,
+								headers: {},
+								body: { response: true },
+							};
+						}
+					}
+
+					const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+					await session.request( {}, { userAgent: undefined, warn } );
+					expect( warnCalled ).to.be.true;
+					await session.request( {}, { userAgent: undefined, warn } );
+				} );
+
+				it( 'warns multiple times for different sessions', async () => {
+					let warnCalled = false;
+					function warn( warning ) {
+						expect( warning ).to.be.instanceof( DefaultUserAgentWarning );
+						expect( warnCalled, 'warn() not called yet' ).to.be.false;
+						warnCalled = true;
+					}
+
+					class TestSession extends BaseTestSession {
+						async internalGet() {
+							return {
+								status: 200,
+								headers: {},
+								body: { response: true },
+							};
+						}
+					}
+
+					await new TestSession( 'https://en.wikipedia.org/w/api.php' )
+						.request( {}, { userAgent: undefined, warn } );
+					expect( warnCalled ).to.be.true;
+					warnCalled = false;
+					await new TestSession( 'https://en.wikipedia.org/w/api.php' )
+						.request( {}, { userAgent: undefined, warn } );
+					expect( warnCalled ).to.be.true;
+					warnCalled = false;
+				} );
+
 			} );
 
 		} );

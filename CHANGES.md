@@ -13,6 +13,33 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   The `fetch.js` and `axios.js` backends already add a default for this option,
   so this is only relevant for you if you wrote a custom network implementation;
   if you just import `browser.js` or `node.js`, it doesn’t matter.
+- Requests that do not specify a user agent will now trigger a warning,
+  limited to once per session.
+  If you see this warning, you should add a user agent to your requests –
+  see the [User-Agent policy][].
+  Usually you would add it to the default options at construction time:
+  ```js
+  const session = new Session( 'https://en.wikipedia.org/w/api.php', {
+      formatversion: 2,
+	  // other default params...
+  }, {
+	  userAgent: 'my-cool-tool',
+	  // other default options...
+  } );
+  ```
+  But it can also be specified for an individual request:
+  ```js
+  const response = await session.request( {
+      action: 'query',
+	  // other params...
+  }, {
+	  userAgent: 'my-cool-tool',
+	  // other default options...
+  } );
+  ```
+  Recall that the default warning handler is `console.warn` in the browser,
+  and also in Node.js if NODE_ENV = “development” is set,
+  but otherwise the Node.js backend ignores warnings.
 
 ## v0.4.0 (2021-11-13)
 
@@ -101,3 +128,4 @@ The Git commit for this version was probably 00e278a13b50cc903b6fb3d530033098d3a
 but I see no reason to recreate the tag now.
 
 [CVE-2021-3749]: https://github.com/advisories/GHSA-cph5-m8f7-6c5x
+[User-Agent policy]: https://meta.wikimedia.org/wiki/Special:MyLanguage/User-Agent_policy

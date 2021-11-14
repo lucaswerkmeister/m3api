@@ -60,6 +60,26 @@ class ApiWarnings extends Error {
 
 }
 
+class DefaultUserAgentWarning extends Error {
+
+	constructor() {
+		super(
+			'm3api: Sending request with default User-Agent. ' +
+				'You should set the userAgent request option, ' +
+				'either as a default option for the session (third constructor argument) ' +
+				'or as a custom option for each request (second request argument). ' +
+				'See w.wiki/4PLr for the User-Agent policy.',
+		);
+
+		if ( Error.captureStackTrace ) {
+			Error.captureStackTrace( this, ApiWarnings );
+		}
+
+		this.name = 'DefaultUserAgentWarning';
+	}
+
+}
+
 /**
  * A session to make API requests.
  */
@@ -124,9 +144,16 @@ class Session {
 			method: 'GET',
 			maxRetries: 1,
 		}, this.defaultOptions, options );
-		const fullUserAgent = userAgent ?
-			`${userAgent} ${defaultUserAgent}` :
-			defaultUserAgent;
+		let fullUserAgent;
+		if ( userAgent ) {
+			fullUserAgent = `${userAgent} ${defaultUserAgent}`;
+		} else {
+			if ( !this.warnedDefaultUserAgent ) {
+				warn( new DefaultUserAgentWarning() );
+				this.warnedDefaultUserAgent = true;
+			}
+			fullUserAgent = defaultUserAgent;
+		}
 
 		const response = await this.internalRequest( method, this.transformParams( {
 			...this.defaultParams,
@@ -370,6 +397,7 @@ function set( ...elements ) {
 export {
 	ApiErrors,
 	ApiWarnings,
+	DefaultUserAgentWarning,
 	Session,
 	responseBoolean,
 	set,
