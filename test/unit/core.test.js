@@ -12,6 +12,30 @@ import chaiAsPromised from 'chai-as-promised';
 import FakeTimers from '@sinonjs/fake-timers';
 chai.use( chaiAsPromised );
 
+export class BaseTestSession extends Session {
+
+	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
+		if ( !( 'warn' in defaultOptions ) ) {
+			defaultOptions.warn = function () {
+				throw new Error( 'warn() should not be called in this test' );
+			};
+		}
+		if ( !( 'userAgent' in defaultOptions ) ) {
+			defaultOptions.userAgent = 'm3api-unit-test';
+		}
+		super( apiUrl, defaultParams, defaultOptions );
+	}
+
+	internalGet() {
+		throw new Error( 'internalGet() should not be called in this test' );
+	}
+
+	internalPost() {
+		throw new Error( 'internalPost() should not be called in this test' );
+	}
+
+}
+
 describe( 'ApiErrors', () => {
 
 	it( 'uses first error code as message', () => {
@@ -29,7 +53,7 @@ describe( 'ApiErrors', () => {
 
 describe( 'Session', () => {
 
-	const session = new Session( 'https://en.wikipedia.org/w/api.php' );
+	const session = new BaseTestSession( 'https://en.wikipedia.org/w/api.php' );
 
 	describe( 'transformParamValue', () => {
 		for ( const [ value, expected ] of [
@@ -86,7 +110,7 @@ describe( 'Session', () => {
 	describe( 'request', () => {
 
 		it( 'throws on non-200 status', async () => {
-			class TestSession extends Session {
+			class TestSession extends BaseTestSession {
 				async internalGet() {
 					return {
 						status: 502,
@@ -105,7 +129,7 @@ describe( 'Session', () => {
 
 			it( 'from default options', async () => {
 				let called = false;
-				class TestSession extends Session {
+				class TestSession extends BaseTestSession {
 					async internalGet( params, userAgent ) {
 						expect( userAgent ).to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
 						expect( called, 'not called yet' ).to.be.false;
@@ -127,7 +151,7 @@ describe( 'Session', () => {
 
 			it( 'from request options', async () => {
 				let called = false;
-				class TestSession extends Session {
+				class TestSession extends BaseTestSession {
 					async internalGet( params, userAgent ) {
 						expect( userAgent ).to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
 						expect( called, 'not called yet' ).to.be.false;
@@ -149,7 +173,7 @@ describe( 'Session', () => {
 
 			it( 'default', async () => {
 				let called = false;
-				class TestSession extends Session {
+				class TestSession extends BaseTestSession {
 					async internalGet( params, userAgent ) {
 						expect( userAgent ).to.match( /^m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
 						expect( called, 'not called yet' ).to.be.false;
@@ -163,7 +187,7 @@ describe( 'Session', () => {
 				}
 
 				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
-				await session.request( {} );
+				await session.request( {}, { userAgent: undefined } );
 				expect( called ).to.be.true;
 			} );
 
@@ -182,7 +206,7 @@ describe( 'Session', () => {
 
 			it( 'default', async () => {
 				let call = 0;
-				class TestSession extends Session {
+				class TestSession extends BaseTestSession {
 					async internalGet( params ) {
 						expect( params ).to.eql( { format: 'json' } );
 						const currentCall = ++call;
@@ -214,7 +238,7 @@ describe( 'Session', () => {
 
 			it( 'maxRetries 5 (actual retries 3)', async () => {
 				let call = 0;
-				class TestSession extends Session {
+				class TestSession extends BaseTestSession {
 					async internalGet( params ) {
 						expect( params ).to.eql( { format: 'json' } );
 						const currentCall = ++call;
@@ -248,7 +272,7 @@ describe( 'Session', () => {
 
 			it( 'disabled', async () => {
 				let called = false;
-				class TestSession extends Session {
+				class TestSession extends BaseTestSession {
 					async internalGet( params ) {
 						expect( params ).to.eql( { format: 'json' } );
 						if ( called === false ) {
@@ -316,7 +340,7 @@ describe( 'Session', () => {
 				},
 			};
 			let call = 0;
-			class TestSession extends Session {
+			class TestSession extends BaseTestSession {
 				async internalGet( params ) {
 					const currentCall = ++call;
 					if ( currentCall === 1 ) {
@@ -395,7 +419,7 @@ describe( 'Session', () => {
 				],
 			};
 			let call = 0;
-			class TestSession extends Session {
+			class TestSession extends BaseTestSession {
 				async internalPost( urlParams, bodyParams ) {
 					expect( urlParams ).to.eql( {} );
 					const currentCall = ++call;

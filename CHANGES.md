@@ -7,7 +7,12 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- BREAKING CHANGE (internal):
+  The `Session` constructor now requires the default request options to include `warn`,
+  which must be a function.
+  The `fetch.js` and `axios.js` backends already add a default for this option,
+  so this is only relevant for you if you wrote a custom network implementation;
+  if you just import `browser.js` or `node.js`, it doesn’t matter.
 
 ## v0.4.0 (2021-11-13)
 

@@ -80,6 +80,14 @@ class Session {
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
 		this.defaultParams = defaultParams;
 		this.defaultOptions = defaultOptions;
+
+		if ( typeof defaultOptions.warn !== 'function' ) {
+			let message = '`warn` request option must be a function';
+			if ( !( 'warn' in defaultOptions ) ) {
+				message += ' (Session subclasses must provide a default for this option)';
+			}
+			throw new Error( message );
+		}
 	}
 
 	/**

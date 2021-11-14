@@ -2,6 +2,7 @@
 
 import { mixCombiningSessionInto } from '../../combine.js';
 import { Session, set } from '../../core.js';
+import { BaseTestSession } from './core.test.js';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 chai.use( chaiAsPromised );
@@ -29,7 +30,7 @@ describe( 'CombiningSession', () => {
 	function singleGetSession( expectedParams, response_ = response ) {
 		expectedParams.format = 'json';
 		let called = false;
-		class TestSession extends Session {
+		class TestSession extends BaseTestSession {
 			async internalGet( params ) {
 				expect( called, 'internalGet already called' ).to.be.false;
 				called = true;
@@ -262,7 +263,7 @@ describe( 'CombiningSession', () => {
 
 	it( 'propagates errors', async () => {
 		const error = new Error();
-		class TestSession extends Session {
+		class TestSession extends BaseTestSession {
 			async internalGet() {
 				throw error;
 			}
@@ -333,7 +334,7 @@ describe( 'CombiningSession', () => {
 	 */
 	function sequentialGetSession( expectedCalls ) {
 		expectedCalls.reverse();
-		class TestSession extends Session {
+		class TestSession extends BaseTestSession {
 			async internalGet( params ) {
 				expect( expectedCalls ).to.not.be.empty;
 				const [ { expectedParams, response } ] = expectedCalls.splice( -1 );
