@@ -22,7 +22,7 @@ class FetchSession extends Session {
 			defaultOptions.warn = console.warn;
 		}
 		super( apiUrl, defaultParams, defaultOptions );
-		this.baseUrl = apiUrl;
+		this.baseUrl = this.apiUrl;
 	}
 
 	async internalGet( params, userAgent ) {

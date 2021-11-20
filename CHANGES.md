@@ -13,6 +13,8 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   The `fetch.js` and `axios.js` backends already add a default for this option,
   so this is only relevant for you if you wrote a custom network implementation;
   if you just import `browser.js` or `node.js`, it doesn’t matter.
+- The first constructor argument can now be a domain name instead of a full `api.php` URL,
+  e.g. `en.wikipedia.org` instead of `https://en.wikipedia.org/w/api.php`.
 - Requests that do not specify a user agent will now trigger a warning,
   limited to once per session.
   If you see this warning, you should add a user agent to your requests –

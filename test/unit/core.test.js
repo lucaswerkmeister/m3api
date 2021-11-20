@@ -56,6 +56,20 @@ describe( 'Session', () => {
 
 	const session = new BaseTestSession( 'https://en.wikipedia.org/w/api.php' );
 
+	describe( 'apiUrl', () => {
+
+		it( 'full URL', () => {
+			const session = new BaseTestSession( 'https://starwars.fandom.com/api.php' );
+			expect( session.apiUrl ).to.equal( 'https://starwars.fandom.com/api.php' );
+		} );
+
+		it( 'domain', () => {
+			const session = new BaseTestSession( 'en.wikipedia.org' );
+			expect( session.apiUrl ).to.equal( 'https://en.wikipedia.org/w/api.php' );
+		} );
+
+	} );
+
 	describe( 'transformParamValue', () => {
 		for ( const [ value, expected ] of [
 			[ 'a string', 'a string' ],

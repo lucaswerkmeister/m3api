@@ -33,8 +33,8 @@ import Session, { set } from './node.js';
 // note: this example uses top-level await for simplicity,
 // you may need an async wrapper function
 
-// create a session from an api.php URL
-const session = new Session( 'https://en.wikipedia.org/w/api.php', {
+// create a session from a wiki domain (or full api.php URL)
+const session = new Session( 'en.wikipedia.org', {
 	// these default parameters will be added to all requests
 	formatversion: 2,
 	errorformat: 'plaintext',
