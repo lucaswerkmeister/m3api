@@ -8,7 +8,7 @@ describe( 'BrowserSession', function () {
 	this.timeout( 60000 );
 
 	it( 'siteinfo, array siprops, default formatversion+origin', async () => {
-		const session = new BrowserSession( 'https://en.wikipedia.org/w/api.php', {
+		const session = new BrowserSession( 'en.wikipedia.org', {
 			formatversion: 2,
 			origin: '*',
 		}, {
@@ -26,7 +26,7 @@ describe( 'BrowserSession', function () {
 	} );
 
 	it( 'validatepassword', async function () {
-		const session = new BrowserSession( 'https://en.wikipedia.org/w/api.php', {
+		const session = new BrowserSession( 'en.wikipedia.org', {
 			formatversion: 2,
 			origin: '*',
 		}, {

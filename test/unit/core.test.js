@@ -54,7 +54,7 @@ describe( 'ApiErrors', () => {
 
 describe( 'Session', () => {
 
-	const session = new BaseTestSession( 'https://en.wikipedia.org/w/api.php' );
+	const session = new BaseTestSession( 'en.wikipedia.org' );
 
 	describe( 'apiUrl', () => {
 
@@ -135,7 +135,7 @@ describe( 'Session', () => {
 				}
 			}
 
-			const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+			const session = new TestSession( 'en.wikipedia.org' );
 			await expect( session.request( { action: 'query' } ) )
 				.to.be.rejectedWith( '502' );
 		} );
@@ -157,7 +157,7 @@ describe( 'Session', () => {
 					}
 				}
 
-				const session = new TestSession( 'https://en.wikipedia.org/w/api.php', {}, {
+				const session = new TestSession( 'en.wikipedia.org', {}, {
 					userAgent: 'user-agent',
 				} );
 				await session.request( {} );
@@ -179,7 +179,7 @@ describe( 'Session', () => {
 					}
 				}
 
-				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+				const session = new TestSession( 'en.wikipedia.org' );
 				await session.request( {}, {
 					userAgent: 'user-agent',
 				} );
@@ -203,7 +203,7 @@ describe( 'Session', () => {
 						}
 					}
 
-					const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+					const session = new TestSession( 'en.wikipedia.org' );
 					await session.request( {}, { userAgent: undefined, warn: () => {} } );
 					expect( called ).to.be.true;
 				} );
@@ -226,7 +226,7 @@ describe( 'Session', () => {
 						}
 					}
 
-					const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+					const session = new TestSession( 'en.wikipedia.org' );
 					await session.request( {}, { userAgent: undefined, warn } );
 					expect( warnCalled ).to.be.true;
 					await session.request( {}, { userAgent: undefined, warn } );
@@ -250,11 +250,11 @@ describe( 'Session', () => {
 						}
 					}
 
-					await new TestSession( 'https://en.wikipedia.org/w/api.php' )
+					await new TestSession( 'en.wikipedia.org' )
 						.request( {}, { userAgent: undefined, warn } );
 					expect( warnCalled ).to.be.true;
 					warnCalled = false;
-					await new TestSession( 'https://en.wikipedia.org/w/api.php' )
+					await new TestSession( 'en.wikipedia.org' )
 						.request( {}, { userAgent: undefined, warn } );
 					expect( warnCalled ).to.be.true;
 					warnCalled = false;
@@ -299,7 +299,7 @@ describe( 'Session', () => {
 					}
 				}
 
-				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+				const session = new TestSession( 'en.wikipedia.org' );
 				const promise = session.request( {} );
 				clock.tickAsync( 5000 );
 				const response = await promise;
@@ -331,7 +331,7 @@ describe( 'Session', () => {
 					}
 				}
 
-				const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+				const session = new TestSession( 'en.wikipedia.org' );
 				const promise = session.request( {}, { maxRetries: 5 } );
 				for ( let i = 0; i < 3; i++ ) {
 					clock.tickAsync( 5000 );
@@ -359,7 +359,7 @@ describe( 'Session', () => {
 					}
 				}
 
-				const session = new TestSession( 'https://en.wikipedia.org/w/api.php', {}, {
+				const session = new TestSession( 'en.wikipedia.org', {}, {
 					maxRetries: 0,
 				} );
 				const response = await session.request( {} );
@@ -440,7 +440,7 @@ describe( 'Session', () => {
 				}
 			}
 
-			const session = new TestSession( 'https://en.wikipedia.org/w/api.php', {
+			const session = new TestSession( 'en.wikipedia.org', {
 				formatversion: 2,
 			} );
 			const params = {
@@ -520,7 +520,7 @@ describe( 'Session', () => {
 				}
 			}
 
-			const session = new TestSession( 'https://en.wikipedia.org/w/api.php', {
+			const session = new TestSession( 'en.wikipedia.org', {
 				formatversion: 2,
 			} );
 			const params = {

@@ -40,7 +40,7 @@ describe( 'CombiningSession', () => {
 		}
 		mixCombiningSessionInto( TestSession );
 
-		return new TestSession( 'https://en.wikipedia.org/w/api.php' );
+		return new TestSession( 'en.wikipedia.org' );
 	}
 
 	describe( 'combines compatible requests', () => {
@@ -270,7 +270,7 @@ describe( 'CombiningSession', () => {
 		}
 		mixCombiningSessionInto( TestSession );
 
-		const session = new TestSession( 'https://en.wikipedia.org/w/api.php' );
+		const session = new TestSession( 'en.wikipedia.org' );
 		await expect( session.request() )
 			.to.be.rejectedWith( error );
 	} );
@@ -345,7 +345,7 @@ describe( 'CombiningSession', () => {
 		}
 		mixCombiningSessionInto( TestSession );
 
-		return new TestSession( 'https://en.wikipedia.org/w/api.php' );
+		return new TestSession( 'en.wikipedia.org' );
 	}
 
 	describe( 'supports sequential requests', () => {

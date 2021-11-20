@@ -9,7 +9,7 @@ describe( 'NodeSession', function () {
 	this.timeout( 60000 );
 
 	it( 'siteinfo, array siprops, default formatversion', async () => {
-		const session = new NodeSession( 'https://en.wikipedia.org/w/api.php', {
+		const session = new NodeSession( 'en.wikipedia.org', {
 			formatversion: 2,
 		}, {
 			userAgent: 'm3api-integration-tests',
@@ -26,7 +26,7 @@ describe( 'NodeSession', function () {
 	} );
 
 	it( 'validatepassword', async function () {
-		const session = new NodeSession( 'https://en.wikipedia.org/w/api.php', {
+		const session = new NodeSession( 'en.wikipedia.org', {
 			formatversion: 2,
 		}, {
 			userAgent: 'm3api-integration-tests',
@@ -42,7 +42,7 @@ describe( 'NodeSession', function () {
 		if ( !( 'MEDIAWIKI_USERNAME' in process.env && 'MEDIAWIKI_PASSWORD' in process.env ) ) {
 			return this.skip();
 		}
-		const session = new NodeSession( 'https://en.wikipedia.beta.wmflabs.org/w/api.php', {
+		const session = new NodeSession( 'en.wikipedia.beta.wmflabs.org', {
 			formatversion: 2,
 		}, {
 			userAgent: 'm3api-integration-tests',

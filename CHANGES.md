@@ -21,7 +21,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   see the [User-Agent policy][].
   Usually you would add it to the default options at construction time:
   ```js
-  const session = new Session( 'https://en.wikipedia.org/w/api.php', {
+  const session = new Session( en.wikipedia.org, {
       formatversion: 2,
 	  // other default params...
   }, {
