@@ -87,7 +87,8 @@ class Session {
 
 	/**
 	 * @param {string} apiUrl The URL to the api.php endpoint,
-	 * such as https://en.wikipedia.org/w/api.php
+	 * such as {@link https://en.wikipedia.org/w/api.php}.
+	 * Can also be just the domain, such as en.wikipedia.org.
 	 * @param {Object} [defaultParams] Parameters to include in every API request.
 	 * See {@link #request} for supported value types.
 	 * You are strongly encouraged to specify formatversion: 2 here;
@@ -98,8 +99,13 @@ class Session {
 	 * {@link https://meta.wikimedia.org/wiki/User-Agent_policy User-Agent policy}.
 	 */
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
+		this.apiUrl = apiUrl;
 		this.defaultParams = defaultParams;
 		this.defaultOptions = defaultOptions;
+
+		if ( !this.apiUrl.includes( '/' ) ) {
+			this.apiUrl = `https://${this.apiUrl}/w/api.php`;
+		}
 
 		if ( typeof defaultOptions.warn !== 'function' ) {
 			let message = '`warn` request option must be a function';

@@ -27,7 +27,7 @@ class AxiosSession extends Session {
 		}
 		super( apiUrl, defaultParams, defaultOptions );
 		this.session = axios.create( {
-			baseURL: apiUrl,
+			baseURL: this.apiUrl,
 		} );
 		axiosCookieJarSupport( this.session );
 		Object.assign( this.session.defaults, { // must happen after axiosCookieJarSupport
