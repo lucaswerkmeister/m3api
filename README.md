@@ -8,7 +8,7 @@ a library for interacting with the [MediaWiki Action API][] from JavaScript.
   as you might find in other libraries (“get page”, “make edit”).
   It’s for people who are comfortable working with the API directly –
   you pass in the same parameters that you’d find in e.g. the [API sandbox][],
-  and get back the original MediaWiki response (JSON-decoded).
+  and get back the original MediaWiki response, JSON-decoded.
   (And if you use the API sandbox, check out [this user script][m3api-ApiSandbox-helper]!)
   As a general rule, this library only implements features
   that apply to more than one API module.
