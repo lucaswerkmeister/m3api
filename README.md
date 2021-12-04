@@ -7,8 +7,9 @@ a library for interacting with the [MediaWiki Action API][] from JavaScript.
   This library does not have many abstractions above the API,
   as you might find in other libraries (“get page”, “make edit”).
   It’s for people who are comfortable working with the API directly –
-  you pass in the same parameters that you’d find in e.g. the [API Sandbox][],
+  you pass in the same parameters that you’d find in e.g. the [API sandbox][],
   and get back the original MediaWiki response (JSON-decoded).
+  (And if you use the API sandbox, check out [this user script][m3api-ApiSandbox-helper]!)
   As a general rule, this library only implements features
   that apply to more than one API module.
   (In this respect, m3api is similar to [mediawiki-js][].)
@@ -264,6 +265,7 @@ By contributing to this software,
 you agree to publish your contribution under the same license.
 
 [MediaWiki Action API]: https://www.mediawiki.org/wiki/Special:MyLanguage/API:Main_page
-[API Sandbox]: https://en.wikipedia.org/wiki/Special:ApiSandbox
+[API sandbox]: https://en.wikipedia.org/wiki/Special:ApiSandbox
+[m3api-ApiSandbox-helper]: https://meta.wikimedia.org/wiki/User:Lucas_Werkmeister/m3api-ApiSandbox-helper
 [mediawiki-js]: https://github.com/brettz9/mediawiki-js
 [ISC License]: https://spdx.org/licenses/ISC.html
