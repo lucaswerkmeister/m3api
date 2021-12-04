@@ -5,7 +5,7 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## next (not yet released)
+## v0.5.0 (2021-12-04)
 
 - BREAKING CHANGE (internal):
   The `Session` constructor now requires the default request options to include `warn`,
