@@ -288,21 +288,21 @@ describe( 'Session', () => {
 				class TestSession extends BaseTestSession {
 					async internalGet( params ) {
 						expect( params ).to.eql( { format: 'json' } );
-						const currentCall = ++call;
-						if ( currentCall === 1 ) {
-							return {
-								status: 200,
-								headers: { 'retry-after': '5' },
-								body: 'irrelevant',
-							};
-						} else if ( currentCall === 2 ) {
-							return {
-								status: 200,
-								headers: {},
-								body: { response: true },
-							};
-						} else {
-							throw new Error( `Unexpected call #${currentCall}` );
+						switch ( ++call ) {
+							case 1:
+								return {
+									status: 200,
+									headers: { 'retry-after': '5' },
+									body: 'irrelevant',
+								};
+							case 2:
+								return {
+									status: 200,
+									headers: {},
+									body: { response: true },
+								};
+							default:
+								throw new Error( `Unexpected call #${call}` );
 						}
 					}
 				}
@@ -320,21 +320,23 @@ describe( 'Session', () => {
 				class TestSession extends BaseTestSession {
 					async internalGet( params ) {
 						expect( params ).to.eql( { format: 'json' } );
-						const currentCall = ++call;
-						if ( currentCall <= 3 ) {
-							return {
-								status: 200,
-								headers: { 'retry-after': '5' },
-								body: 'irrelevant',
-							};
-						} else if ( currentCall === 4 ) {
-							return {
-								status: 200,
-								headers: {},
-								body: { response: true },
-							};
-						} else {
-							throw new Error( `Unexpected call #${currentCall}` );
+						switch ( ++call ) {
+							case 1:
+							case 2:
+							case 3:
+								return {
+									status: 200,
+									headers: { 'retry-after': '5' },
+									body: 'irrelevant',
+								};
+							case 4:
+								return {
+									status: 200,
+									headers: {},
+									body: { response: true },
+								};
+							default:
+								throw new Error( `Unexpected call #${call}` );
 						}
 					}
 				}
@@ -413,29 +415,29 @@ describe( 'Session', () => {
 			let call = 0;
 			class TestSession extends BaseTestSession {
 				async internalGet( params ) {
-					const currentCall = ++call;
-					if ( currentCall === 1 ) {
-						expect( params ).to.eql( {
-							action: 'query',
-							generator: 'allpages',
-							gaplimit: '1',
-							format: 'json',
-							formatversion: '2',
-						} );
-						return successfulResponse( firstResponse );
-					} else if ( currentCall === 2 ) {
-						expect( params ).to.eql( {
-							action: 'query',
-							generator: 'allpages',
-							gaplimit: '1',
-							gapcontinue: '!!',
-							continue: 'gapcontinue||',
-							format: 'json',
-							formatversion: '2',
-						} );
-						return successfulResponse( secondResponse );
-					} else {
-						throw new Error( `Unexpected call #${currentCall}` );
+					switch ( ++call ) {
+						case 1:
+							expect( params ).to.eql( {
+								action: 'query',
+								generator: 'allpages',
+								gaplimit: '1',
+								format: 'json',
+								formatversion: '2',
+							} );
+							return successfulResponse( firstResponse );
+						case 2:
+							expect( params ).to.eql( {
+								action: 'query',
+								generator: 'allpages',
+								gaplimit: '1',
+								gapcontinue: '!!',
+								continue: 'gapcontinue||',
+								format: 'json',
+								formatversion: '2',
+							} );
+							return successfulResponse( secondResponse );
+						default:
+							throw new Error( `Unexpected call #${call}` );
 					}
 				}
 			}
@@ -450,13 +452,15 @@ describe( 'Session', () => {
 			};
 			let iteration = 0;
 			for await ( const response of session.requestAndContinue( params ) ) {
-				const currentIteration = ++iteration;
-				if ( currentIteration === 1 ) {
-					expect( response ).to.eql( firstResponse );
-				} else if ( currentIteration === 2 ) {
-					expect( response ).to.eql( secondResponse );
-				} else {
-					throw new Error( `Unexpected iteration #${currentIteration}` );
+				switch ( ++iteration ) {
+					case 1:
+						expect( response ).to.eql( firstResponse );
+						break;
+					case 2:
+						expect( response ).to.eql( secondResponse );
+						break;
+					default:
+						throw new Error( `Unexpected iteration #${iteration}` );
 				}
 			}
 
@@ -493,29 +497,29 @@ describe( 'Session', () => {
 			class TestSession extends BaseTestSession {
 				async internalPost( urlParams, bodyParams ) {
 					expect( urlParams ).to.eql( {} );
-					const currentCall = ++call;
-					if ( currentCall === 1 ) {
-						expect( bodyParams ).to.eql( {
-							action: 'purge',
-							generator: 'allpages',
-							gaplimit: '1',
-							format: 'json',
-							formatversion: '2',
-						} );
-						return successfulResponse( firstResponse );
-					} else if ( currentCall === 2 ) {
-						expect( bodyParams ).to.eql( {
-							action: 'purge',
-							generator: 'allpages',
-							gaplimit: '1',
-							gapcontinue: '!!',
-							continue: 'gapcontinue||',
-							format: 'json',
-							formatversion: '2',
-						} );
-						return successfulResponse( secondResponse );
-					} else {
-						throw new Error( `Unexpected call #${currentCall}` );
+					switch ( ++call ) {
+						case 1:
+							expect( bodyParams ).to.eql( {
+								action: 'purge',
+								generator: 'allpages',
+								gaplimit: '1',
+								format: 'json',
+								formatversion: '2',
+							} );
+							return successfulResponse( firstResponse );
+						case 2:
+							expect( bodyParams ).to.eql( {
+								action: 'purge',
+								generator: 'allpages',
+								gaplimit: '1',
+								gapcontinue: '!!',
+								continue: 'gapcontinue||',
+								format: 'json',
+								formatversion: '2',
+							} );
+							return successfulResponse( secondResponse );
+						default:
+							throw new Error( `Unexpected call #${call}` );
 					}
 				}
 			}
@@ -530,13 +534,15 @@ describe( 'Session', () => {
 			};
 			let iteration = 0;
 			for await ( const response of session.requestAndContinue( params, { method: 'POST' } ) ) {
-				const currentIteration = ++iteration;
-				if ( currentIteration === 1 ) {
-					expect( response ).to.eql( firstResponse );
-				} else if ( currentIteration === 2 ) {
-					expect( response ).to.eql( secondResponse );
-				} else {
-					throw new Error( `Unexpected iteration #${currentIteration}` );
+				switch ( ++iteration ) {
+					case 1:
+						expect( response ).to.eql( firstResponse );
+						break;
+					case 2:
+						expect( response ).to.eql( secondResponse );
+						break;
+					default:
+						throw new Error( `Unexpected iteration #${iteration}` );
 				}
 			}
 
