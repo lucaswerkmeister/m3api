@@ -537,6 +537,7 @@ describe( 'Session', () => {
 				switch ( ++iteration ) {
 					case 1:
 						expect( response ).to.eql( firstResponse );
+						delete response.continue.gapcontinue; // should *not* affect continuation
 						break;
 					case 2:
 						expect( response ).to.eql( secondResponse );

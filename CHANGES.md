@@ -7,7 +7,15 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- BREAKING CHANGE:
+  It is no longer possible to modify continuation
+  by modifying the contents of a response’s `continue` member;
+  continuation now always proceeds according to the original `continue` contents.
+  The fact that this previously worked was not intended,
+  and if any code actually behaves differently due to this change,
+  it is assumed that the previous behavior was a bug rather than intended.
+  If you really want to modify continuation,
+  implement it yourself instead of using `requestAndContinue`.
 
 ## v0.5.0 (2021-12-04)
 

@@ -187,7 +187,7 @@ class Session {
 				...params,
 				...continueParams,
 			}, options );
-			continueParams = response.continue;
+			continueParams = response.continue && { ...response.continue };
 			yield response;
 		} while ( continueParams !== undefined );
 	}
