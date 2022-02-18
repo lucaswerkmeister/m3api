@@ -16,6 +16,17 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   it is assumed that the previous behavior was a bug rather than intended.
   If you really want to modify continuation,
   implement it yourself instead of using `requestAndContinue`.
+- A new function, `requestAndContinueReducingBatch`,
+  is available to work with continuation.
+  It is useful in cases where data for a batch of pages is spread across multiple responses,
+  i.e. in cases where not every response is marked `batchcomplete`.
+  (An example is generator=search with prop=revisions:
+  the generator can yield up to 500 results per response,
+  but revisions are limited to 50,
+  so ten requests are required to get the revisions of the whole batch,
+  after which the next batch of 500 search results can commence.)
+  It is expected to be mainly used in libraries,
+  such as the upcoming [m3api-query][].
 
 ## v0.5.0 (2021-12-04)
 
@@ -143,3 +154,4 @@ but I see no reason to recreate the tag now.
 
 [CVE-2021-3749]: https://github.com/advisories/GHSA-cph5-m8f7-6c5x
 [User-Agent policy]: https://meta.wikimedia.org/wiki/Special:MyLanguage/User-Agent_policy
+[m3api-query]: https://github.com/lucaswerkmeister/m3api-query

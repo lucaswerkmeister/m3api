@@ -553,6 +553,143 @@ describe( 'Session', () => {
 
 	} );
 
+	describe( 'requestAndContinueReducingBatch', () => {
+
+		it( 'calls reduce and returns results', async () => {
+			const firstResponse = {
+				continue: { c: '1' },
+				query: {
+					pages: [
+						{ title: 't', prop: 'p' },
+						{ title: 'T' },
+					],
+				},
+			};
+			const secondResponse = {
+				batchcomplete: true,
+				continue: { c: '2' },
+				query: {
+					pages: [
+						{ title: 't' },
+						{ title: 'T', prop: 'P' },
+					],
+				},
+			};
+			const thirdResponse = {
+				batchcomplete: true,
+				query: {
+					pages: [ { title: '7' } ],
+				},
+			};
+
+			const firstInitial = '1st initial';
+			const firstAccumulator = '1st accumulator';
+			const secondAccumulator = '2nd accumulator';
+			const secondInitial = '2nd initial';
+			const thirdAccumulator = '3rd accumulator';
+			const thirdInitial = '3rd initial';
+
+			let initialCall = 0;
+			function initial() {
+				switch ( ++initialCall ) {
+					case 1:
+						return firstInitial;
+					case 2:
+						return secondInitial;
+					case 3:
+						// allow an extra initial() call that won’t be used
+						return thirdInitial;
+					default:
+						throw new Error( `Unexpected initial() call #${initialCall}` );
+				}
+			}
+
+			let getCall = 0;
+			class TestSession extends BaseTestSession {
+				async internalGet( params ) {
+					switch ( ++getCall ) {
+						case 1:
+							expect( params ).to.eql( {
+								action: 'query',
+								format: 'json',
+								formatversion: '2',
+							} );
+							return successfulResponse( firstResponse );
+						case 2:
+							expect( params ).to.eql( {
+								action: 'query',
+								c: '1',
+								format: 'json',
+								formatversion: '2',
+							} );
+							return successfulResponse( secondResponse );
+						case 3:
+							expect( params ).to.eql( {
+								action: 'query',
+								c: '2',
+								format: 'json',
+								formatversion: '2',
+							} );
+							return successfulResponse( thirdResponse );
+						default:
+							throw new Error( `Unexpected internalGet() call #${getCall}` );
+					}
+				}
+			}
+
+			let reduceCall = 0;
+			function reduce( accumulator, response ) {
+				switch ( ++reduceCall ) {
+					case 1:
+						expect( accumulator ).to.equal( firstInitial );
+						expect( response ).to.equal( firstResponse );
+						return firstAccumulator;
+					case 2:
+						expect( accumulator ).to.equal( firstAccumulator );
+						expect( response ).to.equal( secondResponse );
+						delete response.batchcomplete; // this should *not* affect continuation
+						return secondAccumulator;
+					case 3:
+						expect( accumulator ).to.equal( secondInitial );
+						expect( response ).to.equal( thirdResponse );
+						return thirdAccumulator;
+					default:
+						throw new Error( `Unexpected reduce() call #${reduceCall}` );
+				}
+			}
+
+			const session = new TestSession( 'en.wikipedia.org', {
+				formatversion: 2,
+			} );
+			const params = { action: 'query' };
+			let iteration = 0;
+			for await ( const result of session.requestAndContinueReducingBatch(
+				params,
+				{},
+				reduce,
+				initial,
+			) ) {
+				switch ( ++iteration ) {
+					case 1:
+						expect( result ).to.equal( secondAccumulator );
+						break;
+					case 2:
+						expect( result ).to.equal( thirdAccumulator );
+						break;
+					default:
+						throw new Error( `Unexpected iteration #${iteration}` );
+				}
+			}
+
+			// allow an extra initial() call that won’t be used (just before continuation ends)
+			expect( initialCall, 'initial() call' ).to.be.oneOf( [ 2, 3 ] );
+			expect( getCall, 'internalGet() call' ).to.equal( 3 );
+			expect( reduceCall, 'reduce() call' ).to.equal( 3 );
+			expect( iteration, 'iteration' ).to.equal( 2 );
+		} );
+
+	} );
+
 	describe( 'throwErrors', () => {
 
 		it( 'formatversion=1', () => {

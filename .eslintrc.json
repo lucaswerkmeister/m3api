@@ -9,6 +9,7 @@
 		"plugin:chai-friendly/recommended"
 	],
 	"rules": {
-		"comma-dangle": [ "error", "always-multiline" ]
+		"comma-dangle": [ "error", "always-multiline" ],
+		"no-use-before-define": [ "error", "nofunc" ]
 	}
 }

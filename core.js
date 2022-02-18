@@ -193,6 +193,48 @@ class Session {
 	}
 
 	/**
+	 * Make a series of API requests, following API continuation,
+	 * accumulating responses and yielding one result per batch.
+	 *
+	 * This works conceptually similar to Array.reduce(), but repeatedly,
+	 * with each batch of responses corresponding to one array.
+	 * At the beginning of each batch, an initial value is generated,
+	 * and then for each response in the batch,
+	 * a reducer is called with the current value and that response.
+	 * (The current value starts out as the initial value;
+	 * afterwards, it’s the reducer’s return value for the previous response.)
+	 * At the end of each batch, the current value is yielded,
+	 * and the process starts over with a new initial value.
+	 *
+	 * The reducer will typically extract some kind of pages or other entries from the response,
+	 * add them to the current value, possibly merging them with existing entries there,
+	 * and then return the updated value.
+	 * The initial callback defaults to producing empty objects,
+	 * but other values are also possible: sets or maps may be useful.
+	 *
+	 * @param {Object} params Same as for request.
+	 * @param {Object} options Same as for request. (But not optional here!)
+	 * @param {Function} reducer A callback like for Array.reduce().
+	 * Called with two arguments, the current value and the current response.
+	 * @param {Function} [initial] A callback producing initial values.
+	 * Called with no arguments. Defaults to producing empty objects.
+	 * @return {*} The last reducer return value for each batch.
+	 * Typically, the initial and reducer callbacks will have the same return type,
+	 * which will then also be the return type of this function, such as Object, Map, or Set.
+	 */
+	async * requestAndContinueReducingBatch( params, options, reducer, initial = () => ( {} ) ) {
+		let accumulator = initial();
+		for await ( const response of this.requestAndContinue( params, options ) ) {
+			const complete = responseBoolean( response.batchcomplete );
+			accumulator = reducer( accumulator, response );
+			if ( complete ) {
+				yield accumulator;
+				accumulator = initial();
+			}
+		}
+	}
+
+	/**
 	 * @private
 	 * @param {Object} params
 	 * @return {Object}
