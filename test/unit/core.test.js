@@ -688,6 +688,126 @@ describe( 'Session', () => {
 			expect( iteration, 'iteration' ).to.equal( 2 );
 		} );
 
+		describe( 'drops single truncatedresult warning', () => {
+
+			function warn() {
+				throw new Error( 'Should not be called in this test' );
+			}
+
+			for ( const [ description, warnings ] of [
+				[ 'errorformat=bc, formatversion=1, 1.37', {
+					main: {
+						'*': 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
+					},
+				} ],
+				[ 'errorformat=bc, formatversion=1, 1.27', {
+					main: {
+						'*': 'This result was truncated because it would otherwise  be larger than the limit of 1 bytes',
+					},
+				} ],
+				[ 'errorformat=bc, formatversion=2', {
+					main: {
+						warnings: 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
+					},
+				} ],
+				[ 'errorformat=none', [
+					{ code: 'truncatedresult' },
+				] ],
+			] ) {
+				it( description, async () => {
+					class TestSession extends BaseTestSession {
+						async internalGet() {
+							return successfulResponse( {
+								batchcomplete: true,
+								warnings,
+							} );
+						}
+					}
+					const session = new TestSession( 'en.wikipedia.org' );
+					await session.requestAndContinueReducingBatch( {}, { warn }, () => 0 ).next();
+				} );
+			}
+
+		} );
+
+		describe( 'passes through other warnings', () => {
+
+			let seenWarnings;
+			function warn( warnings ) {
+				expect( warnings ).to.be.instanceof( ApiWarnings );
+				seenWarnings = warnings.warnings;
+			}
+			afterEach( () => {
+				seenWarnings = undefined;
+			} );
+
+			for ( const [ d1, warnings, expectedLength ] of [
+				[ 'deprecation warnings', {
+					main: { '*': 'Subscribe to the mediawiki-api-announce…' },
+					revisions: { '*': 'Because "rvslots" was not specified…' },
+				}, 2 ],
+				[ 'misleading message', [ {
+					code: 'unrelated',
+					'*': 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
+				} ], 1 ],
+			] ) {
+				for ( const [ d2, defaultOptions, options ] of [
+					[ 'warn in options', {}, { warn } ],
+					[ 'warn in defaultOptions', { warn }, {} ],
+				] ) {
+					// eslint-disable-next-line no-loop-func
+					it( `${d1}, ${d2}`, async () => {
+						class TestSession extends BaseTestSession {
+							async internalGet() {
+								return successfulResponse( {
+									batchcomplete: true,
+									warnings,
+								} );
+							}
+						}
+						const session = new TestSession( 'en.wikipedia.org', {}, defaultOptions );
+						await session.requestAndContinueReducingBatch(
+							{},
+							options,
+							() => null,
+						).next();
+						expect( seenWarnings ).to.have.lengthOf( expectedLength );
+					} );
+				}
+			}
+
+		} );
+
+		it( 'drops truncatedresult from several warnings', async () => {
+			class TestSession extends BaseTestSession {
+				async internalGet() {
+					return successfulResponse( {
+						batchcomplete: true,
+						warnings: [
+							{ code: 'deprecation' },
+							{ code: 'truncatedresult' },
+							{ code: 'deprecation-help' },
+						],
+					} );
+				}
+			}
+			const session = new TestSession( 'en.wikipedia.org' );
+			let called = false;
+			await session.requestAndContinueReducingBatch(
+				{},
+				{ warn( warnings ) {
+					called = true;
+					expect( warnings ).to.be.instanceof( ApiWarnings );
+					expect( warnings.warnings ).to.eql( [
+						{ code: 'deprecation' },
+						{ code: 'deprecation-help' },
+					] );
+				} },
+				() => null,
+			).next();
+			expect( called ).to.be.true;
+		} );
+
 	} );
 
 	describe( 'throwErrors', () => {

@@ -3,6 +3,8 @@
 
 const defaultUserAgent = 'm3api/0.5.0 (https://www.npmjs.com/package/m3api)';
 
+const truncatedResult = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes$/;
+
 /**
  * @private
  * @param {Object} params
@@ -214,6 +216,8 @@ class Session {
 	 *
 	 * @param {Object} params Same as for request.
 	 * @param {Object} options Same as for request. (But not optional here!)
+	 * The warn option is automatically adjusted to drop truncatedresult warnings,
+	 * since continuation will produce the rest of the truncated result automatically.
 	 * @param {Function} reducer A callback like for Array.reduce().
 	 * Called with two arguments, the current value and the current response.
 	 * @param {Function} [initial] A callback producing initial values.
@@ -223,8 +227,29 @@ class Session {
 	 * which will then also be the return type of this function, such as Object, Map, or Set.
 	 */
 	async * requestAndContinueReducingBatch( params, options, reducer, initial = () => ( {} ) ) {
+		const warnOptions = {
+			...options,
+			warn: ( error ) => {
+				const { warn } = { ...this.defaultOptions, ...options };
+				if ( error instanceof ApiWarnings ) {
+					const warnings = error.warnings.filter( ( warning ) => {
+						return warning.code ?
+							warning.code !== 'truncatedresult' :
+							!truncatedResult.test( warning.warnings || warning[ '*' ] );
+					} );
+					if ( warnings.length > 0 ) {
+						return warn( warnings.length === error.warnings.length ?
+							error :
+							new ApiWarnings( warnings ) );
+					}
+				} else {
+					return warn( error );
+				}
+			},
+		};
+
 		let accumulator = initial();
-		for await ( const response of this.requestAndContinue( params, options ) ) {
+		for await ( const response of this.requestAndContinue( params, warnOptions ) ) {
 			const complete = responseBoolean( response.batchcomplete );
 			accumulator = reducer( accumulator, response );
 			if ( complete ) {
