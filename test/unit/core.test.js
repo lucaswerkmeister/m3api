@@ -37,6 +37,14 @@ export class BaseTestSession extends Session {
 
 }
 
+export function successfulResponse( body ) {
+	return {
+		status: 200,
+		headers: {},
+		body,
+	};
+}
+
 describe( 'ApiErrors', () => {
 
 	it( 'uses first error code as message', () => {
@@ -373,14 +381,6 @@ describe( 'Session', () => {
 
 	describe( 'requestAndContinue', () => {
 
-		function transformResponse( response ) {
-			return {
-				status: 200,
-				headers: {},
-				body: response,
-			};
-		}
-
 		it( 'query (GET)', async () => {
 			const firstResponse = {
 				batchcomplete: true,
@@ -422,7 +422,7 @@ describe( 'Session', () => {
 							format: 'json',
 							formatversion: '2',
 						} );
-						return transformResponse( firstResponse );
+						return successfulResponse( firstResponse );
 					} else if ( currentCall === 2 ) {
 						expect( params ).to.eql( {
 							action: 'query',
@@ -433,7 +433,7 @@ describe( 'Session', () => {
 							format: 'json',
 							formatversion: '2',
 						} );
-						return transformResponse( secondResponse );
+						return successfulResponse( secondResponse );
 					} else {
 						throw new Error( `Unexpected call #${currentCall}` );
 					}
@@ -502,7 +502,7 @@ describe( 'Session', () => {
 							format: 'json',
 							formatversion: '2',
 						} );
-						return transformResponse( firstResponse );
+						return successfulResponse( firstResponse );
 					} else if ( currentCall === 2 ) {
 						expect( bodyParams ).to.eql( {
 							action: 'purge',
@@ -513,7 +513,7 @@ describe( 'Session', () => {
 							format: 'json',
 							formatversion: '2',
 						} );
-						return transformResponse( secondResponse );
+						return successfulResponse( secondResponse );
 					} else {
 						throw new Error( `Unexpected call #${currentCall}` );
 					}

@@ -2,20 +2,12 @@
 
 import { mixCombiningSessionInto } from '../../combine.js';
 import { Session, set } from '../../core.js';
-import { BaseTestSession } from './core.test.js';
+import { BaseTestSession, successfulResponse } from './core.test.js';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 chai.use( chaiAsPromised );
 
 describe( 'CombiningSession', () => {
-
-	function successfulResponse( body ) {
-		return {
-			status: 200,
-			headers: {},
-			body,
-		};
-	}
 
 	const response = successfulResponse( { response: true } );
 
