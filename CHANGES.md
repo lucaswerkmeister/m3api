@@ -8,6 +8,14 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 ## next (not yet released)
 
 - BREAKING CHANGE:
+  Warnings are now always logged to the console by default.
+  Previously, the Node.js backend only did this if NODE_ENV = “development” was set.
+  If you use m3api for an interactive CLI application on Node.js,
+  you may want to configure a custom `warn` handler
+  (using the second constructor argument, next to the `userAgent` option),
+  so that warnings are not shown to end users.
+  You should make sure that the warnings still reach the developers, though.
+- BREAKING CHANGE:
   It is no longer possible to modify continuation
   by modifying the contents of a response’s `continue` member;
   continuation now always proceeds according to the original `continue` contents.

@@ -4,6 +4,7 @@
 const fallbackOptions = {
 	method: 'GET',
 	maxRetries: 1,
+	warn: console.warn,
 };
 
 const defaultUserAgent = 'm3api/0.5.0 (https://www.npmjs.com/package/m3api)';
@@ -113,14 +114,6 @@ class Session {
 		if ( !this.apiUrl.includes( '/' ) ) {
 			this.apiUrl = `https://${this.apiUrl}/w/api.php`;
 		}
-
-		if ( typeof defaultOptions.warn !== 'function' ) {
-			let message = '`warn` request option must be a function';
-			if ( !( 'warn' in defaultOptions ) ) {
-				message += ' (Session subclasses must provide a default for this option)';
-			}
-			throw new Error( message );
-		}
 	}
 
 	/**
@@ -142,8 +135,7 @@ class Session {
 	 * (Usually specified as a default option in the constructor.)
 	 * @param {Function} [options.warn] A handler for warnings from this API request.
 	 * Called with a single instance of a subclass of Error, such as {@link ApiWarnings}.
-	 * The default is console.warn in the browser, and in Node.js if NODE_ENV is 'development',
-	 * or a no-op function (ignore warnings) in Node.js otherwise.
+	 * The default is console.warn (interactive CLI applications may wish to change this).
 	 * @return {Object}
 	 * @throws {ApiErrors}
 	 */
@@ -236,7 +228,7 @@ class Session {
 		const warnOptions = {
 			...options,
 			warn: ( error ) => {
-				const { warn } = { ...this.defaultOptions, ...options };
+				const { warn } = { ...fallbackOptions, ...this.defaultOptions, ...options };
 				if ( error instanceof ApiWarnings ) {
 					const warnings = error.warnings.filter( ( warning ) => {
 						return warning.code ?

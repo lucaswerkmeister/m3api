@@ -126,14 +126,10 @@ Other features not demonstrated above:
   (The shape of those objects will depend on the request `errorformat`.)
 
 - Any warnings returned by the API are also detected.
-  You can specify a custom `warn` handler function in the request options;
-  by default, warnings are logged to the console in the browser,
-  and also in Node.js if NODE_ENV is set to “development”.
-  Node.js users that aren’t CLI applications
-  (e.g. bots or tool backends)
-  are encouraged to pass `warn: console.warn` in the default request options in the constructor
-  (along with the `userAgent` option),
-  to ensure that warnings are visible and can be acted on.
+  By default, warnings are logged to the console;
+  you can specify a custom `warn` handler function in the request options
+  (this may be advisable for interactive CLI applications on Node.js,
+  though you should make sure the warnings are still seen by developers somehow).
 
 - To make POST requests instead of GET requests,
   pass an object with a `method` value as the second parameter:

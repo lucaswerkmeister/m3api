@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { wrapper as axiosCookieJarSupport } from 'axios-cookiejar-support';
-import process from 'process';
 import tough from 'tough-cookie';
 import { Session } from './core.js';
 
@@ -18,13 +17,6 @@ function transformResponse( response ) {
 class AxiosSession extends Session {
 
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
-		if ( typeof defaultOptions.warn !== 'function' ) {
-			if ( process.env.NODE_ENV === 'development' ) {
-				defaultOptions.warn = console.warn;
-			} else {
-				defaultOptions.warn = function () {};
-			}
-		}
 		super( apiUrl, defaultParams, defaultOptions );
 		this.session = axios.create( {
 			baseURL: this.apiUrl,

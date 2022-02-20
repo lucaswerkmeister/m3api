@@ -18,9 +18,6 @@ async function transformResponse( response ) {
 class FetchSession extends Session {
 
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
-		if ( typeof defaultOptions.warn !== 'function' ) {
-			defaultOptions.warn = console.warn;
-		}
 		super( apiUrl, defaultParams, defaultOptions );
 		this.baseUrl = this.apiUrl;
 	}
