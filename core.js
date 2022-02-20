@@ -1,6 +1,11 @@
 /* eslint no-unused-vars: [ "error", { "args": "none" } ] */
 // Session has abstract methods with parameters only used in subclasses
 
+const fallbackOptions = {
+	method: 'GET',
+	maxRetries: 1,
+};
+
 const defaultUserAgent = 'm3api/0.5.0 (https://www.npmjs.com/package/m3api)';
 
 const truncatedResult = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes$/;
@@ -148,10 +153,11 @@ class Session {
 			maxRetries,
 			userAgent,
 			warn,
-		} = Object.assign( {
-			method: 'GET',
-			maxRetries: 1,
-		}, this.defaultOptions, options );
+		} = {
+			...fallbackOptions,
+			...this.defaultOptions,
+			...options,
+		};
 		let fullUserAgent;
 		if ( userAgent ) {
 			fullUserAgent = `${userAgent} ${defaultUserAgent}`;
