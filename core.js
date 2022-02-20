@@ -4,7 +4,7 @@
 const fallbackOptions = {
 	method: 'GET',
 	maxRetries: 1,
-	warn: console.warn,
+	warn: console.warn, // copied in combine.js
 };
 
 const defaultUserAgent = 'm3api/0.5.0 (https://www.npmjs.com/package/m3api)';

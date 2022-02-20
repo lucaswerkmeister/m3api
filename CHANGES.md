@@ -35,6 +35,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   after which the next batch of 500 search results can commence.)
   It is expected to be mainly used in libraries,
   such as the upcoming [m3api-query][].
+- Fixed a bug in handling warnings for combined requests.
 
 ## v0.5.0 (2021-12-04)
 

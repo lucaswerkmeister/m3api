@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { mixCombiningSessionInto } from '../../combine.js';
-import { Session, set } from '../../core.js';
+import { ApiWarnings, Session, set } from '../../core.js';
 import { BaseTestSession, successfulResponse } from './core.test.js';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -267,53 +267,74 @@ describe( 'CombiningSession', () => {
 			.to.be.rejectedWith( error );
 	} );
 
-	it( 'propagates warnings', async () => {
-		const params = { rvprop: 'content' };
-		const response = successfulResponse( {
-			warnings: {
-				main: { warnings: 'Subscribe to…' },
-				revisions: { warnings: 'Because…' },
-			},
+	describe( 'propagates warnings', () => {
+
+		it( 'to per-request handlers', async () => {
+			const params = { rvprop: 'content' };
+			const response = successfulResponse( {
+				warnings: {
+					main: { warnings: 'Subscribe to…' },
+					revisions: { warnings: 'Because…' },
+				},
+			} );
+			let called1 = false;
+			let warnings;
+			function warn1( warnings_ ) {
+				expect( called1, 'warn1 already called' ).to.be.false;
+				called1 = true;
+				expect( warnings_.warnings[ 0 ].module ).to.equal( 'revisions' );
+				warnings = warnings_;
+			}
+			let called2 = false;
+			function warn2( warnings_ ) {
+				expect( called2, 'warn2 already called' ).to.be.false;
+				called2 = true;
+				expect( warnings_ ).to.equal( warnings );
+			}
+			let called3 = false;
+			function warn3( warnings_ ) {
+				expect( called3, 'warn3 already called' ).to.be.false;
+				called3 = true;
+				expect( warnings_ ).to.equal( warnings );
+			}
+			const session = singleGetSession( params, response );
+			const promise1 = session.request( params, { warn: warn1 } );
+			const promise2 = session.request( params, { warn: warn2 } );
+			const promise3 = session.request( params, { warn: warn3 } );
+			const [
+				response1,
+				response2,
+				response3,
+			] = await Promise.all( [
+				promise1,
+				promise2,
+				promise3,
+			] );
+			expect( response1 ).to.equal( response.body );
+			expect( response2 ).to.equal( response.body );
+			expect( response3 ).to.equal( response.body );
+			expect( called1 ).to.be.true;
+			expect( called2 ).to.be.true;
+			expect( called3 ).to.be.true;
 		} );
-		let called1 = false;
-		let warnings;
-		function warn1( warnings_ ) {
-			expect( called1, 'warn1 already called' ).to.be.false;
-			called1 = true;
-			expect( warnings_.warnings[ 0 ].module ).to.equal( 'revisions' );
-			warnings = warnings_;
-		}
-		let called2 = false;
-		function warn2( warnings_ ) {
-			expect( called2, 'warn2 already called' ).to.be.false;
-			called2 = true;
-			expect( warnings_ ).to.equal( warnings );
-		}
-		let called3 = false;
-		function warn3( warnings_ ) {
-			expect( called3, 'warn3 already called' ).to.be.false;
-			called3 = true;
-			expect( warnings_ ).to.equal( warnings );
-		}
-		const session = singleGetSession( params, response );
-		const promise1 = session.request( params, { warn: warn1 } );
-		const promise2 = session.request( params, { warn: warn2 } );
-		const promise3 = session.request( params, { warn: warn3 } );
-		const [
-			response1,
-			response2,
-			response3,
-		] = await Promise.all( [
-			promise1,
-			promise2,
-			promise3,
-		] );
-		expect( response1 ).to.equal( response.body );
-		expect( response2 ).to.equal( response.body );
-		expect( response3 ).to.equal( response.body );
-		expect( called1 ).to.be.true;
-		expect( called2 ).to.be.true;
-		expect( called3 ).to.be.true;
+
+		it( 'to session default handler', async () => {
+			const session = singleGetSession( {}, successfulResponse( {
+				warnings: {
+					main: { warnings: 'Subscribe to…' },
+					revisions: { warnings: 'Because…' },
+				},
+			} ) );
+			let call = 0;
+			session.defaultOptions.warn = function ( warnings ) {
+				++call;
+				expect( warnings ).to.be.instanceof( ApiWarnings );
+				expect( warnings.warnings ).to.have.lengthOf( 2 );
+			};
+			await Promise.all( [ session.request( {} ), session.request( {} ) ] );
+			expect( call ).to.equal( 2 );
+		} );
+
 	} );
 
 	/**
