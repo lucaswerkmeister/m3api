@@ -19,11 +19,10 @@ class FetchSession extends Session {
 
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
 		super( apiUrl, defaultParams, defaultOptions );
-		this.baseUrl = this.apiUrl;
 	}
 
 	async internalGet( params, userAgent ) {
-		const url = new URL( this.baseUrl );
+		const url = new URL( this.apiUrl );
 		url.search = new URLSearchParams( params );
 		const response = await fetch( url, {
 			headers: {
@@ -34,7 +33,7 @@ class FetchSession extends Session {
 	}
 
 	async internalPost( urlParams, bodyParams, userAgent ) {
-		const url = new URL( this.baseUrl );
+		const url = new URL( this.apiUrl );
 		url.search = new URLSearchParams( urlParams );
 		const response = await fetch( url, {
 			method: 'POST',
