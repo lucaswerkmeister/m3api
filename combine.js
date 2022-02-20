@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { Session } from './core.js';
 
-const fallbackOptions = {
+const DEFAULT_OPTIONS = {
 	warn: console.warn, // copied from core.js
 };
 
@@ -54,9 +54,9 @@ class CombiningSession extends Session {
 		requestA.params = combinedParams;
 		requestA.options = {
 			warn: ( ...args ) => {
-				( warnA || this.defaultOptions.warn || fallbackOptions.warn )( ...args );
+				( warnA || this.defaultOptions.warn || DEFAULT_OPTIONS.warn )( ...args );
 				// `return` so it’s a tail call :)
-				return ( warnB || this.defaultOptions.warn || fallbackOptions.warn )( ...args );
+				return ( warnB || this.defaultOptions.warn || DEFAULT_OPTIONS.warn )( ...args );
 			},
 			...optionsA,
 		};

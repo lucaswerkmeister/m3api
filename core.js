@@ -1,15 +1,15 @@
 /* eslint no-unused-vars: [ "error", { "args": "none" } ] */
 // Session has abstract methods with parameters only used in subclasses
 
-const fallbackOptions = {
+const DEFAULT_OPTIONS = {
 	method: 'GET',
 	maxRetries: 1,
 	warn: console.warn, // copied in combine.js
 };
 
-const defaultUserAgent = 'm3api/0.5.0 (https://www.npmjs.com/package/m3api)';
+const DEFAULT_USER_AGENT = 'm3api/0.5.0 (https://www.npmjs.com/package/m3api)';
 
-const truncatedResult = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes$/;
+const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes$/;
 
 /**
  * @private
@@ -146,19 +146,19 @@ class Session {
 			userAgent,
 			warn,
 		} = {
-			...fallbackOptions,
+			...DEFAULT_OPTIONS,
 			...this.defaultOptions,
 			...options,
 		};
 		let fullUserAgent;
 		if ( userAgent ) {
-			fullUserAgent = `${userAgent} ${defaultUserAgent}`;
+			fullUserAgent = `${userAgent} ${DEFAULT_USER_AGENT}`;
 		} else {
 			if ( !this.warnedDefaultUserAgent ) {
 				warn( new DefaultUserAgentWarning() );
 				this.warnedDefaultUserAgent = true;
 			}
-			fullUserAgent = defaultUserAgent;
+			fullUserAgent = DEFAULT_USER_AGENT;
 		}
 
 		const response = await this.internalRequest( method, this.transformParams( {
@@ -228,12 +228,12 @@ class Session {
 		const warnOptions = {
 			...options,
 			warn: ( error ) => {
-				const { warn } = { ...fallbackOptions, ...this.defaultOptions, ...options };
+				const { warn } = { ...DEFAULT_OPTIONS, ...this.defaultOptions, ...options };
 				if ( error instanceof ApiWarnings ) {
 					const warnings = error.warnings.filter( ( warning ) => {
 						return warning.code ?
 							warning.code !== 'truncatedresult' :
-							!truncatedResult.test( warning.warnings || warning[ '*' ] );
+							!TRUNCATED_RESULT.test( warning.warnings || warning[ '*' ] );
 					} );
 					if ( warnings.length > 0 ) {
 						return warn( warnings.length === error.warnings.length ?
