@@ -4,3 +4,4 @@
 # additional exclusions irrelevant for published packages
 /.github/
 /test/
+/RELEASE.md
