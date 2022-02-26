@@ -254,6 +254,34 @@ To avoid just relying on default parameter values, you have several options:
    you may be able to process both `formatversion=1` and `formatversion=2` responses
    (see also the `responseBoolean` helper function).
 
+## Compatibility
+
+In Node.js, m3api is compatible with Node 14.17.0 or later,
+or in the Node 12 line with Node 12.22.0 or later.
+Among major browsers, m3api is compatible with
+Chrome 63, Firefox 60, Edge 79, Opera 50 (46 on Android), Safari 12, and Samsung Internet 8.0.
+The relevant requirements of m3api are:
+
+- Support for ES6 modules (`import`/`export`).
+  Stable in Node since 12.22.0 or 14.17.0
+  (available but considered experimental, with or without a feature flag,
+  in several older Node versions).
+  Supported in Firefox since version 60.
+  (Other browsers supported async generators before ES6 modules.)
+- Support for async generators (`async function *`, `for await … of`).
+  Supported since Chrome 63, Edge 79, Opera 50 (46 on Android), Safari 12, Samsung Internet 8.0.
+  (Firefox and Node supported ES6 modules before async generators.)
+
+Other modern features used by m3api –
+destructuring assignment, spread syntax, default arguments, classes, etc. –
+are less recent than ES6 modules and async generators,
+and therefore aren’t expected to affect compatibility.
+
+Using a combination of transpiling and polyfilling,
+it should be possible to use m3api on older platforms as well.
+If you try this, feel free to send a pull request
+updating this paragraph with your experience.
+
 ## License
 
 Published under the [ISC License][].

@@ -36,6 +36,9 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   It is expected to be mainly used in libraries,
   such as the upcoming [m3api-query][].
 - Fixed a bug in handling warnings for combined requests.
+- The “modern” requirements of m3api,
+  i.e. compatibility with different platforms,
+  are documented in the README now.
 
 ## v0.5.0 (2021-12-04)
 
