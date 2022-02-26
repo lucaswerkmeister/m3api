@@ -2,11 +2,60 @@
 
 import NodeSession, { set } from '../../node.js';
 import { expect } from 'chai';
-import 'dotenv/config';
+import fs from 'fs';
+import process from 'process';
 
 describe( 'NodeSession', function () {
 
 	this.timeout( 60000 );
+
+	let mediawikiUsername, mediawikiPassword;
+
+	before( 'load credentials', async () => {
+		mediawikiUsername = process.env.MEDIAWIKI_USERNAME;
+		mediawikiPassword = process.env.MEDIAWIKI_PASSWORD;
+
+		if ( !mediawikiUsername || !mediawikiPassword ) {
+			let envFile;
+			try {
+				envFile = await fs.promises.readFile( '.env', { encoding: 'utf8' } );
+			} catch ( e ) {
+				if ( e.code === 'ENOENT' ) {
+					return;
+				} else {
+					throw e;
+				}
+			}
+
+			for ( let line of envFile.split( '\n' ) ) {
+				line = line.trim();
+				if ( line.startsWith( '#' ) || line === '' ) {
+					continue;
+				}
+
+				const match = line.match( /^([^=]*)='([^']*)'$/ );
+				if ( !match ) {
+					console.warn( `.env: ignoring bad format: ${line}` );
+					continue;
+				}
+				switch ( match[ 1 ] ) {
+					case 'MEDIAWIKI_USERNAME':
+						if ( !mediawikiUsername ) {
+							mediawikiUsername = match[ 2 ];
+						}
+						break;
+					case 'MEDIAWIKI_PASSWORD':
+						if ( !mediawikiPassword ) {
+							mediawikiPassword = match[ 2 ];
+						}
+						break;
+					default:
+						console.warn( `.env: ignoring unknown assignment: ${line}` );
+						break;
+				}
+			}
+		}
+	} );
 
 	it( 'siteinfo, array siprops, default formatversion', async () => {
 		const session = new NodeSession( 'en.wikipedia.org', {
@@ -39,7 +88,7 @@ describe( 'NodeSession', function () {
 	} );
 
 	it( 'login, edit', async function () {
-		if ( !( 'MEDIAWIKI_USERNAME' in process.env && 'MEDIAWIKI_PASSWORD' in process.env ) ) {
+		if ( !mediawikiUsername || !mediawikiPassword ) {
 			return this.skip();
 		}
 		const session = new NodeSession( 'en.wikipedia.beta.wmflabs.org', {
@@ -54,8 +103,8 @@ describe( 'NodeSession', function () {
 		} );
 		const { login: { lgusername: username } } = await session.request( {
 			action: 'login',
-			lgname: process.env.MEDIAWIKI_USERNAME,
-			lgpassword: process.env.MEDIAWIKI_PASSWORD,
+			lgname: mediawikiUsername,
+			lgpassword: mediawikiPassword,
 			lgtoken: logintoken,
 		}, { method: 'POST' } );
 		const { query: { tokens: { csrftoken } } } = await session.request( {
