@@ -31,3 +31,12 @@ jobs:
       # don’t run test:lint in Node 12 – no point running it twice
       # don’t run test:browser in Node 12 – mocha-headless needs ?? syntax
       # don’t run test:readme in Node 12 – needs --harmony-top-level-await
+  test-package-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - run: npm i --package-lock-only
+      - run: git diff --exit-code
