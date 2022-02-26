@@ -16,8 +16,7 @@ a library for interacting with the [MediaWiki Action API][] from JavaScript.
 
 - It is **modern**: It’s based on Promises, provides iterators,
   uses ES6 modules, and so on.
-  (Specifically, it’s “modern” as of mid-2021 –
-  future updates are expected but not guaranteed.)
+  (See [§ Compatibility](#Compatibility) below for details.)
 
 It supports both Node.js (using axios) and browsers (using `fetch`).
 The browser version has no external dependencies.
