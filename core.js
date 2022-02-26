@@ -177,7 +177,7 @@ class Session {
 	 * @param {Object} params Same as for request.
 	 * Continuation parameters will be added automatically.
 	 * @param {Object} [options] Same as for request.
-	 * @return {Object}
+	 * @yield {Object}
 	 * @throws {ApiErrors}
 	 */
 	async * requestAndContinue( params, options = {} ) {
@@ -220,7 +220,7 @@ class Session {
 	 * Called with two arguments, the current value and the current response.
 	 * @param {Function} [initial] A callback producing initial values.
 	 * Called with no arguments. Defaults to producing empty objects.
-	 * @return {*} The last reducer return value for each batch.
+	 * @yield {*} The last reducer return value for each batch.
 	 * Typically, the initial and reducer callbacks will have the same return type,
 	 * which will then also be the return type of this function, such as Object, Map, or Set.
 	 */

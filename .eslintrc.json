@@ -11,6 +11,16 @@
 	],
 	"rules": {
 		"comma-dangle": [ "error", "always-multiline" ],
-		"no-use-before-define": [ "error", "nofunc" ]
-	}
+		"no-use-before-define": [ "error", "nofunc" ],
+		"no-shadow": "off",
+		"es/no-promise-any": "off"
+	},
+	"overrides": [
+		{
+			"files": "*.json",
+			"rules": {
+				"comma-dangle": "off"
+			}
+		}
+	]
 }
