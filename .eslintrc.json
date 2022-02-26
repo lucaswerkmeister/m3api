@@ -6,7 +6,8 @@
 		"wikimedia/common",
 		"wikimedia/language/es2019",
 		"wikimedia/node",
-		"plugin:chai-friendly/recommended"
+		"plugin:chai-friendly/recommended",
+		"plugin:compat/recommended"
 	],
 	"rules": {
 		"comma-dangle": [ "error", "always-multiline" ],

@@ -1,0 +1,12 @@
+Node 14.17.0
+Node 12.22.0
+Chrome 63
+ChromeAndroid 63
+Firefox 60
+FirefoxAndroid 60
+Edge 79
+Opera 50
+# OperaAndroid 46 according to MDN but caniuse-lite situation confusing
+Safari 12
+ios_saf 12
+Samsung 12 # actually 8 but caniuse-lite only knows 12
