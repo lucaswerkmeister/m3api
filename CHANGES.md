@@ -39,6 +39,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 - The “modern” requirements of m3api,
   i.e. compatibility with different platforms,
   are documented in the README now.
+- Updated dependencies.
 
 ## v0.5.0 (2021-12-04)
 
