@@ -35,6 +35,9 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   after which the next batch of 500 search results can commence.)
   It is expected to be mainly used in libraries,
   such as the upcoming [m3api-query][].
+- The Node.js backend (specifically `axios.js`)
+  now requests gzip compression of the response from the server,
+  which should reduce network traffic somewhat.
 - Fixed a bug in handling warnings for combined requests.
 - The “modern” requirements of m3api,
   i.e. compatibility with different platforms,

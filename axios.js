@@ -33,6 +33,7 @@ class AxiosSession extends Session {
 			params,
 			headers: {
 				'user-agent': userAgent,
+				'accept-encoding': 'gzip',
 			},
 		} );
 		return transformResponse( response );
