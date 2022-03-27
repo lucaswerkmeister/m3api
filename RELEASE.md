@@ -31,7 +31,8 @@ For the release notes (for users), see [CHANGES.md](./CHANGES.md).
    but with line breaks removed.
    Once the release is published, CI will automatically publish it to npm.
 
-8. Add a new section for the next release to `CHANGES.md`:
+8. Add a new section for the next release to `CHANGES.md`,
+   and commit it with the message “Add CHANGES.md section for next release”:
 
    > ## next (not yet released)
    >
