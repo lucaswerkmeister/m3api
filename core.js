@@ -7,7 +7,7 @@ const DEFAULT_OPTIONS = {
 	warn: console.warn, // copied in combine.js
 };
 
-const DEFAULT_USER_AGENT = 'm3api/0.5.0 (https://www.npmjs.com/package/m3api)';
+const DEFAULT_USER_AGENT = 'm3api/0.6.0 (https://www.npmjs.com/package/m3api)';
 
 const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes$/;
 

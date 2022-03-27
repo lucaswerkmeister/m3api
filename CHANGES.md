@@ -5,7 +5,7 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## next (not yet released)
+## v0.6.0 (2022-03-27)
 
 - BREAKING CHANGE:
   Warnings are now always logged to the console by default.
