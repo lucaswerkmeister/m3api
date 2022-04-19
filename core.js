@@ -5,6 +5,7 @@ const DEFAULT_OPTIONS = {
 	method: 'GET',
 	maxRetries: 1,
 	warn: console.warn, // copied in combine.js
+	dropTruncatedResultWarning: false,
 };
 
 const DEFAULT_USER_AGENT = 'm3api/0.6.0 (https://www.npmjs.com/package/m3api)';
@@ -147,6 +148,16 @@ class Session {
 	 * @param {Function} [options.warn] A handler for warnings from this API request.
 	 * Called with a single instance of a subclass of Error, such as {@link ApiWarnings}.
 	 * The default is console.warn (interactive CLI applications may wish to change this).
+	 * @param {boolean} [options.dropTruncatedResultWarning]
+	 * Whether to drop warnings about truncated results instead of passing them to the warn handler.
+	 * Occasionally, an API result may not fit into a single network response;
+	 * in such cases, the API will add a warning about the result being truncated,
+	 * as well as continuation parameters that will result in the remaining information
+	 * being included in the next request, if continuation is followed.
+	 * If you follow continuation and are prepared to merge truncated responses back together,
+	 * you don’t need to see this warning and can use this option to suppress it.
+	 * This option defaults to false here (i.e. treat the warning like any other),
+	 * but in {@link requestAndContinueReducingBatch} it defaults to true.
 	 * @return {Object}
 	 * @throws {ApiErrors}
 	 */
@@ -156,6 +167,7 @@ class Session {
 			maxRetries,
 			userAgent,
 			warn,
+			dropTruncatedResultWarning,
 		} = {
 			...DEFAULT_OPTIONS,
 			...this.defaultOptions,
@@ -178,7 +190,7 @@ class Session {
 			format: 'json',
 		} ), fullUserAgent, maxRetries );
 		this.throwErrors( response );
-		this.handleWarnings( response, warn );
+		this.handleWarnings( response, warn, dropTruncatedResultWarning );
 		return response;
 	}
 
@@ -225,7 +237,7 @@ class Session {
 	 *
 	 * @param {Object} params Same as for request.
 	 * @param {Object} options Same as for request. (But not optional here!)
-	 * The warn option is automatically adjusted to drop truncatedresult warnings,
+	 * The dropTruncatedResultWarning option defaults to true here,
 	 * since continuation will produce the rest of the truncated result automatically.
 	 * @param {Function} reducer A callback like for Array.reduce().
 	 * Called with two arguments, the current value and the current response.
@@ -236,25 +248,13 @@ class Session {
 	 * which will then also be the return type of this function, such as Object, Map, or Set.
 	 */
 	async * requestAndContinueReducingBatch( params, options, reducer, initial = () => ( {} ) ) {
-		const warnOptions = {
+		options = {
+			dropTruncatedResultWarning: true,
 			...options,
-			warn: ( error ) => {
-				const { warn } = { ...DEFAULT_OPTIONS, ...this.defaultOptions, ...options };
-				if ( error instanceof ApiWarnings ) {
-					const warnings = error.warnings.filter( isTruncatedResultWarning );
-					if ( warnings.length > 0 ) {
-						return warn( warnings.length === error.warnings.length ?
-							error :
-							new ApiWarnings( warnings ) );
-					}
-				} else {
-					return warn( error );
-				}
-			},
 		};
 
 		let accumulator = initial();
-		for await ( const response of this.requestAndContinue( params, warnOptions ) ) {
+		for await ( const response of this.requestAndContinue( params, options ) ) {
 			const complete = responseBoolean( response.batchcomplete );
 			accumulator = reducer( accumulator, response );
 			if ( complete ) {
@@ -413,12 +413,14 @@ class Session {
 	 * @private
 	 * @param {Object} response
 	 * @param {Function} warn
+	 * @param {boolean} dropTruncatedResultWarning
 	 */
-	handleWarnings( response, warn ) {
+	handleWarnings( response, warn, dropTruncatedResultWarning ) {
 		let warnings = response.warnings;
 		if ( !warnings ) {
 			return;
 		}
+
 		if ( !Array.isArray( warnings ) ) {
 			const bcWarnings = Object.entries( warnings );
 			if ( bcWarnings[ 0 ][ 0 ] === 'main' ) {
@@ -431,6 +433,14 @@ class Session {
 				warnings.push( warning );
 			}
 		}
+
+		if ( dropTruncatedResultWarning ) {
+			warnings = warnings.filter( isTruncatedResultWarning );
+			if ( !warnings.length ) {
+				return;
+			}
+		}
+
 		warn( new ApiWarnings( warnings ) );
 	}
 
