@@ -30,6 +30,17 @@ function splitPostParameters( params ) {
 }
 
 /**
+ * @private
+ * @param {Object} warning
+ * @return {boolean}
+ */
+function isTruncatedResultWarning( warning ) {
+	return warning.code ?
+		warning.code !== 'truncatedresult' :
+		!TRUNCATED_RESULT.test( warning.warnings || warning[ '*' ] );
+}
+
+/**
  * An Error wrapping one or more API errors.
  */
 class ApiErrors extends Error {
@@ -230,11 +241,7 @@ class Session {
 			warn: ( error ) => {
 				const { warn } = { ...DEFAULT_OPTIONS, ...this.defaultOptions, ...options };
 				if ( error instanceof ApiWarnings ) {
-					const warnings = error.warnings.filter( ( warning ) => {
-						return warning.code ?
-							warning.code !== 'truncatedresult' :
-							!TRUNCATED_RESULT.test( warning.warnings || warning[ '*' ] );
-					} );
+					const warnings = error.warnings.filter( isTruncatedResultWarning );
 					if ( warnings.length > 0 ) {
 						return warn( warnings.length === error.warnings.length ?
 							error :
