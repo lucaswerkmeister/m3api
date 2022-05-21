@@ -28,7 +28,7 @@
 		"node": "^12.22.0 || >=14.17.0"
 	},
 	"dependencies": {
-		"axios": "^0.26.0",
+		"axios": "^0.27.2",
 		"axios-cookiejar-support": "^2.0.3",
 		"tough-cookie": "^4.0.0"
 	},

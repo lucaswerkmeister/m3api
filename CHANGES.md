@@ -13,6 +13,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   or disabled in `requestAndContinueReducingBatch()`.
   By default, the option is enabled in the latter function and disbled in the former two,
   so there is no change in behavior unless you set the option with a request.
+- Updated dependencies.
 
 ## v0.6.0 (2022-03-27)
 
