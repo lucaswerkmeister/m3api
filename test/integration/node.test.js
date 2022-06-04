@@ -96,32 +96,21 @@ describe( 'NodeSession', function () {
 		}, {
 			userAgent: 'm3api-integration-tests',
 		} );
-		const { query: { tokens: { logintoken } } } = await session.request( {
-			action: 'query',
-			meta: set( 'tokens' ),
-			type: set( 'login' ),
-		} );
 		const { login: { lgusername: username } } = await session.request( {
 			action: 'login',
 			lgname: mediawikiUsername,
 			lgpassword: mediawikiPassword,
-			lgtoken: logintoken,
-		}, { method: 'POST' } );
-		const { query: { tokens: { csrftoken } } } = await session.request( {
-			action: 'query',
-			meta: set( 'tokens' ),
-			type: set( 'csrf' ),
-		} );
+		}, { method: 'POST', tokenType: 'login', tokenName: 'lgtoken' } );
+		session.tokens.clear();
 		const title = `User:${username}/m3api test`;
 		const text = `Test content (${new Date().toISOString()}).`;
 		await session.request( {
 			action: 'edit',
 			title,
 			text,
-			token: csrftoken,
 			bot: true,
 			assert: 'user',
-		}, { method: 'POST' } );
+		}, { method: 'POST', tokenType: 'csrf' } );
 		const { query: { pages: [ page ] } } = await session.request( {
 			action: 'query',
 			titles: [ title ], // not set(), we destructure assuming a single page

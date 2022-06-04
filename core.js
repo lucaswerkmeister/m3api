@@ -6,6 +6,8 @@
  */
 const DEFAULT_OPTIONS = {
 	method: 'GET',
+	tokenType: null,
+	tokenName: 'token',
 	maxRetriesSeconds: 65,
 	retryAfterMaxlagSeconds: 5,
 	retryAfterReadonlySeconds: 30,
@@ -16,6 +18,8 @@ const DEFAULT_OPTIONS = {
 const DEFAULT_USER_AGENT = 'm3api/0.6.1 (https://www.npmjs.com/package/m3api)';
 
 const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes$/;
+
+const TOKEN_PLACEHOLDER = Symbol( 'm3api/token-placeholder' );
 
 /**
  * @private
@@ -201,6 +205,7 @@ class Session {
 		this.apiUrl = apiUrl;
 		this.defaultParams = defaultParams;
 		this.defaultOptions = defaultOptions;
+		this.tokens = new Map();
 
 		if ( !this.apiUrl.includes( '/' ) ) {
 			this.apiUrl = `https://${this.apiUrl}/w/api.php`;
@@ -219,6 +224,14 @@ class Session {
 	 * Default options from the constructor are added to these,
 	 * with per-request options overriding default options in case of collision.
 	 * @param {string} [options.method] The method, either GET (default) or POST.
+	 * @param {string|null} [options.tokenType] Include a token parameter of this type,
+	 * automatically getting it from the API if necessary.
+	 * The most common token type is 'csrf' (some actions use a different type);
+	 * you will also want to set the method option to POST.
+	 * @param {string} [options.tokenName] The name of the token parameter.
+	 * Only used if the tokenType option is not null.
+	 * Defaults to 'token', but some modules need a different name
+	 * (e.g. action=login needs 'lgtoken').
 	 * @param {string} [options.userAgent] The User-Agent header to send.
 	 * (Usually specified as a default option in the constructor.)
 	 * @param {number} [options.maxRetriesSeconds] The maximum duration for automatic retries,
@@ -256,6 +269,8 @@ class Session {
 	async request( params, options = {} ) {
 		const {
 			method,
+			tokenType,
+			tokenName,
 			maxRetries, // only for warning
 			maxRetriesSeconds,
 			retryAfterMaxlagSeconds,
@@ -287,15 +302,23 @@ class Session {
 			warn;
 		const retryUntil = performance.now() + maxRetriesSeconds * 1000;
 
+		const tokenParams = {};
+		if ( tokenType !== null ) {
+			tokenParams[ tokenName ] = TOKEN_PLACEHOLDER; // replaced in internalRequest()
+		}
+
 		const response = await this.internalRequest(
 			method,
 			this.transformParams( {
 				...this.defaultParams,
+				...tokenParams,
 				...params,
 				format: 'json',
 			} ),
 			fullUserAgent,
 			actualWarn,
+			tokenType,
+			tokenName,
 			retryUntil,
 			retryAfterMaxlagSeconds,
 			retryAfterReadonlySeconds,
@@ -375,6 +398,44 @@ class Session {
 	}
 
 	/**
+	 * Get a token of the specified type.
+	 *
+	 * Though this method is public, it should generally not be used directly:
+	 * call {@link #request} with the tokenType/tokenName options instead.
+	 *
+	 * @param {string} type
+	 * @param {Object} options Options for the request to get the token.
+	 * @return {string}
+	 */
+	async getToken( type, options ) {
+		if ( !this.tokens.has( type ) ) {
+			const params = {
+				action: 'query',
+				meta: set( 'tokens' ),
+				type: set( type ),
+			};
+			options = {
+				...options,
+				method: 'GET',
+				tokenType: null,
+				dropTruncatedResultWarning: true,
+			};
+			for await ( const response of this.requestAndContinue( params, options ) ) {
+				try {
+					const token = response.query.tokens[ type + 'token' ];
+					if ( typeof token === 'string' ) {
+						this.tokens.set( type, token );
+						break;
+					}
+					// if token not found in this response, follow continuation
+				} catch ( _ ) {
+				}
+			}
+		}
+		return this.tokens.get( type );
+	}
+
+	/**
 	 * @private
 	 * @param {Object} params
 	 * @return {Object}
@@ -444,6 +505,8 @@ class Session {
 	 * @param {Object} params
 	 * @param {string} userAgent
 	 * @param {Function} warn
+	 * @param {string} tokenType
+	 * @param {string} tokenName
 	 * @param {number} retryUntil (performance.now() clock)
 	 * @param {number} retryAfterMaxlagSeconds
 	 * @param {number} retryAfterReadonlySeconds
@@ -454,15 +517,28 @@ class Session {
 		params,
 		userAgent,
 		warn,
+		tokenType,
+		tokenName,
 		retryUntil,
 		retryAfterMaxlagSeconds,
 		retryAfterReadonlySeconds,
 	) {
+		let tokenParams = null;
+		if ( params[ tokenName ] === TOKEN_PLACEHOLDER ) {
+			tokenParams = { [ tokenName ]: await this.getToken( tokenType, {
+				maxRetriesSeconds: ( retryUntil - performance.now() ) / 1000,
+				retryAfterMaxlagSeconds,
+				retryAfterReadonlySeconds,
+				userAgent,
+				warn,
+			} ) };
+		}
+
 		let result;
 		if ( method === 'GET' ) {
-			result = this.internalGet( params, userAgent );
+			result = this.internalGet( { ...params, ...tokenParams }, userAgent );
 		} else if ( method === 'POST' ) {
-			const [ urlParams, bodyParams ] = splitPostParameters( params );
+			const [ urlParams, bodyParams ] = splitPostParameters( { ...params, ...tokenParams } );
 			result = this.internalPost( urlParams, bodyParams, userAgent );
 		} else {
 			throw new Error( `Unknown request method: ${method}` );
@@ -487,6 +563,8 @@ class Session {
 					params,
 					userAgent,
 					warn,
+					tokenType,
+					tokenName,
 					retryUntil,
 					retryAfterMaxlagSeconds,
 					retryAfterReadonlySeconds,
