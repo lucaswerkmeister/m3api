@@ -3,6 +3,8 @@
 
 const DEFAULT_OPTIONS = {
 	method: 'GET',
+	tokentype: null,
+	tokenname: 'token',
 	maxRetries: 1,
 	warn: console.warn, // copied in combine.js
 	dropTruncatedResultWarning: false,
@@ -122,6 +124,7 @@ class Session {
 		this.apiUrl = apiUrl;
 		this.defaultParams = defaultParams;
 		this.defaultOptions = defaultOptions;
+		this.tokens = new Map();
 
 		if ( !this.apiUrl.includes( '/' ) ) {
 			this.apiUrl = `https://${this.apiUrl}/w/api.php`;
@@ -140,6 +143,14 @@ class Session {
 	 * Default options from the constructor are added to these,
 	 * with per-request options overriding default options in case of collision.
 	 * @param {string} [options.method] The method, either GET (default) or POST.
+	 * @param {string|null} [options.tokentype] Include a token parameter of this type,
+	 * automatically getting it from the API if necessary.
+	 * The most common token type is 'csrf' (some actions use a different type);
+	 * you will also want to set the method option to POST.
+	 * @param {string} [options.tokenname] The name of the token parameter.
+	 * Only used if the tokentype option is not null.
+	 * Defaults to 'token', but some modules need a different name
+	 * (e.g. action=login needs 'lgtoken').
 	 * @param {number} [options.maxRetries] The maximum number of automatic retries,
 	 * i.e. times the request will be repeated if the response contains a Retry-After header.
 	 * Defaults to 1; set to 0 to disable automatic retries.
@@ -164,6 +175,8 @@ class Session {
 	async request( params, options = {} ) {
 		const {
 			method,
+			tokentype,
+			tokenname,
 			maxRetries,
 			userAgent,
 			warn,
@@ -184,8 +197,14 @@ class Session {
 			fullUserAgent = DEFAULT_USER_AGENT;
 		}
 
+		const tokenParams = {};
+		if ( tokentype !== null ) {
+			tokenParams[ tokenname ] = await this.getToken( tokentype, options );
+		}
+
 		const response = await this.internalRequest( method, this.transformParams( {
 			...this.defaultParams,
+			...tokenParams,
 			...params,
 			format: 'json',
 		} ), fullUserAgent, maxRetries );
@@ -262,6 +281,42 @@ class Session {
 				accumulator = initial();
 			}
 		}
+	}
+
+	/**
+	 * @private
+	 * Get a token of the specified type.
+	 *
+	 * @param {string} type
+	 * @param {Object} options Options for the request to get the token.
+	 * @return {string}
+	 */
+	async getToken( type, options ) {
+		if ( !this.tokens.has( type ) ) {
+			const params = {
+				action: 'query',
+				meta: set( 'tokens' ),
+				type: set( type ),
+			};
+			options = {
+				...options,
+				method: 'GET',
+				tokentype: null,
+				dropTruncatedResultWarning: true,
+			};
+			for await ( const response of this.requestAndContinue( params, options ) ) {
+				try {
+					const token = response.query.tokens[ type + 'token' ];
+					if ( typeof token === 'string' ) {
+						this.tokens.set( type, token );
+						break;
+					}
+					// if token not found in this response, follow continuation
+				} catch ( _ ) {
+				}
+			}
+		}
+		return this.tokens.get( type );
 	}
 
 	/**
