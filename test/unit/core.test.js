@@ -148,6 +148,24 @@ describe( 'Session', () => {
 				.to.be.rejectedWith( '502' );
 		} );
 
+		describe( 'tokens', () => {
+
+			it( 'gets token of tokentype using continuation and uses tokenname', async () => {
+				// move sequentialGetSession() from combine.test.js here?
+			} );
+
+			describe( 'badtoken error', () => {
+
+				it( 'discards tokens and retries with maxRetries > 0', async () => {
+				} );
+
+				it( 'discards tokens but does not retry with maxRetries = 0', async () => {
+				} );
+
+			} );
+
+		} );
+
 		describe( 'user agent', () => {
 
 			it( 'from default options', async () => {
