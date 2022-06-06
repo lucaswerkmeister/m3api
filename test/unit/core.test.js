@@ -45,6 +45,83 @@ export function successfulResponse( body ) {
 	};
 }
 
+const isResponseKey = Set.prototype.has.bind(
+	new Set( Object.keys( successfulResponse( {} ) ) ),
+);
+
+function isResponse( bodyOrResponse ) {
+	return Object.keys( bodyOrResponse )
+		.every( isResponseKey );
+}
+
+/**
+ * Make a response from the given body or response.
+ *
+ * @param {Object} bodyOrResponse Either a response,
+ * to be returned from {@link Session#internalGet} or {@link Session#internalPost}
+ * (with any body, status, and/or headers, but no other keys),
+ * or just a response body, to be turned into a successful response.
+ * Response objects may still omit parts of a full response,
+ * to be completed with defaults from a successful response.
+ * @return {Object}
+ */
+export function makeResponse( bodyOrResponse ) {
+	if ( isResponse( bodyOrResponse ) ) {
+		return {
+			...successfulResponse( {} ),
+			...bodyOrResponse,
+		};
+	} else {
+		return successfulResponse( bodyOrResponse );
+	}
+}
+
+/**
+ * Create a Session that expects a single internal GET.
+ *
+ * @param {Object} expectedParams The expected parameters of the call.
+ * For convenience, format='json' is added automatically.
+ * @param {Object} response A response object or just its body, see {@link makeResponse}.
+ * @return {Session}
+ */
+export function singleGetSession( expectedParams, response ) {
+	expectedParams.format = 'json';
+	let called = false;
+	class TestSession extends BaseTestSession {
+		async internalGet( params ) {
+			expect( called, 'internalGet already called' ).to.be.false;
+			called = true;
+			expect( params ).to.eql( expectedParams );
+			return makeResponse( response );
+		}
+	}
+
+	return new TestSession( 'en.wikipedia.org' );
+}
+
+/**
+ * Create a Session that expects a series of GETs.
+ *
+ * @param {Object[]} expectedCalls The expected calls.
+ * Each call is an object with expectedParams and response (object or body).
+ * format='json' is added to the expectedParams automatically.
+ * @return {Session}
+ */
+export function sequentialGetSession( expectedCalls ) {
+	expectedCalls.reverse();
+	class TestSession extends BaseTestSession {
+		async internalGet( params ) {
+			expect( expectedCalls ).to.not.be.empty;
+			const [ { expectedParams, response } ] = expectedCalls.splice( -1 );
+			expectedParams.format = 'json';
+			expect( params ).to.eql( expectedParams );
+			return makeResponse( response );
+		}
+	}
+
+	return new TestSession( 'en.wikipedia.org' );
+}
+
 describe( 'ApiErrors', () => {
 
 	it( 'uses first error code as message', () => {

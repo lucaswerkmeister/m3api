@@ -2,7 +2,12 @@
 
 import { mixCombiningSessionInto } from '../../combine.js';
 import { ApiWarnings, Session, set } from '../../core.js';
-import { BaseTestSession, successfulResponse } from './core.test.js';
+import {
+	BaseTestSession,
+	successfulResponse,
+	singleGetSession as singleGetCoreSession,
+	sequentialGetSession as sequentialGetCoreSession,
+} from './core.test.js';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 chai.use( chaiAsPromised );
@@ -20,19 +25,9 @@ describe( 'CombiningSession', () => {
 	 * @return {Session}
 	 */
 	function singleGetSession( expectedParams, response_ = response ) {
-		expectedParams.format = 'json';
-		let called = false;
-		class TestSession extends BaseTestSession {
-			async internalGet( params ) {
-				expect( called, 'internalGet already called' ).to.be.false;
-				called = true;
-				expect( params ).to.eql( expectedParams );
-				return response_;
-			}
-		}
-		mixCombiningSessionInto( TestSession );
-
-		return new TestSession( 'en.wikipedia.org' );
+		const session = singleGetCoreSession( expectedParams, response_ );
+		mixCombiningSessionInto( Object.getPrototypeOf( session ).constructor );
+		return session;
 	}
 
 	describe( 'combines compatible requests', () => {
@@ -346,19 +341,9 @@ describe( 'CombiningSession', () => {
 	 * @return {Session}
 	 */
 	function sequentialGetSession( expectedCalls ) {
-		expectedCalls.reverse();
-		class TestSession extends BaseTestSession {
-			async internalGet( params ) {
-				expect( expectedCalls ).to.not.be.empty;
-				const [ { expectedParams, response } ] = expectedCalls.splice( -1 );
-				expectedParams.format = 'json';
-				expect( params ).to.eql( expectedParams );
-				return response;
-			}
-		}
-		mixCombiningSessionInto( TestSession );
-
-		return new TestSession( 'en.wikipedia.org' );
+		const session = sequentialGetCoreSession( expectedCalls );
+		mixCombiningSessionInto( Object.getPrototypeOf( session ).constructor );
+		return session;
 	}
 
 	describe( 'supports sequential requests', () => {
