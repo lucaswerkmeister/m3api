@@ -210,17 +210,10 @@ describe( 'Session', () => {
 	describe( 'request', () => {
 
 		it( 'throws on non-200 status', async () => {
-			class TestSession extends BaseTestSession {
-				async internalGet() {
-					return {
-						status: 502,
-						headers: {},
-						body: 'irrelevant',
-					};
-				}
-			}
-
-			const session = new TestSession( 'en.wikipedia.org' );
+			const session = singleGetSession( { action: 'query' }, {
+				status: 502,
+				body: 'irrelevant',
+			} );
 			await expect( session.request( { action: 'query' } ) )
 				.to.be.rejectedWith( '502' );
 		} );
@@ -301,17 +294,10 @@ describe( 'Session', () => {
 						warnCalled = true;
 					}
 
-					class TestSession extends BaseTestSession {
-						async internalGet() {
-							return {
-								status: 200,
-								headers: {},
-								body: { response: true },
-							};
-						}
-					}
-
-					const session = new TestSession( 'en.wikipedia.org' );
+					const session = sequentialGetSession( [
+						{ expectedParams: {}, response: { response: true } },
+						{ expectedParams: {}, response: { response: true } },
+					] );
 					await session.request( {}, { userAgent: undefined, warn } );
 					expect( warnCalled ).to.be.true;
 					await session.request( {}, { userAgent: undefined, warn } );
@@ -325,21 +311,11 @@ describe( 'Session', () => {
 						warnCalled = true;
 					}
 
-					class TestSession extends BaseTestSession {
-						async internalGet() {
-							return {
-								status: 200,
-								headers: {},
-								body: { response: true },
-							};
-						}
-					}
-
-					await new TestSession( 'en.wikipedia.org' )
+					await singleGetSession( {}, { response: true } )
 						.request( {}, { userAgent: undefined, warn } );
 					expect( warnCalled ).to.be.true;
 					warnCalled = false;
-					await new TestSession( 'en.wikipedia.org' )
+					await singleGetSession( {}, { response: true } )
 						.request( {}, { userAgent: undefined, warn } );
 					expect( warnCalled ).to.be.true;
 					warnCalled = false;
@@ -361,113 +337,56 @@ describe( 'Session', () => {
 			} );
 
 			it( 'default', async () => {
-				let call = 0;
-				class TestSession extends BaseTestSession {
-					async internalGet( params ) {
-						expect( params ).to.eql( { format: 'json' } );
-						switch ( ++call ) {
-							case 1:
-								return {
-									status: 200,
-									headers: { 'retry-after': '5' },
-									body: 'irrelevant',
-								};
-							case 2:
-								return {
-									status: 200,
-									headers: {},
-									body: { response: true },
-								};
-							default:
-								throw new Error( `Unexpected call #${call}` );
-						}
-					}
-				}
-
-				const session = new TestSession( 'en.wikipedia.org' );
+				const session = sequentialGetSession( [
+					{ expectedParams: {}, response: {
+						headers: { 'retry-after': '5' },
+						body: 'irrelevant',
+					} },
+					{ expectedParams: {}, response: { response: true } },
+				] );
 				const promise = session.request( {} );
 				clock.tickAsync( 5000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
-				expect( call ).to.equal( 2 );
 			} );
 
 			it( 'maxRetries 5 (actual retries 3)', async () => {
-				let call = 0;
-				class TestSession extends BaseTestSession {
-					async internalGet( params ) {
-						expect( params ).to.eql( { format: 'json' } );
-						switch ( ++call ) {
-							case 1:
-							case 2:
-							case 3:
-								return {
-									status: 200,
-									headers: { 'retry-after': '5' },
-									body: 'irrelevant',
-								};
-							case 4:
-								return {
-									status: 200,
-									headers: {},
-									body: { response: true },
-								};
-							default:
-								throw new Error( `Unexpected call #${call}` );
-						}
-					}
+				const calls = [];
+				for ( let i = 0; i < 3; i++ ) {
+					calls.push( { expectedParams: {}, response: {
+						headers: { 'retry-after': '5' },
+						body: 'irrelevant',
+					} } );
 				}
+				calls.push( { expectedParams: {}, response: { response: true } } );
+				const session = sequentialGetSession( calls );
 
-				const session = new TestSession( 'en.wikipedia.org' );
 				const promise = session.request( {}, { maxRetries: 5 } );
 				for ( let i = 0; i < 3; i++ ) {
 					clock.tickAsync( 5000 );
 				}
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
-				expect( call ).to.equal( 4 );
 			} );
 
 			it( 'disabled', async () => {
-				let called = false;
-				class TestSession extends BaseTestSession {
-					async internalGet( params ) {
-						expect( params ).to.eql( { format: 'json' } );
-						if ( called === false ) {
-							called = true;
-							return {
-								status: 200,
-								headers: { 'retry-after': '5' },
-								body: { response: true },
-							};
-						} else {
-							throw new Error( 'Unexpected additional call' );
-						}
-					}
-				}
-
-				const session = new TestSession( 'en.wikipedia.org', {}, {
-					maxRetries: 0,
+				const session = singleGetSession( {}, {
+					headers: { 'retry-after': '5' },
+					body: { response: true },
 				} );
-				const response = await session.request( {} );
+				const response = await session.request( {}, { maxRetries: 0 } );
 				expect( response ).to.eql( { response: true } );
-				expect( called ).to.equal( true );
 			} );
 
 		} );
 
 		it( 'keeps truncatedresult warning by default', async () => {
-			class TestSession extends BaseTestSession {
-				async internalGet() {
-					return successfulResponse( {
-						batchcomplete: true,
-						warnings: [
-							{ code: 'truncatedresult' },
-						],
-					} );
-				}
-			}
-			const session = new TestSession( 'en.wikipedia.org' );
+			const session = singleGetSession( {}, {
+				batchcomplete: true,
+				warnings: [
+					{ code: 'truncatedresult' },
+				],
+			} );
 			let called = false;
 			await session.request(
 				{},
@@ -483,17 +402,12 @@ describe( 'Session', () => {
 		} );
 
 		it( 'drops truncatedresult warning with dropTruncatedResultWarning=true', async () => {
-			class TestSession extends BaseTestSession {
-				async internalGet() {
-					return successfulResponse( {
-						batchcomplete: true,
-						warnings: [
-							{ code: 'truncatedresult' },
-						],
-					} );
-				}
-			}
-			const session = new TestSession( 'en.wikipedia.org' );
+			const session = singleGetSession( {}, {
+				batchcomplete: true,
+				warnings: [
+					{ code: 'truncatedresult' },
+				],
+			} );
 			await session.request(
 				{},
 				{
@@ -538,43 +452,36 @@ describe( 'Session', () => {
 					],
 				},
 			};
-			let call = 0;
-			class TestSession extends BaseTestSession {
-				async internalGet( params ) {
-					switch ( ++call ) {
-						case 1:
-							expect( params ).to.eql( {
-								action: 'query',
-								generator: 'allpages',
-								gaplimit: '1',
-								format: 'json',
-								formatversion: '2',
-							} );
-							return successfulResponse( firstResponse );
-						case 2:
-							expect( params ).to.eql( {
-								action: 'query',
-								generator: 'allpages',
-								gaplimit: '1',
-								gapcontinue: '!!',
-								continue: 'gapcontinue||',
-								format: 'json',
-								formatversion: '2',
-							} );
-							return successfulResponse( secondResponse );
-						default:
-							throw new Error( `Unexpected call #${call}` );
-					}
-				}
-			}
+			const session = sequentialGetSession( [
+				{
+					expectedParams: {
+						action: 'query',
+						generator: 'allpages',
+						gaplimit: '1',
+						format: 'json',
+						formatversion: '2',
+					},
+					response: firstResponse,
+				},
+				{
+					expectedParams: {
+						action: 'query',
+						generator: 'allpages',
+						gaplimit: '1',
+						gapcontinue: '!!',
+						continue: 'gapcontinue||',
+						format: 'json',
+						formatversion: '2',
+					},
+					response: secondResponse,
+				},
+			] );
 
-			const session = new TestSession( 'en.wikipedia.org', {
-				formatversion: 2,
-			} );
 			const params = {
 				action: 'query',
 				generator: 'allpages',
 				gaplimit: 1,
+				formatversion: '2',
 			};
 			let iteration = 0;
 			for await ( const response of session.requestAndContinue( params ) ) {
@@ -590,7 +497,6 @@ describe( 'Session', () => {
 				}
 			}
 
-			expect( call ).to.equal( 2 );
 			expect( iteration ).to.equal( 2 );
 		} );
 
@@ -708,6 +614,35 @@ describe( 'Session', () => {
 				},
 			};
 
+			const session = sequentialGetSession( [
+				{
+					expectedParams: {
+						action: 'query',
+						format: 'json',
+						formatversion: '2',
+					},
+					response: firstResponse,
+				},
+				{
+					expectedParams: {
+						action: 'query',
+						c: '1',
+						format: 'json',
+						formatversion: '2',
+					},
+					response: secondResponse,
+				},
+				{
+					expectedParams: {
+						action: 'query',
+						c: '2',
+						format: 'json',
+						formatversion: '2',
+					},
+					response: thirdResponse,
+				},
+			] );
+
 			const firstInitial = '1st initial';
 			const firstAccumulator = '1st accumulator';
 			const secondAccumulator = '2nd accumulator';
@@ -727,39 +662,6 @@ describe( 'Session', () => {
 						return thirdInitial;
 					default:
 						throw new Error( `Unexpected initial() call #${initialCall}` );
-				}
-			}
-
-			let getCall = 0;
-			class TestSession extends BaseTestSession {
-				async internalGet( params ) {
-					switch ( ++getCall ) {
-						case 1:
-							expect( params ).to.eql( {
-								action: 'query',
-								format: 'json',
-								formatversion: '2',
-							} );
-							return successfulResponse( firstResponse );
-						case 2:
-							expect( params ).to.eql( {
-								action: 'query',
-								c: '1',
-								format: 'json',
-								formatversion: '2',
-							} );
-							return successfulResponse( secondResponse );
-						case 3:
-							expect( params ).to.eql( {
-								action: 'query',
-								c: '2',
-								format: 'json',
-								formatversion: '2',
-							} );
-							return successfulResponse( thirdResponse );
-						default:
-							throw new Error( `Unexpected internalGet() call #${getCall}` );
-					}
 				}
 			}
 
@@ -784,10 +686,7 @@ describe( 'Session', () => {
 				}
 			}
 
-			const session = new TestSession( 'en.wikipedia.org', {
-				formatversion: 2,
-			} );
-			const params = { action: 'query' };
+			const params = { action: 'query', formatversion: 2 };
 			let iteration = 0;
 			for await ( const result of session.requestAndContinueReducingBatch(
 				params,
@@ -809,23 +708,17 @@ describe( 'Session', () => {
 
 			// allow an extra initial() call that won’t be used (just before continuation ends)
 			expect( initialCall, 'initial() call' ).to.be.oneOf( [ 2, 3 ] );
-			expect( getCall, 'internalGet() call' ).to.equal( 3 );
 			expect( reduceCall, 'reduce() call' ).to.equal( 3 );
 			expect( iteration, 'iteration' ).to.equal( 2 );
 		} );
 
 		it( 'drops truncatedresult warning by default', async () => {
-			class TestSession extends BaseTestSession {
-				async internalGet() {
-					return successfulResponse( {
-						batchcomplete: true,
-						warnings: [
-							{ code: 'truncatedresult' },
-						],
-					} );
-				}
-			}
-			const session = new TestSession( 'en.wikipedia.org' );
+			const session = singleGetSession( {}, {
+				batchcomplete: true,
+				warnings: [
+					{ code: 'truncatedresult' },
+				],
+			} );
 			await session.requestAndContinueReducingBatch(
 				{},
 				{ warn() {
@@ -836,17 +729,12 @@ describe( 'Session', () => {
 		} );
 
 		it( 'keeps truncatedresult warning with dropTruncatedResultWarning=false', async () => {
-			class TestSession extends BaseTestSession {
-				async internalGet() {
-					return successfulResponse( {
-						batchcomplete: true,
-						warnings: [
-							{ code: 'truncatedresult' },
-						],
-					} );
-				}
-			}
-			const session = new TestSession( 'en.wikipedia.org' );
+			const session = singleGetSession( {}, {
+				batchcomplete: true,
+				warnings: [
+					{ code: 'truncatedresult' },
+				],
+			} );
 			let called = false;
 			await session.requestAndContinueReducingBatch(
 				{},
