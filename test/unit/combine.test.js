@@ -4,8 +4,8 @@ import { mixCombiningSessionInto } from '../../combine.js';
 import { ApiWarnings, Session, set } from '../../core.js';
 import {
 	BaseTestSession,
-	singleGetSession as singleGetCoreSession,
-	sequentialGetSession as sequentialGetCoreSession,
+	singleRequestSession as singleRequestCoreSession,
+	sequentialRequestSession as sequentialRequestCoreSession,
 } from './core.test.js';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -16,15 +16,16 @@ describe( 'CombiningSession', () => {
 	const response = { response: true };
 
 	/**
-	 * Create a CombiningSession that expects a single internal GET.
+	 * Create a CombiningSession that expects a single internal request.
 	 *
 	 * @param {Object} expectedParams The expected parameters of the call.
 	 * For convenience, format='json' is added automatically.
 	 * @param {Object} [response_] The response object, default to `response`.
+	 * @param {string} [method] The expected method, 'GET' or 'POST'.
 	 * @return {Session}
 	 */
-	function singleGetSession( expectedParams, response_ = response ) {
-		const session = singleGetCoreSession( expectedParams, response_ );
+	function singleRequestSession( expectedParams, response_ = response, method = 'GET' ) {
+		const session = singleRequestCoreSession( expectedParams, response_, method );
 		mixCombiningSessionInto( Object.getPrototypeOf( session ).constructor );
 		return session;
 	}
@@ -32,7 +33,7 @@ describe( 'CombiningSession', () => {
 	describe( 'combines compatible requests', () => {
 
 		it( 'empty + nonempty', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				formatversion: '2',
 			} );
 			const promise1 = session.request( {} );
@@ -43,7 +44,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'nonempty + empty', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				formatversion: '2',
 			} );
 			const promise1 = session.request( { formatversion: 2 } );
@@ -54,7 +55,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'identical parameters', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				formatversion: '2',
 				errorformat: 'raw',
 			} );
@@ -66,7 +67,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'identical but swapped parameters', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				formatversion: '2',
 				errorformat: 'raw',
 			} );
@@ -78,7 +79,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'disjoint parameters', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				formatversion: '2',
 				errorformat: 'raw',
 			} );
@@ -90,7 +91,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'differently typed scalar parameters', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				two: '2',
 				yes: '',
 			} );
@@ -102,7 +103,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'set parameters', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				meta: 'siteinfo|userinfo',
 			} );
 			const promise1 = session.request( { meta: set( 'siteinfo' ) } );
@@ -113,7 +114,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'set + nonempty set', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				meta: 'siteinfo',
 			} );
 			const promise1 = session.request( { meta: set() } );
@@ -124,7 +125,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'nonempty set + empty set', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				meta: 'siteinfo',
 			} );
 			const promise1 = session.request( { meta: set( 'siteinfo' ) } );
@@ -135,7 +136,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'longer sets', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				alpha: 'a|b|c|d|e|f|g|h',
 			} );
 			const promise1 = session.request( { alpha: set( 'a', 'b', 'c', 'd', 'e' ) } );
@@ -146,7 +147,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'sets with differently typed scalars', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				two: '2',
 			} );
 			const promise1 = session.request( { two: set( 2 ) } );
@@ -157,7 +158,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'sets from more than two requests', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				meta: 'siteinfo|userinfo|tokens',
 				siprop: 'general|statistics',
 				uiprop: 'editcount',
@@ -217,7 +218,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'requestAndContinue + requestAndContinue', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				list: 'allpages|allrevisions',
 			} );
 			const promise1 = session.requestAndContinue( { list: set( 'allpages' ) } ).next();
@@ -231,7 +232,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'requestAndContinue + request', async () => {
-			const session = singleGetSession( {
+			const session = singleRequestSession( {
 				meta: 'siteinfo',
 				list: 'allpages',
 			} );
@@ -291,7 +292,7 @@ describe( 'CombiningSession', () => {
 				called3 = true;
 				expect( warnings_ ).to.equal( warnings );
 			}
-			const session = singleGetSession( params, response );
+			const session = singleRequestSession( params, response );
 			const promise1 = session.request( params, { warn: warn1 } );
 			const promise2 = session.request( params, { warn: warn2 } );
 			const promise3 = session.request( params, { warn: warn3 } );
@@ -313,7 +314,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'to session default handler', async () => {
-			const session = singleGetSession( {}, {
+			const session = singleRequestSession( {}, {
 				warnings: {
 					main: { warnings: 'Subscribe to…' },
 					revisions: { warnings: 'Because…' },
@@ -332,15 +333,16 @@ describe( 'CombiningSession', () => {
 	} );
 
 	/**
-	 * Create a CombiningSession that expects a series of GETs.
+	 * Create a CombiningSession that expects a series of requests.
 	 *
 	 * @param {Object[]} expectedCalls The expected calls.
-	 * Each call is an object with expectedParams and response.
-	 * format='json' is added to the expectedParams automatically.
+	 * Each call is an object with expectedParams, response, and/or method;
+	 * response defaults to an empty object,
+	 * not the outer `response` as in {@link singleRequestSession}.
 	 * @return {Session}
 	 */
-	function sequentialGetSession( expectedCalls ) {
-		const session = sequentialGetCoreSession( expectedCalls );
+	function sequentialRequestSession( expectedCalls ) {
+		const session = sequentialRequestCoreSession( expectedCalls );
 		mixCombiningSessionInto( Object.getPrototypeOf( session ).constructor );
 		return session;
 	}
@@ -351,7 +353,7 @@ describe( 'CombiningSession', () => {
 			const expectedParams = {
 				formatversion: '2',
 			};
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams, response },
 				{ expectedParams, response },
 			] );
@@ -364,7 +366,7 @@ describe( 'CombiningSession', () => {
 			const response1 = { foo: 'FOO' };
 			const params2 = { action: 'bar' };
 			const response2 = { bar: 'BAR' };
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams: params1, response: response1 },
 				{ expectedParams: params2, response: response2 },
 			] );
@@ -381,7 +383,7 @@ describe( 'CombiningSession', () => {
 			const response1 = { foo: 'FOO' };
 			const params2 = { action: 'bar' };
 			const response2 = { bar: 'BAR' };
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams: params1, response: response1 },
 				{ expectedParams: params2, response: response2 },
 			] );
@@ -398,7 +400,7 @@ describe( 'CombiningSession', () => {
 			const params2 = { action: set( 'foo' ) };
 			const response2 = { foo: 'FOO' };
 			const expectedParams = params1; // same for both
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams, response: response1 },
 				{ expectedParams, response: response2 },
 			] );
@@ -415,7 +417,7 @@ describe( 'CombiningSession', () => {
 			const params2 = { action: [ 'foo' ] };
 			const response2 = { foo: 'FOO' };
 			const expectedParams = params1; // same for both
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams, response: response1 },
 				{ expectedParams, response: response2 },
 			] );
@@ -432,7 +434,7 @@ describe( 'CombiningSession', () => {
 			const params2 = { action: set( 'foo' ) };
 			const response2 = { foo: 'FOO' };
 			const expectedParams = { action: 'foo' }; // same for both
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams, response: response1 },
 				{ expectedParams, response: response2 },
 			] );
@@ -449,7 +451,7 @@ describe( 'CombiningSession', () => {
 			const params2 = { action: [ 'foo' ] };
 			const response2 = { foo: 'FOO' };
 			const expectedParams = { action: 'foo' }; // same for both
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams, response: response1 },
 				{ expectedParams, response: response2 },
 			] );
@@ -465,7 +467,7 @@ describe( 'CombiningSession', () => {
 			const response1 = { redirect: true };
 			const params2 = { redirects: false };
 			const response2 = { redirect: false };
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams: { redirects: '' }, response: response1 },
 				{ expectedParams: {}, response: response2 },
 			] );
@@ -481,7 +483,7 @@ describe( 'CombiningSession', () => {
 			const response1 = { statistics: 1 };
 			const params2 = { siprop: undefined };
 			const response2 = { statistics: 0 };
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams: params1, response: response1 },
 				{ expectedParams: {}, response: response2 },
 			] );
@@ -497,7 +499,7 @@ describe( 'CombiningSession', () => {
 			const response1 = { statistics: 1 };
 			const params2 = { siprop: undefined };
 			const response2 = { statistics: 0 };
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams: { siprop: 'statistics' }, response: response1 },
 				{ expectedParams: {}, response: response2 },
 			] );
@@ -515,7 +517,7 @@ describe( 'CombiningSession', () => {
 					const response1 = { kind: 'first' };
 					const params2 = { [ second ]: '' };
 					const response2 = { kind: 'second' };
-					const session = sequentialGetSession( [
+					const session = sequentialRequestSession( [
 						{ expectedParams: params1, response: response1 },
 						{ expectedParams: params2, response: response2 },
 					] );
@@ -535,7 +537,7 @@ describe( 'CombiningSession', () => {
 					const response1 = { kind: 'first' };
 					const params2 = { [ second ]: '' };
 					const response2 = { kind: 'second' };
-					const session = sequentialGetSession( [
+					const session = sequentialRequestSession( [
 						{ expectedParams: params1, response: response1 },
 						{ expectedParams: params2, response: response2 },
 					] );
@@ -553,7 +555,7 @@ describe( 'CombiningSession', () => {
 			const response1 = { batchcomplete: true };
 			const params2 = { continue: '' };
 			const response2 = { batchcomplete: false };
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{ expectedParams: params1, response: response1 },
 				{ expectedParams: params2, response: response2 },
 			] );
@@ -565,19 +567,31 @@ describe( 'CombiningSession', () => {
 		} );
 
 		describe( 'different options', () => {
+			it( 'method', async () => {
+				const params = { action: 'foo' };
+				const response = { foo: 'foo' };
+				const session = sequentialRequestSession( [
+					{ expectedParams: params, response, method: 'GET' },
+					{ expectedParams: params, response, method: 'POST' },
+				] );
+				const promise1 = session.request( params, { method: 'GET' } );
+				const promise2 = session.request( params, { method: 'POST' } );
+				const responses = await Promise.all( [ promise1, promise2 ] );
+				expect( responses[ 0 ] ).to.equal( response );
+				expect( responses[ 1 ] ).to.equal( response );
+			} );
+
 			for ( const [ optionName, optionA, optionB ] of [
-				[ 'method', 'GET', 'POST' ],
 				[ 'maxRetries', 0, 1 ],
 				[ 'userAgent', 'foo', 'bar' ],
 			] ) {
 				it( optionName, async () => {
 					const params = { action: 'foo' };
 					const response = { foo: 'foo' };
-					const session = sequentialGetSession( [
+					const session = sequentialRequestSession( [
 						{ expectedParams: params, response },
 						{ expectedParams: params, response },
 					] );
-					session.internalPost = ( _, params ) => session.internalGet( params );
 					const promise1 = session.request( params, { [ optionName ]: optionA } );
 					const promise2 = session.request( params, { [ optionName ]: optionB } );
 					const responses = await Promise.all( [ promise1, promise2 ] );

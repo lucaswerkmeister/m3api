@@ -77,21 +77,30 @@ export function makeResponse( bodyOrResponse ) {
 }
 
 /**
- * Create a Session that expects a single internal GET.
+ * Create a Session that expects a single internal request.
  *
- * @param {Object} expectedParams The expected parameters of the call.
+ * @param {Object} [expectedParams] The expected parameters of the call.
  * For convenience, format='json' is added automatically.
- * @param {Object} response A response object or just its body, see {@link makeResponse}.
+ * @param {Object} [response] A response object or just its body, see {@link makeResponse}.
+ * @param {string} [method] The expected method, 'GET' or 'POST'.
  * @return {Session}
  */
-export function singleGetSession( expectedParams, response ) {
+export function singleRequestSession( expectedParams = {}, response = {}, method = 'GET' ) {
 	expectedParams.format = 'json';
 	let called = false;
 	class TestSession extends BaseTestSession {
 		async internalGet( params ) {
+			expect( 'GET', `${method} request expected` ).to.equal( method );
 			expect( called, 'internalGet already called' ).to.be.false;
 			called = true;
 			expect( params ).to.eql( expectedParams );
+			return makeResponse( response );
+		}
+		async internalPost( urlParams, bodyParams ) {
+			expect( 'POST', `${method} request expected` ).to.equal( method );
+			expect( called, 'internalPost already called' ).to.be.false;
+			called = true;
+			expect( bodyParams ).to.eql( expectedParams );
 			return makeResponse( response );
 		}
 	}
@@ -100,21 +109,38 @@ export function singleGetSession( expectedParams, response ) {
 }
 
 /**
- * Create a Session that expects a series of GETs.
+ * Create a Session that expects a series of requests.
  *
  * @param {Object[]} expectedCalls The expected calls.
- * Each call is an object with expectedParams and response (object or body).
- * format='json' is added to the expectedParams automatically.
+ * Each call is an object with expectedParams, response, and method;
+ * each is optional and has the same meaning and default as in {@link singleRequestSession}.
  * @return {Session}
  */
-export function sequentialGetSession( expectedCalls ) {
+export function sequentialRequestSession( expectedCalls ) {
 	expectedCalls.reverse();
 	class TestSession extends BaseTestSession {
 		async internalGet( params ) {
 			expect( expectedCalls ).to.not.be.empty;
-			const [ { expectedParams, response } ] = expectedCalls.splice( -1 );
+			const [ {
+				expectedParams = {},
+				response = {},
+				method = 'GET',
+			} ] = expectedCalls.splice( -1 );
+			expect( 'GET', `${method} request expected` ).to.equal( method );
 			expectedParams.format = 'json';
 			expect( params ).to.eql( expectedParams );
+			return makeResponse( response );
+		}
+		async internalPost( urlParams, bodyParams ) {
+			expect( expectedCalls ).to.not.be.empty;
+			const [ {
+				expectedParams = {},
+				response = {},
+				method = 'GET',
+			} ] = expectedCalls.splice( -1 );
+			expect( 'POST', `${method} request expected` ).to.equal( method );
+			expectedParams.format = 'json';
+			expect( bodyParams ).to.eql( expectedParams );
 			return makeResponse( response );
 		}
 	}
@@ -210,7 +236,7 @@ describe( 'Session', () => {
 	describe( 'request', () => {
 
 		it( 'throws on non-200 status', async () => {
-			const session = singleGetSession( { action: 'query' }, {
+			const session = singleRequestSession( { action: 'query' }, {
 				status: 502,
 				body: 'irrelevant',
 			} );
@@ -294,9 +320,9 @@ describe( 'Session', () => {
 						warnCalled = true;
 					}
 
-					const session = sequentialGetSession( [
-						{ expectedParams: {}, response: { response: true } },
-						{ expectedParams: {}, response: { response: true } },
+					const session = sequentialRequestSession( [
+						{ response: { response: true } },
+						{ response: { response: true } },
 					] );
 					await session.request( {}, { userAgent: undefined, warn } );
 					expect( warnCalled ).to.be.true;
@@ -311,11 +337,11 @@ describe( 'Session', () => {
 						warnCalled = true;
 					}
 
-					await singleGetSession( {}, { response: true } )
+					await singleRequestSession( {}, { response: true } )
 						.request( {}, { userAgent: undefined, warn } );
 					expect( warnCalled ).to.be.true;
 					warnCalled = false;
-					await singleGetSession( {}, { response: true } )
+					await singleRequestSession( {}, { response: true } )
 						.request( {}, { userAgent: undefined, warn } );
 					expect( warnCalled ).to.be.true;
 					warnCalled = false;
@@ -337,12 +363,12 @@ describe( 'Session', () => {
 			} );
 
 			it( 'default', async () => {
-				const session = sequentialGetSession( [
-					{ expectedParams: {}, response: {
+				const session = sequentialRequestSession( [
+					{ response: {
 						headers: { 'retry-after': '5' },
 						body: 'irrelevant',
 					} },
-					{ expectedParams: {}, response: { response: true } },
+					{ response: { response: true } },
 				] );
 				const promise = session.request( {} );
 				clock.tickAsync( 5000 );
@@ -353,13 +379,13 @@ describe( 'Session', () => {
 			it( 'maxRetries 5 (actual retries 3)', async () => {
 				const calls = [];
 				for ( let i = 0; i < 3; i++ ) {
-					calls.push( { expectedParams: {}, response: {
+					calls.push( { response: {
 						headers: { 'retry-after': '5' },
 						body: 'irrelevant',
 					} } );
 				}
-				calls.push( { expectedParams: {}, response: { response: true } } );
-				const session = sequentialGetSession( calls );
+				calls.push( { response: { response: true } } );
+				const session = sequentialRequestSession( calls );
 
 				const promise = session.request( {}, { maxRetries: 5 } );
 				for ( let i = 0; i < 3; i++ ) {
@@ -370,7 +396,7 @@ describe( 'Session', () => {
 			} );
 
 			it( 'disabled', async () => {
-				const session = singleGetSession( {}, {
+				const session = singleRequestSession( {}, {
 					headers: { 'retry-after': '5' },
 					body: { response: true },
 				} );
@@ -381,7 +407,7 @@ describe( 'Session', () => {
 		} );
 
 		it( 'keeps truncatedresult warning by default', async () => {
-			const session = singleGetSession( {}, {
+			const session = singleRequestSession( {}, {
 				batchcomplete: true,
 				warnings: [
 					{ code: 'truncatedresult' },
@@ -402,7 +428,7 @@ describe( 'Session', () => {
 		} );
 
 		it( 'drops truncatedresult warning with dropTruncatedResultWarning=true', async () => {
-			const session = singleGetSession( {}, {
+			const session = singleRequestSession( {}, {
 				batchcomplete: true,
 				warnings: [
 					{ code: 'truncatedresult' },
@@ -452,7 +478,7 @@ describe( 'Session', () => {
 					],
 				},
 			};
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{
 					expectedParams: {
 						action: 'query',
@@ -525,44 +551,38 @@ describe( 'Session', () => {
 					},
 				],
 			};
-			let call = 0;
-			class TestSession extends BaseTestSession {
-				async internalPost( urlParams, bodyParams ) {
-					expect( urlParams ).to.eql( {} );
-					switch ( ++call ) {
-						case 1:
-							expect( bodyParams ).to.eql( {
-								action: 'purge',
-								generator: 'allpages',
-								gaplimit: '1',
-								format: 'json',
-								formatversion: '2',
-							} );
-							return successfulResponse( firstResponse );
-						case 2:
-							expect( bodyParams ).to.eql( {
-								action: 'purge',
-								generator: 'allpages',
-								gaplimit: '1',
-								gapcontinue: '!!',
-								continue: 'gapcontinue||',
-								format: 'json',
-								formatversion: '2',
-							} );
-							return successfulResponse( secondResponse );
-						default:
-							throw new Error( `Unexpected call #${call}` );
-					}
-				}
-			}
+			const session = sequentialRequestSession( [
+				{
+					expectedParams: {
+						action: 'purge',
+						generator: 'allpages',
+						gaplimit: '1',
+						format: 'json',
+						formatversion: '2',
+					},
+					response: firstResponse,
+					method: 'POST',
+				},
+				{
+					expectedParams: {
+						action: 'purge',
+						generator: 'allpages',
+						gaplimit: '1',
+						gapcontinue: '!!',
+						continue: 'gapcontinue||',
+						format: 'json',
+						formatversion: '2',
+					},
+					response: secondResponse,
+					method: 'POST',
+				},
+			] );
 
-			const session = new TestSession( 'en.wikipedia.org', {
-				formatversion: 2,
-			} );
 			const params = {
 				action: 'purge',
 				generator: 'allpages',
 				gaplimit: 1,
+				formatversion: 2,
 			};
 			let iteration = 0;
 			for await ( const response of session.requestAndContinue( params, { method: 'POST' } ) ) {
@@ -579,7 +599,6 @@ describe( 'Session', () => {
 				}
 			}
 
-			expect( call ).to.equal( 2 );
 			expect( iteration ).to.equal( 2 );
 		} );
 
@@ -614,7 +633,7 @@ describe( 'Session', () => {
 				},
 			};
 
-			const session = sequentialGetSession( [
+			const session = sequentialRequestSession( [
 				{
 					expectedParams: {
 						action: 'query',
@@ -713,7 +732,7 @@ describe( 'Session', () => {
 		} );
 
 		it( 'drops truncatedresult warning by default', async () => {
-			const session = singleGetSession( {}, {
+			const session = singleRequestSession( {}, {
 				batchcomplete: true,
 				warnings: [
 					{ code: 'truncatedresult' },
@@ -729,7 +748,7 @@ describe( 'Session', () => {
 		} );
 
 		it( 'keeps truncatedresult warning with dropTruncatedResultWarning=false', async () => {
-			const session = singleGetSession( {}, {
+			const session = singleRequestSession( {}, {
 				batchcomplete: true,
 				warnings: [
 					{ code: 'truncatedresult' },
