@@ -65,11 +65,11 @@ class CombiningSession extends Session {
 
 	/**
 	 * @private
-	 * Try to combine the two sets of parameters for the given session.
+	 * Try to combine the two sets of parameters.
 	 *
 	 * @param {Object} paramsA The first set of params. (Not modified.)
 	 * @param {Object} paramsB The other set of params. (Not modified.)
-	 * @param {Object|null} A new set of combined params, if possible, else null.
+	 * @return {Object|null} A new set of combined params, if possible, else null.
 	 */
 	combineParams( paramsA, paramsB ) {
 		// never combine generator/continue with titles/pageids/revids
