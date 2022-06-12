@@ -599,6 +599,14 @@ class Session {
 			}
 		}
 
+		if ( tokenParams !== null && errors.some( ( { code } ) => code === 'badtoken' ) ) {
+			this.tokens.clear();
+			retryPromise = retryIfBefore( 0 /* no delay */ );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
 		if ( errors.length > 0 ) {
 			throw new ApiErrors( errors );
 		}

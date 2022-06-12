@@ -365,39 +365,119 @@ describe( 'Session', () => {
 			it( 'uses retry options for token request', async () => {
 				const clock = FakeTimers.install();
 				clock.tickAsync( 1000 ); // just so it doesn’t start at 0
-				after( () => {
+
+				try {
+					const expectedParams = {
+						action: 'query',
+						meta: 'tokens',
+						type: 'csrf',
+					};
+					const session = sequentialRequestSession( [
+						{ // retry this one
+							expectedParams,
+							response: { error: { code: 'maxlag' } },
+						},
+						{ // retry this one
+							expectedParams,
+							response: { error: { code: 'readonly' } },
+						},
+						{ // don’t retry this one, exceeds maxRetriesSeconds
+							expectedParams,
+							response: { error: { code: 'maxlag' } },
+						},
+					] );
+					const promise = session.request( {}, {
+						maxRetriesSeconds: 5,
+						retryAfterMaxlagSeconds: 2,
+						retryAfterReadonlySeconds: 3,
+						tokenType: 'csrf',
+					} );
+					clock.tickAsync( 5000 );
+					await expect( promise )
+						.to.be.rejectedWith( ApiErrors );
+				} finally {
 					clock.uninstall();
 					expect( clock.countTimers() ).to.equal( 0 );
+				}
+			} );
+
+			describe( 'badtoken error', () => {
+
+				it( 'discards tokens and retries with maxRetriesSeconds > 0', async () => {
+					const session = sequentialRequestSession( [
+						{
+							expectedParams: {
+								action: 'edit',
+								token: 'badtoken+\\',
+							},
+							response: { errors: [ { code: 'badtoken' } ] },
+							method: 'POST',
+						},
+						{
+							expectedParams: {
+								action: 'query',
+								meta: 'tokens',
+								type: 'csrf',
+							},
+							response: { query: { tokens: { csrftoken: 'csrftoken+\\' } } },
+						},
+						{
+							expectedParams: {
+								action: 'edit',
+								token: 'csrftoken+\\',
+							},
+							response: { edit: true },
+							method: 'POST',
+						},
+					] );
+					session.tokens.set( 'csrf', 'badtoken+\\' );
+					session.tokens.set( 'other', 'othertoken+\\' );
+
+					const response = await session.request(
+						{ action: 'edit' },
+						{ method: 'POST', tokenType: 'csrf' },
+					);
+					expect( response ).to.eql( { edit: true } );
+					expect( session.tokens ).not.to.have.keys( 'other' );
 				} );
 
-				const expectedParams = {
-					action: 'query',
-					meta: 'tokens',
-					type: 'csrf',
-				};
-				const session = sequentialRequestSession( [
-					{ // retry this one
-						expectedParams,
-						response: { error: { code: 'maxlag' } },
-					},
-					{ // retry this one
-						expectedParams,
-						response: { error: { code: 'readonly' } },
-					},
-					{ // don’t retry this one, exceeds maxRetriesSeconds
-						expectedParams,
-						response: { error: { code: 'maxlag' } },
-					},
-				] );
-				const promise = session.request( {}, {
-					maxRetriesSeconds: 5,
-					retryAfterMaxlagSeconds: 2,
-					retryAfterReadonlySeconds: 3,
-					tokenType: 'csrf',
+				it( 'discards tokens but does not retry with maxRetriesSeconds = 0', async () => {
+					const session = singleRequestSession(
+						{
+							action: 'edit',
+							token: 'badtoken+\\',
+						},
+						{ errors: [ { code: 'badtoken' } ] },
+						'POST',
+					);
+					session.tokens.set( 'csrf', 'badtoken+\\' );
+					session.tokens.set( 'other', 'othertoken+\\' );
+
+					await expect( session.request(
+						{ action: 'edit' },
+						{ method: 'POST', tokenType: 'csrf', maxRetriesSeconds: 0 },
+					) ).to.be.rejectedWith( 'badtoken' );
+					expect( session.tokens ).to.be.empty;
 				} );
-				clock.tickAsync( 5000 );
-				await expect( promise )
-					.to.be.rejectedWith( ApiErrors );
+
+				it( 'does nothing special if token specified manually', async () => {
+					const session = singleRequestSession(
+						{
+							action: 'edit',
+							token: 'customtoken+\\',
+						},
+						{ errors: [ { code: 'badtoken' } ] },
+						'POST',
+					);
+					session.tokens.set( 'csrf', 'csrftoken+\\' );
+
+					await expect( session.request( {
+						action: 'edit',
+						token: 'customtoken+\\',
+					}, { method: 'POST' } ) ).to.be.rejectedWith( 'badtoken' );
+					expect( session.tokens ).not.to.be.empty; // not cleared
+				} );
+
 			} );
 
 		} );
