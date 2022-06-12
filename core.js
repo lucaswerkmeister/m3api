@@ -1,10 +1,13 @@
 /* eslint no-unused-vars: [ "error", { "args": "none" } ] */
 // Session has abstract methods with parameters only used in subclasses
 
+/**
+ * @private
+ */
 const DEFAULT_OPTIONS = {
 	method: 'GET',
 	maxRetries: 1,
-	warn: console.warn, // copied in combine.js
+	warn: console.warn,
 	dropTruncatedResultWarning: false,
 };
 
@@ -483,6 +486,7 @@ function set( ...elements ) {
 }
 
 export {
+	DEFAULT_OPTIONS,
 	ApiErrors,
 	ApiWarnings,
 	DefaultUserAgentWarning,

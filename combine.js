@@ -1,9 +1,5 @@
 /* eslint-disable */
-import { Session } from './core.js';
-
-const DEFAULT_OPTIONS = {
-	warn: console.warn, // copied from core.js
-};
+import { DEFAULT_OPTIONS, Session } from './core.js';
 
 class CombiningSession extends Session {
 
