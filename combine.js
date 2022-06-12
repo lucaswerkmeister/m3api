@@ -38,24 +38,16 @@ class CombiningSession extends Session {
 	 * @return {Object|null} requestA (modified) if the requests are compatible, else null.
 	 */
 	combineRequests( requestA, requestB ) {
-		const { warn: warnA, ...optionsA } = requestA.options,
-			{ warn: warnB, ...optionsB } = requestB.options;
-		if ( JSON.stringify( optionsA ) !== JSON.stringify( optionsB ) ){
-			return null;
-		}
 		const combinedParams = this.combineParams( requestA.params, requestB.params );
 		if ( combinedParams === null ) {
 			return null;
 		}
+		const combinedOptions = this.combineOptions( requestA.options, requestB.options );
+		if ( combinedOptions === null ) {
+			return null;
+		}
 		requestA.params = combinedParams;
-		requestA.options = {
-			warn: ( ...args ) => {
-				( warnA || this.defaultOptions.warn || DEFAULT_OPTIONS.warn )( ...args );
-				// `return` so it’s a tail call :)
-				return ( warnB || this.defaultOptions.warn || DEFAULT_OPTIONS.warn )( ...args );
-			},
-			...optionsA,
-		};
+		requestA.options = combinedOptions;
 		return requestA;
 	}
 
@@ -112,12 +104,66 @@ class CombiningSession extends Session {
 		return params;
 	}
 
+	/**
+	 * @private
+	 * Try to combine the two sets of options.
+	 *
+	 * @param {Object} optionsA The first set of options. (Not modified.)
+	 * @param {Object} optionsB The other set of options. (Not modified.)
+	 * @return {Object|null} A new set of combined options, if possible, else null.
+	 */
+	combineOptions( optionsA, optionsB ) {
+		const defaultOptions = { ...DEFAULT_OPTIONS, ...this.defaultOptions };
+		const isDefaultOption = ( key, value ) => defaultOptions[ key ] === value;
+
+		const {
+			warn: warnA = defaultOptions.warn,
+			...otherOptionsA
+		} = optionsA;
+		const {
+			warn: warnB = defaultOptions.warn,
+			...otherOptionsB
+		} = optionsB;
+		const options = {
+			warn: ( ...args ) => {
+				warnA( ...args );
+				// `return` so it’s a tail call :)
+				return warnB( ...args );
+			},
+		};
+
+		for ( const [ key, optionB ] of Object.entries( otherOptionsB ) ) {
+			if ( Object.prototype.hasOwnProperty.call( otherOptionsA, key ) ) {
+				const optionA = otherOptionsA[ key ];
+				if ( optionA !== optionB ) {
+					return null;
+				}
+			} else {
+				if ( !isDefaultOption( key, optionB ) ) {
+					return null;
+				}
+			}
+			options[ key ] = optionB;
+		}
+		for ( const [ key, optionA ] of Object.entries( otherOptionsA ) ) {
+			if ( !Object.prototype.hasOwnProperty.call( otherOptionsB, key ) ) {
+				if ( !isDefaultOption( key, optionA ) ) {
+					return null;
+				}
+			}
+			options[ key ] = optionA;
+		}
+
+		return options;
+	}
+
 }
 
 function mixCombiningSessionInto( otherClass ) {
 	otherClass.prototype.request = CombiningSession.prototype.request;
 	otherClass.prototype.combineRequests = CombiningSession.prototype.combineRequests;
 	otherClass.prototype.combineParams = CombiningSession.prototype.combineParams;
+	otherClass.prototype.combineOptions = CombiningSession.prototype.combineOptions;
 }
 
 export {
