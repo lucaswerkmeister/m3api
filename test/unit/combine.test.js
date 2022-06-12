@@ -6,7 +6,7 @@ import {
 	BaseTestSession,
 	singleRequestSession as singleRequestCoreSession,
 	sequentialRequestSession as sequentialRequestCoreSession,
-} from './core.test.js';
+} from './sessions.js';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 chai.use( chaiAsPromised );
