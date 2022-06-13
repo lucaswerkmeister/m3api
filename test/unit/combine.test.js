@@ -358,6 +358,26 @@ describe( 'CombiningSession', () => {
 			expect( call ).to.equal( 2 );
 		} );
 
+		it( 'drops truncated result warnings when specified', async () => {
+			const response = {
+				warnings: [ { code: 'truncatedresult' } ],
+			};
+			const session = singleRequestSession( {}, response );
+			let called = false;
+			function warn( warnings ) {
+				expect( called, 'warn already called' ).to.be.false;
+				called = true;
+				expect( warnings ).to.be.instanceof( ApiWarnings );
+				expect( warnings.warnings ).to.eql( [ { code: 'truncatedresult' } ] );
+			}
+			const promise1 = session.request( {}, { warn } );
+			const promise2 = session.request( {}, { dropTruncatedResultWarning: true } );
+			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+			expect( response1 ).to.equal( response );
+			expect( response2 ).to.equal( response );
+			expect( called ).to.be.true;
+		} );
+
 	} );
 
 	/**

@@ -1,5 +1,9 @@
 /* eslint-disable */
-import { DEFAULT_OPTIONS, Session } from './core.js';
+import {
+	DEFAULT_OPTIONS,
+	Session,
+	makeWarnDroppingTruncatedResultWarning,
+} from './core.js';
 
 class CombiningSession extends Session {
 
@@ -118,18 +122,23 @@ class CombiningSession extends Session {
 
 		const {
 			warn: warnA = defaultOptions.warn,
+			dropTruncatedResultWarning: dtrwA = defaultOptions.dropTruncatedResultWarning,
 			...otherOptionsA
 		} = optionsA;
 		const {
 			warn: warnB = defaultOptions.warn,
+			dropTruncatedResultWarning: dtrwB = defaultOptions.dropTruncatedResultWarning,
 			...otherOptionsB
 		} = optionsB;
+		const realWarnA = dtrwA ? makeWarnDroppingTruncatedResultWarning( warnA ) : warnA;
+		const realWarnB = dtrwB ? makeWarnDroppingTruncatedResultWarning( warnB ) : warnB;
 		const options = {
 			warn: ( ...args ) => {
-				warnA( ...args );
+				realWarnA( ...args );
 				// `return` so it’s a tail call :)
-				return warnB( ...args );
+				return realWarnB( ...args );
 			},
+			dropTruncatedResultWarning: false,
 		};
 
 		for ( const [ key, optionB ] of Object.entries( otherOptionsB ) ) {
