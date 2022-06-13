@@ -35,10 +35,12 @@ function splitPostParameters( params ) {
 
 /**
  * @private
+ * Return whether the given warning is *not* a truncatedresult warning.
+ *
  * @param {Object} warning
  * @return {boolean}
  */
-function isTruncatedResultWarning( warning ) {
+function notTruncatedResultWarning( warning ) {
 	return warning.code ?
 		warning.code !== 'truncatedresult' :
 		!TRUNCATED_RESULT.test( warning.warnings || warning[ '*' ] );
@@ -98,7 +100,7 @@ class ApiWarnings extends Error {
 function makeWarnDroppingTruncatedResultWarning( warn ) {
 	return function ( error ) {
 		if ( error instanceof ApiWarnings ) {
-			const warnings = error.warnings.filter( isTruncatedResultWarning );
+			const warnings = error.warnings.filter( notTruncatedResultWarning );
 			if ( warnings.length > 0 ) {
 				return warn( warnings.length === error.warnings.length ?
 					error :
