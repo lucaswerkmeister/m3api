@@ -47,6 +47,23 @@ function notTruncatedResultWarning( warning ) {
 }
 
 /**
+ * @private
+ * Return the errors of a response (if any).
+ *
+ * @param {Object} response
+ * @return {Array.<Object>}
+ */
+function responseErrors( response ) {
+	if ( 'error' in response ) {
+		return [ response.error ];
+	}
+	if ( 'errors' in response ) {
+		return response.errors;
+	}
+	return [];
+}
+
+/**
  * An Error wrapping one or more API errors.
  */
 class ApiErrors extends Error {
@@ -229,7 +246,6 @@ class Session {
 			...params,
 			format: 'json',
 		} ), fullUserAgent, retryUntil );
-		this.throwErrors( response );
 		this.handleWarnings( response, warn, dropTruncatedResultWarning );
 		return response;
 	}
@@ -406,6 +422,11 @@ class Session {
 			throw new Error( `API request returned non-200 HTTP status code: ${status}` );
 		}
 
+		const errors = responseErrors( body );
+		if ( errors.length > 0 ) {
+			throw new ApiErrors( errors );
+		}
+
 		return body;
 	}
 
@@ -436,20 +457,6 @@ class Session {
 	 */
 	internalPost( urlParams, bodyParams, userAgent ) {
 		throw new Error( 'Abstract method internalPost not implemented!' );
-	}
-
-	/**
-	 * @private
-	 * @param {Object} response
-	 * @throws {ApiErrors}
-	 */
-	throwErrors( response ) {
-		if ( 'error' in response ) {
-			throw new ApiErrors( [ response.error ] );
-		}
-		if ( 'errors' in response ) {
-			throw new ApiErrors( response.errors );
-		}
 	}
 
 	/**
