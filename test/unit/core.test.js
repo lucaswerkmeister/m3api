@@ -34,8 +34,6 @@ describe( 'ApiErrors', () => {
 
 describe( 'Session', () => {
 
-	const session = new BaseTestSession( 'en.wikipedia.org' );
-
 	describe( 'apiUrl', () => {
 
 		it( 'full URL', () => {
@@ -50,59 +48,39 @@ describe( 'Session', () => {
 
 	} );
 
-	describe( 'transformParamValue', () => {
-		for ( const [ value, expected ] of [
-			[ 'a string', 'a string' ],
-			[ 1, '1' ],
-			[ 0, '0' ],
-			[ [ 'an', 'array' ], 'an|array' ],
-			[ [], '' ],
-			[ [ 'an', 'array', 'with', '|' ], '\x1fan\x1farray\x1fwith\x1f|' ],
-			[ new Set( [ 'a', 'set' ] ), 'a|set' ],
-			[ new Set(), '' ],
-			[ new Set( [ 'a', 'set', 'with', '|' ] ), '\x1fa\x1fset\x1fwith\x1f|' ],
-			[ true, '' ],
-			[ false, undefined ],
-			[ null, undefined ],
-			[ undefined, undefined ],
-		] ) {
-			it( `${value} => ${expected}`, () => {
-				const actual = session.transformParamValue( value );
-				expect( actual ).to.equal( expected );
-			} );
-		}
-	} );
-
-	it( 'transformParams', () => {
-		expect( session.transformParams( {
-			string: 'a string',
-			one: 1,
-			zero: 0,
-			anArray: [ 'an', 'array' ],
-			anEmptyArray: [],
-			anArrayWithPipe: [ 'an', 'array', 'with', '|' ],
-			aSet: new Set( [ 'a', 'set' ] ),
-			anEmptySet: new Set(),
-			aSetWithPipe: new Set( [ 'a', 'set', 'with', '|' ] ),
-			true: true,
-			false: false,
-			null: null,
-			undefined: undefined,
-		} ) ).to.eql( {
-			string: 'a string',
-			one: '1',
-			zero: '0',
-			anArray: 'an|array',
-			anEmptyArray: '',
-			anArrayWithPipe: '\x1fan\x1farray\x1fwith\x1f|',
-			aSet: 'a|set',
-			anEmptySet: '',
-			aSetWithPipe: '\x1fa\x1fset\x1fwith\x1f|',
-			true: '',
-		} );
-	} );
-
 	describe( 'request', () => {
+
+		it( 'transforms params', async () => {
+			const params = {
+				string: 'a string',
+				one: 1,
+				zero: 0,
+				anArray: [ 'an', 'array' ],
+				anEmptyArray: [],
+				anArrayWithPipe: [ 'an', 'array', 'with', '|' ],
+				aSet: new Set( [ 'a', 'set' ] ),
+				anEmptySet: new Set(),
+				aSetWithPipe: new Set( [ 'a', 'set', 'with', '|' ] ),
+				true: true,
+				false: false,
+				null: null,
+				undefined: undefined,
+			};
+			const expectedParams = {
+				string: 'a string',
+				one: '1',
+				zero: '0',
+				anArray: 'an|array',
+				anEmptyArray: '',
+				anArrayWithPipe: '\x1fan\x1farray\x1fwith\x1f|',
+				aSet: 'a|set',
+				anEmptySet: '',
+				aSetWithPipe: '\x1fa\x1fset\x1fwith\x1f|',
+				true: '',
+			};
+			const session = singleRequestSession( expectedParams, {} );
+			await session.request( params );
+		} );
 
 		it( 'throws on non-200 status', async () => {
 			const session = singleRequestSession( { action: 'query' }, {
@@ -369,6 +347,275 @@ describe( 'Session', () => {
 					dropTruncatedResultWarning: true,
 				},
 			);
+		} );
+
+		describe( 'throw errors', () => {
+
+			it( 'formatversion=1', async () => {
+				const session = singleRequestSession( {}, {
+					error: { code: 'errorcode' },
+				} );
+				await expect( session.request( {} ) )
+					.to.be.rejectedWith( ApiErrors, 'errorcode' );
+			} );
+
+			it( 'formatversion=2', async () => {
+				const session = singleRequestSession( {}, {
+					errors: [ { code: 'errorcode' }, { code: 'other' } ],
+				} );
+				await expect( session.request( {} ) )
+					.to.be.rejectedWith( ApiErrors, 'errorcode' );
+			} );
+
+		} );
+
+		describe( 'handle warnings', () => {
+
+			it( 'errorformat=bc, formatversion=1', async () => {
+				let called = false;
+				function warn( warnings ) {
+					expect( called, 'not called yet' ).to.be.false;
+					called = true;
+					expect( warnings ).to.be.an.instanceof( ApiWarnings );
+					expect( warnings.message ).to.equal(
+						'Because "rvslots" was not specified…',
+					);
+					expect( warnings.warnings ).to.eql( [
+						{
+							'*': 'Because "rvslots" was not specified…',
+							module: 'revisions',
+						},
+						{
+							'*': 'Subscribe to the mediawiki-api-announce…',
+							module: 'main',
+						},
+					] );
+				}
+				const session = singleRequestSession( {}, { warnings: {
+					main: {
+						'*': 'Subscribe to the mediawiki-api-announce…',
+					},
+					revisions: {
+						'*': 'Because "rvslots" was not specified…',
+					},
+				} } );
+				await session.request( {}, { warn } );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'errorformat=bc, formatversion=2', async () => {
+				let called = false;
+				function warn( warnings ) {
+					expect( called, 'not called yet' ).to.be.false;
+					called = true;
+					expect( warnings ).to.be.an.instanceof( ApiWarnings );
+					expect( warnings.message ).to.equal(
+						'Because "rvslots" was not specified…',
+					);
+					expect( warnings.warnings ).to.eql( [
+						{
+							warnings: 'Because "rvslots" was not specified…',
+							module: 'revisions',
+						},
+						{
+							warnings: 'Subscribe to the mediawiki-api-announce…',
+							module: 'main',
+						},
+					] );
+				}
+				const session = singleRequestSession( {}, { warnings: {
+					main: {
+						warnings: 'Subscribe to the mediawiki-api-announce…',
+					},
+					revisions: {
+						warnings: 'Because "rvslots" was not specified…',
+					},
+				} } );
+				await session.request( {}, { warn } );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'errorformat=plaintext, formatversion=1', async () => {
+				let called = false;
+				function warn( warnings ) {
+					expect( called, 'not called yet' ).to.be.false;
+					called = true;
+					expect( warnings ).to.be.an.instanceof( ApiWarnings );
+					expect( warnings.message ).to.equal(
+						'deprecation',
+					);
+					expect( warnings.warnings ).to.eql( [
+						{
+							code: 'deprecation',
+							data: { feature: 'action=query&prop=revisions&!rvslots' },
+							module: 'query+revisions',
+							'*': 'Because "rvslots" was not specified…',
+						},
+						{
+							code: 'deprecation-help',
+							module: 'main',
+							'*': 'Subscribe to the mediawiki-api-announce…',
+						},
+					] );
+				}
+				const session = singleRequestSession( {}, { warnings: [
+					{
+						code: 'deprecation',
+						data: { feature: 'action=query&prop=revisions&!rvslots' },
+						module: 'query+revisions',
+						'*': 'Because "rvslots" was not specified…',
+					},
+					{
+						code: 'deprecation-help',
+						module: 'main',
+						'*': 'Subscribe to the mediawiki-api-announce…',
+					},
+				] } );
+				await session.request( {}, { warn } );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'errorformat=plaintext, formatversion=2', async () => {
+				let called = false;
+				function warn( warnings ) {
+					expect( called, 'not called yet' ).to.be.false;
+					called = true;
+					expect( warnings ).to.be.an.instanceof( ApiWarnings );
+					expect( warnings.message ).to.equal(
+						'deprecation',
+					);
+					expect( warnings.warnings ).to.eql( [
+						{
+							code: 'deprecation',
+							text: 'Because "rvslots" was not specified…',
+							data: { feature: 'action=query&prop=revisions&!rvslots' },
+							module: 'query+revisions',
+						},
+						{
+							code: 'deprecation-help',
+							text: 'Subscribe to the mediawiki-api-announce…',
+							module: 'main',
+						},
+					] );
+				}
+				const session = singleRequestSession( {}, { warnings: [
+					{
+						code: 'deprecation',
+						text: 'Because "rvslots" was not specified…',
+						data: { feature: 'action=query&prop=revisions&!rvslots' },
+						module: 'query+revisions',
+					},
+					{
+						code: 'deprecation-help',
+						text: 'Subscribe to the mediawiki-api-announce…',
+						module: 'main',
+					},
+				] } );
+				await session.request( {}, { warn } );
+				expect( called ).to.be.true;
+			} );
+
+			describe( 'dropTruncatedResultWarning', () => {
+
+				describe( 'drops single truncatedresult warning', () => {
+
+					function warn() {
+						throw new Error( 'Should not be called in this test' );
+					}
+
+					for ( const [ description, warnings ] of [
+						[ 'errorformat=bc, formatversion=1, 1.37', {
+							main: {
+								'*': 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
+							},
+						} ],
+						[ 'errorformat=bc, formatversion=1, 1.27', {
+							main: {
+								'*': 'This result was truncated because it would otherwise  be larger than the limit of 1 bytes',
+							},
+						} ],
+						[ 'errorformat=bc, formatversion=2', {
+							main: {
+								warnings: 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
+							},
+						} ],
+						[ 'errorformat=none', [
+							{ code: 'truncatedresult' },
+						] ],
+					] ) {
+						it( description, async () => {
+							const session = singleRequestSession( {}, { warnings } );
+							await session.request( {}, { warn, dropTruncatedResultWarning: true } );
+						} );
+					}
+
+				} );
+
+				describe( 'passes through other warnings', () => {
+
+					for ( const [ description, warnings, expectedLength ] of [
+						[ 'deprecation warnings', {
+							main: { '*': 'Subscribe to the mediawiki-api-announce…' },
+							revisions: { '*': 'Because "rvslots" was not specified…' },
+						}, 2 ],
+						[ 'misleading message', [ {
+							code: 'unrelated',
+							'*': 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
+						} ], 1 ],
+					] ) {
+						it( description, async () => {
+							let seenWarnings;
+							function warn( warnings ) {
+								expect( warnings ).to.be.instanceof( ApiWarnings );
+								seenWarnings = warnings.warnings;
+							}
+							const session = singleRequestSession( {}, { warnings } );
+							await session.request( {}, { warn, dropTruncatedResultWarning: true } );
+							expect( seenWarnings ).to.have.lengthOf( expectedLength );
+						} );
+					}
+
+				} );
+
+				it( 'drops truncatedresult from several warnings', async () => {
+					let called = false;
+					function warn( warnings ) {
+						called = true;
+						expect( warnings ).to.be.instanceof( ApiWarnings );
+						expect( warnings.warnings ).to.eql( [
+							{ code: 'deprecation' },
+							{ code: 'deprecation-help' },
+						] );
+					}
+					const warnings = [
+						{ code: 'deprecation' },
+						{ code: 'truncatedresult' },
+						{ code: 'deprecation-help' },
+					];
+					const session = singleRequestSession( {}, { warnings } );
+					await session.request( {}, { warn, dropTruncatedResultWarning: true } );
+					expect( called ).to.be.true;
+				} );
+
+				it( 'keeps truncatedresult with dropTruncatedResultWarning=false', async () => {
+					let called = false;
+					function warn( warnings ) {
+						called = true;
+						expect( warnings ).to.be.instanceof( ApiWarnings );
+						expect( warnings.warnings ).to.eql( [
+							{ code: 'truncatedresult' },
+						] );
+					}
+					const warnings = [
+						{ code: 'truncatedresult' },
+					];
+					const session = singleRequestSession( {}, { warnings } );
+					await session.request( {}, { warn, dropTruncatedResultWarning: false } );
+					expect( called ).to.be.true;
+				} );
+
+			} );
+
 		} );
 
 	} );
@@ -696,263 +943,6 @@ describe( 'Session', () => {
 				() => null,
 			).next();
 			expect( called ).to.be.true;
-		} );
-
-	} );
-
-	describe( 'throwErrors', () => {
-
-		it( 'formatversion=1', () => {
-			expect( () => session.throwErrors( {
-				error: { code: 'errorcode' },
-			} ) ).to.throw( ApiErrors, 'errorcode' );
-		} );
-
-		it( 'formatversion=2', () => {
-			expect( () => session.throwErrors( {
-				errors: [ { code: 'errorcode' }, { code: 'other' } ],
-			} ) ).to.throw( ApiErrors, 'errorcode' );
-		} );
-
-	} );
-
-	describe( 'handleWarnings', () => {
-
-		it( 'errorformat=bc, formatversion=1', () => {
-			let called = false;
-			function warn( warnings ) {
-				expect( called, 'not called yet' ).to.be.false;
-				called = true;
-				expect( warnings ).to.be.an.instanceof( ApiWarnings );
-				expect( warnings.message ).to.equal(
-					'Because "rvslots" was not specified…',
-				);
-				expect( warnings.warnings ).to.eql( [
-					{
-						'*': 'Because "rvslots" was not specified…',
-						module: 'revisions',
-					},
-					{
-						'*': 'Subscribe to the mediawiki-api-announce…',
-						module: 'main',
-					},
-				] );
-			}
-			session.handleWarnings( { warnings: {
-				main: {
-					'*': 'Subscribe to the mediawiki-api-announce…',
-				},
-				revisions: {
-					'*': 'Because "rvslots" was not specified…',
-				},
-			} }, warn, false );
-			expect( called ).to.be.true;
-		} );
-
-		it( 'errorformat=bc, formatversion=2', () => {
-			let called = false;
-			function warn( warnings ) {
-				expect( called, 'not called yet' ).to.be.false;
-				called = true;
-				expect( warnings ).to.be.an.instanceof( ApiWarnings );
-				expect( warnings.message ).to.equal(
-					'Because "rvslots" was not specified…',
-				);
-				expect( warnings.warnings ).to.eql( [
-					{
-						warnings: 'Because "rvslots" was not specified…',
-						module: 'revisions',
-					},
-					{
-						warnings: 'Subscribe to the mediawiki-api-announce…',
-						module: 'main',
-					},
-				] );
-			}
-			session.handleWarnings( { warnings: {
-				main: {
-					warnings: 'Subscribe to the mediawiki-api-announce…',
-				},
-				revisions: {
-					warnings: 'Because "rvslots" was not specified…',
-				},
-			} }, warn, false );
-			expect( called ).to.be.true;
-		} );
-
-		it( 'errorformat=plaintext, formatversion=1', () => {
-			let called = false;
-			function warn( warnings ) {
-				expect( called, 'not called yet' ).to.be.false;
-				called = true;
-				expect( warnings ).to.be.an.instanceof( ApiWarnings );
-				expect( warnings.message ).to.equal(
-					'deprecation',
-				);
-				expect( warnings.warnings ).to.eql( [
-					{
-						code: 'deprecation',
-						data: { feature: 'action=query&prop=revisions&!rvslots' },
-						module: 'query+revisions',
-						'*': 'Because "rvslots" was not specified…',
-					},
-					{
-						code: 'deprecation-help',
-						module: 'main',
-						'*': 'Subscribe to the mediawiki-api-announce…',
-					},
-				] );
-			}
-			session.handleWarnings( { warnings: [
-				{
-					code: 'deprecation',
-					data: { feature: 'action=query&prop=revisions&!rvslots' },
-					module: 'query+revisions',
-					'*': 'Because "rvslots" was not specified…',
-				},
-				{
-					code: 'deprecation-help',
-					module: 'main',
-					'*': 'Subscribe to the mediawiki-api-announce…',
-				},
-			] }, warn, false );
-			expect( called ).to.be.true;
-		} );
-
-		it( 'errorformat=plaintext, formatversion=2', () => {
-			let called = false;
-			function warn( warnings ) {
-				expect( called, 'not called yet' ).to.be.false;
-				called = true;
-				expect( warnings ).to.be.an.instanceof( ApiWarnings );
-				expect( warnings.message ).to.equal(
-					'deprecation',
-				);
-				expect( warnings.warnings ).to.eql( [
-					{
-						code: 'deprecation',
-						text: 'Because "rvslots" was not specified…',
-						data: { feature: 'action=query&prop=revisions&!rvslots' },
-						module: 'query+revisions',
-					},
-					{
-						code: 'deprecation-help',
-						text: 'Subscribe to the mediawiki-api-announce…',
-						module: 'main',
-					},
-				] );
-			}
-			session.handleWarnings( { warnings: [
-				{
-					code: 'deprecation',
-					text: 'Because "rvslots" was not specified…',
-					data: { feature: 'action=query&prop=revisions&!rvslots' },
-					module: 'query+revisions',
-				},
-				{
-					code: 'deprecation-help',
-					text: 'Subscribe to the mediawiki-api-announce…',
-					module: 'main',
-				},
-			] }, warn, false );
-			expect( called ).to.be.true;
-		} );
-
-		describe( 'dropTruncatedResultWarning', () => {
-
-			describe( 'drops single truncatedresult warning', () => {
-
-				function warn() {
-					throw new Error( 'Should not be called in this test' );
-				}
-
-				for ( const [ description, warnings ] of [
-					[ 'errorformat=bc, formatversion=1, 1.37', {
-						main: {
-							'*': 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
-						},
-					} ],
-					[ 'errorformat=bc, formatversion=1, 1.27', {
-						main: {
-							'*': 'This result was truncated because it would otherwise  be larger than the limit of 1 bytes',
-						},
-					} ],
-					[ 'errorformat=bc, formatversion=2', {
-						main: {
-							warnings: 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
-						},
-					} ],
-					[ 'errorformat=none', [
-						{ code: 'truncatedresult' },
-					] ],
-				] ) {
-					it( description, () => {
-						session.handleWarnings( { warnings }, warn, true );
-					} );
-				}
-
-			} );
-
-			describe( 'passes through other warnings', () => {
-
-				for ( const [ description, warnings, expectedLength ] of [
-					[ 'deprecation warnings', {
-						main: { '*': 'Subscribe to the mediawiki-api-announce…' },
-						revisions: { '*': 'Because "rvslots" was not specified…' },
-					}, 2 ],
-					[ 'misleading message', [ {
-						code: 'unrelated',
-						'*': 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
-					} ], 1 ],
-				] ) {
-					it( description, () => {
-						let seenWarnings;
-						function warn( warnings ) {
-							expect( warnings ).to.be.instanceof( ApiWarnings );
-							seenWarnings = warnings.warnings;
-						}
-						session.handleWarnings( { warnings }, warn, true );
-						expect( seenWarnings ).to.have.lengthOf( expectedLength );
-					} );
-				}
-
-			} );
-
-			it( 'drops truncatedresult from several warnings', () => {
-				let called = false;
-				function warn( warnings ) {
-					called = true;
-					expect( warnings ).to.be.instanceof( ApiWarnings );
-					expect( warnings.warnings ).to.eql( [
-						{ code: 'deprecation' },
-						{ code: 'deprecation-help' },
-					] );
-				}
-				const warnings = [
-					{ code: 'deprecation' },
-					{ code: 'truncatedresult' },
-					{ code: 'deprecation-help' },
-				];
-				session.handleWarnings( { warnings }, warn, true );
-				expect( called ).to.be.true;
-			} );
-
-			it( 'keeps truncatedresult with dropTruncatedResultWarning=false', () => {
-				let called = false;
-				function warn( warnings ) {
-					called = true;
-					expect( warnings ).to.be.instanceof( ApiWarnings );
-					expect( warnings.warnings ).to.eql( [
-						{ code: 'truncatedresult' },
-					] );
-				}
-				const warnings = [
-					{ code: 'truncatedresult' },
-				];
-				session.handleWarnings( { warnings }, warn, false );
-				expect( called ).to.be.true;
-			} );
-
 		} );
 
 	} );
