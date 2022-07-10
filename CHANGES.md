@@ -13,6 +13,13 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   Interactive applications may wish to use a lower value,
   to show an error to users earlier rather than waiting for a long time.
   The previous `maxRetries` option should no longer be used.
+- Requests that produced `maxlag` or `readonly` errors are now automatically retried,
+  even if the response did not include a `Retry-After` response header.
+  (Currently, MediaWiki only sends this header for `maxlag` errors.)
+  Two new request options, `retryAfterMaxlagSeconds` and `retryAfterReadonlySeconds`,
+  control the default retry delay (in seconds) for these errors.
+  The defaults of 5 and 30 seconds respectively are intended to be useful for Wikimedia wikis.
+  If you increase these values, don’t forget to increase `maxRetriesSeconds` as well.
 - Requests with technically different options can be combined in some more situations.
   Specifically, a request explicitly specifying a default option is compatible
   with a request not specifying the option at all (both will use the default),

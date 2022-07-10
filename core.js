@@ -7,6 +7,8 @@
 const DEFAULT_OPTIONS = {
 	method: 'GET',
 	maxRetriesSeconds: 65,
+	retryAfterMaxlagSeconds: 5,
+	retryAfterReadonlySeconds: 30,
 	warn: console.warn,
 	dropTruncatedResultWarning: false,
 };
@@ -224,6 +226,17 @@ class Session {
 	 * according to the Retry-After response header if it is present.
 	 * Defaults to 65 seconds; set to 0 to disable automatic retries.
 	 * (Can also be a fractional number for sub-second precision.)
+	 * @param {number} [options.retryAfterMaxlagSeconds] Default Retry-After header value
+	 * in case of a maxlag error. Only used when the response is missing the header.
+	 * Since MediaWiki usually sends this header for maxlag errors, this option is rarely used.
+	 * Defaults to five seconds, which is the recommended maxlag value for bots.
+	 * @param {number} [options.retryAfterReadonlySeconds] Default Retry-After header value
+	 * in case of a readonly error. Only used when the response is missing the header.
+	 * MediaWiki does not usually send this header for readonly errors,
+	 * so this option is more important than the retryAfterMaxlagSeconds option.
+	 * The default of 30 seconds is thought to be appropriate for Wikimedia wikis;
+	 * for third-party wikis, higher values may be useful
+	 * (remember to also increase the maxRetriesSeconds option accordingly).
 	 * @param {Function} [options.warn] A handler for warnings from this API request.
 	 * Called with a single instance of a subclass of Error, such as {@link ApiWarnings}.
 	 * The default is console.warn (interactive CLI applications may wish to change this).
@@ -245,6 +258,8 @@ class Session {
 			method,
 			maxRetries, // only for warning
 			maxRetriesSeconds,
+			retryAfterMaxlagSeconds,
+			retryAfterReadonlySeconds,
 			userAgent,
 			warn,
 			dropTruncatedResultWarning,
@@ -272,11 +287,19 @@ class Session {
 			warn;
 		const retryUntil = performance.now() + maxRetriesSeconds * 1000;
 
-		const response = await this.internalRequest( method, this.transformParams( {
-			...this.defaultParams,
-			...params,
-			format: 'json',
-		} ), fullUserAgent, actualWarn, retryUntil );
+		const response = await this.internalRequest(
+			method,
+			this.transformParams( {
+				...this.defaultParams,
+				...params,
+				format: 'json',
+			} ),
+			fullUserAgent,
+			actualWarn,
+			retryUntil,
+			retryAfterMaxlagSeconds,
+			retryAfterReadonlySeconds,
+		);
 
 		return response;
 	}
@@ -422,9 +445,19 @@ class Session {
 	 * @param {string} userAgent
 	 * @param {Function} warn
 	 * @param {number} retryUntil (performance.now() clock)
+	 * @param {number} retryAfterMaxlagSeconds
+	 * @param {number} retryAfterReadonlySeconds
 	 * @return {Object}
 	 */
-	async internalRequest( method, params, userAgent, warn, retryUntil ) {
+	async internalRequest(
+		method,
+		params,
+		userAgent,
+		warn,
+		retryUntil,
+		retryAfterMaxlagSeconds,
+		retryAfterReadonlySeconds,
+	) {
 		let result;
 		if ( method === 'GET' ) {
 			result = this.internalGet( params, userAgent );
@@ -440,21 +473,54 @@ class Session {
 			body,
 		} = await result;
 
-		if ( 'retry-after' in headers ) {
-			const retryAfterMillis = 1000 * parseInt( headers[ 'retry-after' ] );
-			if ( performance.now() + retryAfterMillis <= retryUntil ) {
-				await new Promise( ( resolve ) => {
-					setTimeout( resolve, retryAfterMillis );
-				} );
-				return this.internalRequest( method, params, userAgent, warn, retryUntil );
-			}
-		}
-
 		if ( status !== 200 ) {
 			throw new Error( `API request returned non-200 HTTP status code: ${status}` );
 		}
 
+		const retryIfBefore = ( retryAfterSeconds ) => {
+			const retryAfterMillis = 1000 * retryAfterSeconds;
+			if ( performance.now() + retryAfterMillis <= retryUntil ) {
+				return new Promise( ( resolve ) => {
+					setTimeout( resolve, retryAfterMillis );
+				} ).then( () => this.internalRequest(
+					method,
+					params,
+					userAgent,
+					warn,
+					retryUntil,
+					retryAfterMaxlagSeconds,
+					retryAfterReadonlySeconds,
+				) );
+			} else {
+				return null;
+			}
+		};
+		let retryPromise = null;
+
+		const hasRetryAfterHeader = 'retry-after' in headers;
+		if ( hasRetryAfterHeader ) {
+			retryPromise = retryIfBefore( parseInt( headers[ 'retry-after' ] ) );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
 		const errors = responseErrors( body );
+
+		if ( !hasRetryAfterHeader && errors.some( ( { code } ) => code === 'maxlag' ) ) {
+			retryPromise = retryIfBefore( retryAfterMaxlagSeconds );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
+		if ( !hasRetryAfterHeader && errors.some( ( { code } ) => code === 'readonly' ) ) {
+			retryPromise = retryIfBefore( retryAfterReadonlySeconds );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
 		if ( errors.length > 0 ) {
 			throw new ApiErrors( errors );
 		}

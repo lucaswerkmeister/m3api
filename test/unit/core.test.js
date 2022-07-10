@@ -280,6 +280,50 @@ describe( 'Session', () => {
 				expect( response ).to.eql( { response: true } );
 			} );
 
+			it( 'default maxlag retry', async () => {
+				const session = sequentialRequestSession( [
+					{ response: { error: { code: 'maxlag' } } },
+					{ response: { response: true } },
+				] );
+				const promise = session.request( {} );
+				clock.tickAsync( 5000 );
+				const response = await promise;
+				expect( response ).to.eql( { response: true } );
+			} );
+
+			it( 'default readonly retry', async () => {
+				const session = sequentialRequestSession( [
+					{ response: { error: { code: 'readonly' } } },
+					{ response: { response: true } },
+				] );
+				const promise = session.request( {} );
+				clock.tickAsync( 30000 );
+				const response = await promise;
+				expect( response ).to.eql( { response: true } );
+			} );
+
+			it( 'custom maxlag retry', async () => {
+				const session = sequentialRequestSession( [
+					{ response: { error: { code: 'maxlag' } } },
+					{ response: { response: true } },
+				] );
+				const promise = session.request( {}, { retryAfterMaxlagSeconds: 2 } );
+				clock.tickAsync( 2000 );
+				const response = await promise;
+				expect( response ).to.eql( { response: true } );
+			} );
+
+			it( 'custom readonly retry', async () => {
+				const session = sequentialRequestSession( [
+					{ response: { error: { code: 'readonly' } } },
+					{ response: { response: true } },
+				] );
+				const promise = session.request( {}, { retryAfterReadonlySeconds: 10 } );
+				clock.tickAsync( 10000 );
+				const response = await promise;
+				expect( response ).to.eql( { response: true } );
+			} );
+
 		} );
 
 		describe( 'maxRetries former option', () => {

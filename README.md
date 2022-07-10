@@ -135,10 +135,11 @@ Other features not demonstrated above:
   e.g. `request( { ... }, { method: 'POST' } )`.
   (`requestAndContinue` also supports this.)
 
-- If the API response contains a Retry-After header
-  (most common case: you specified the `maxlag` parameter and lag is currently higher),
-  the request will automatically be retried for up to 65 seconds by default
-  (after waiting for the amount of time specified in the header each time).
+- API requests will automatically be retried if necessary
+  (if the response contains a Retry-After header,
+  or either a `maxlag` or `readonly` error).
+  m3api will wait for an appropriate amount of time, then repeat the request,
+  for up to 65 seconds by default.
   You can change this with the `maxRetriesSeconds` request option:
   e.g. `request( { ... }, { maxRetriesSeconds: 10 } )` to stop retrying sooner.
   Set `maxRetriesSeconds` to 0 to disable this feature entirely.
