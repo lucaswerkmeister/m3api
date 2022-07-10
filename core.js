@@ -64,6 +64,34 @@ function responseErrors( response ) {
 }
 
 /**
+ * @private
+ * Return the warnings of a response (if any).
+ *
+ * @param {Object} response
+ * @return {Array.<Object>}
+ */
+function responseWarnings( response ) {
+	let warnings = response.warnings;
+	if ( !warnings ) {
+		return [];
+	}
+
+	if ( !Array.isArray( warnings ) ) {
+		const bcWarnings = Object.entries( warnings );
+		if ( bcWarnings[ 0 ][ 0 ] === 'main' ) {
+			// move to end of list
+			bcWarnings.push( bcWarnings.shift() );
+		}
+		warnings = [];
+		for ( const [ module, warning ] of bcWarnings ) {
+			warning.module = module;
+			warnings.push( warning );
+		}
+	}
+	return warnings;
+}
+
+/**
  * An Error wrapping one or more API errors.
  */
 class ApiErrors extends Error {
@@ -239,14 +267,17 @@ class Session {
 			}
 			fullUserAgent = DEFAULT_USER_AGENT;
 		}
+		const actualWarn = dropTruncatedResultWarning ?
+			makeWarnDroppingTruncatedResultWarning( warn ) :
+			warn;
 		const retryUntil = performance.now() + maxRetriesSeconds * 1000;
 
 		const response = await this.internalRequest( method, this.transformParams( {
 			...this.defaultParams,
 			...params,
 			format: 'json',
-		} ), fullUserAgent, retryUntil );
-		this.handleWarnings( response, warn, dropTruncatedResultWarning );
+		} ), fullUserAgent, actualWarn, retryUntil );
+
 		return response;
 	}
 
@@ -389,10 +420,11 @@ class Session {
 	 * @param {string} method
 	 * @param {Object} params
 	 * @param {string} userAgent
+	 * @param {Function} warn
 	 * @param {number} retryUntil (performance.now() clock)
 	 * @return {Object}
 	 */
-	async internalRequest( method, params, userAgent, retryUntil ) {
+	async internalRequest( method, params, userAgent, warn, retryUntil ) {
 		let result;
 		if ( method === 'GET' ) {
 			result = this.internalGet( params, userAgent );
@@ -414,7 +446,7 @@ class Session {
 				await new Promise( ( resolve ) => {
 					setTimeout( resolve, retryAfterMillis );
 				} );
-				return this.internalRequest( method, params, userAgent, retryUntil );
+				return this.internalRequest( method, params, userAgent, warn, retryUntil );
 			}
 		}
 
@@ -425,6 +457,11 @@ class Session {
 		const errors = responseErrors( body );
 		if ( errors.length > 0 ) {
 			throw new ApiErrors( errors );
+		}
+
+		const warnings = responseWarnings( body );
+		if ( warnings.length > 0 ) {
+			warn( new ApiWarnings( warnings ) );
 		}
 
 		return body;
@@ -457,38 +494,6 @@ class Session {
 	 */
 	internalPost( urlParams, bodyParams, userAgent ) {
 		throw new Error( 'Abstract method internalPost not implemented!' );
-	}
-
-	/**
-	 * @private
-	 * @param {Object} response
-	 * @param {Function} warn
-	 * @param {boolean} dropTruncatedResultWarning
-	 */
-	handleWarnings( response, warn, dropTruncatedResultWarning ) {
-		let warnings = response.warnings;
-		if ( !warnings ) {
-			return;
-		}
-
-		if ( !Array.isArray( warnings ) ) {
-			const bcWarnings = Object.entries( warnings );
-			if ( bcWarnings[ 0 ][ 0 ] === 'main' ) {
-				// move to end of list
-				bcWarnings.push( bcWarnings.shift() );
-			}
-			warnings = [];
-			for ( const [ module, warning ] of bcWarnings ) {
-				warning.module = module;
-				warnings.push( warning );
-			}
-		}
-
-		if ( dropTruncatedResultWarning ) {
-			warn = makeWarnDroppingTruncatedResultWarning( warn );
-		}
-
-		warn( new ApiWarnings( warnings ) );
 	}
 
 }
