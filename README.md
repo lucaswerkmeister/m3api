@@ -169,13 +169,16 @@ how it automatically combines concurrent, compatible API requests.
   Technically, as soon as m3api receives a request,
   it queues a microtask (using `Promise.resolve()`) to dispatch it,
   and only other requests which arrive before that microtask runs have a chance to be combined with it.
-- API requests are **compatible** if they have the same options,
-  and all the parameters they have in common are compatible.
-  Parameters are compatible if they’re identical
-  (after simple transformations like `2` → `"2"`),
-  or if they’re both sets, in which case they’re merged for the combined request.
+- API requests are **compatible** if their parameters and options are compatible.
+  The parameters as a whole are compatible if every parameter common to both requests is compatible,
+  i.e. the parameter values are either identical
+  (after simple transformations like `2` → `"2"`)
+  or are both sets, in which case they’re merged for the combined request.
   (The `set( ... )` function, which can be imported from `node.js` and `browser.js`,
   is just a shortcut for `new Set( [ ... ] )`.)
+  Options are mostly compatible if they’re identical for both requests,
+  but some options have special handling so that requests can still be combined
+  even if they specify different values for those options.
 
 To take advantage of this feature,
 it’s recommended to use `set( ... )` instead of `[ ... ]` for most “list-like” API paremeters,
