@@ -304,6 +304,34 @@ describe( 'Session', () => {
 
 		} );
 
+		describe( 'maxRetries former option', () => {
+
+			it( 'warns if maxRetries is given on its own', async () => {
+				let warnCalled = false;
+				function warn( warning ) {
+					expect( warning.message ).to.contain( 'maxRetriesSeconds' );
+					expect( warnCalled, 'warn() not called yet' ).to.be.false;
+					warnCalled = true;
+				}
+
+				const session = singleRequestSession( {} );
+				await session.request( {}, {
+					maxRetries: 1,
+					warn,
+				} );
+				expect( warnCalled ).to.be.true;
+			} );
+
+			it( 'does not warn if both maxRetries and maxRetriesSeconds are given', async () => {
+				const session = singleRequestSession( {} );
+				await session.request( {}, {
+					maxRetries: 1,
+					maxRetriesSeconds: 65,
+				} );
+			} );
+
+		} );
+
 		it( 'keeps truncatedresult warning by default', async () => {
 			const session = singleRequestSession( {}, {
 				batchcomplete: true,

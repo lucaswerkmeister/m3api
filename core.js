@@ -208,7 +208,7 @@ class Session {
 			...this.defaultOptions,
 			...options,
 		};
-		if ( maxRetries !== undefined ) {
+		if ( maxRetries !== undefined && !( 'maxRetriesSeconds' in { ...this.defaultOptions, ...options } ) ) {
 			warn( new Error( 'The maxRetries option is no longer supported, ' +
 				'use maxRetriesSeconds instead.' ) );
 		}
