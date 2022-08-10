@@ -231,37 +231,66 @@ describe( 'Session', () => {
 				expect( clock.countTimers() ).to.equal( 0 );
 			} );
 
-			it( 'default', async () => {
+			it( 'default, retry once after 60 seconds', async () => {
 				const session = sequentialRequestSession( [
 					{ response: {
-						headers: { 'retry-after': '5' },
-						body: 'irrelevant',
+						headers: { 'retry-after': '60' },
+						body: { error: { code: 'maxlag' } },
 					} },
 					{ response: { response: true } },
 				] );
 				const promise = session.request( {} );
-				clock.tickAsync( 5000 );
+				clock.tickAsync( 60000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
 			} );
 
-			it( 'maxRetries 5 (actual retries 3)', async () => {
-				const calls = [];
-				for ( let i = 0; i < 3; i++ ) {
-					calls.push( { response: {
-						headers: { 'retry-after': '5' },
-						body: 'irrelevant',
-					} } );
-				}
-				calls.push( { response: { response: true } } );
-				const session = sequentialRequestSession( calls );
+			it( 'default, no retry after 66 seconds', async () => {
+				const session = singleRequestSession( {}, {
+					headers: { 'retry-after': '66' },
+					body: { error: { code: 'maxlag' } },
+				} );
+				await expect( session.request( {} ) )
+					.to.be.rejectedWith( ApiErrors );
+			} );
 
-				const promise = session.request( {}, { maxRetries: 5 } );
-				for ( let i = 0; i < 3; i++ ) {
-					clock.tickAsync( 5000 );
-				}
+			it( 'default, retry repeatedly up to 65 seconds', async () => {
+				const session = sequentialRequestSession( [
+					{ response: {
+						headers: { 'retry-after': '30' },
+						body: { error: { code: 'readonly' } },
+					} },
+					{ response: {
+						headers: { 'retry-after': '30' },
+						body: { error: { code: 'readonly' } },
+					} },
+					{ response: {
+						headers: { 'retry-after': '5' },
+						body: { error: { code: 'maxlag' } },
+					} },
+					{ response: { response: true } },
+				] );
+				const promise = session.request( {} );
+				clock.tickAsync( 65000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
+			} );
+
+			it( 'only retry up to 5 seconds', async () => {
+				const session = sequentialRequestSession( [
+					{ response: {
+						headers: { 'retry-after': '5' },
+						body: { error: { code: 'maxlag' } },
+					} },
+					{ response: {
+						headers: { 'retry-after': '5' },
+						body: { error: { code: 'maxlag' } },
+					} },
+				] );
+				const promise = session.request( {}, { maxRetriesSeconds: 5 } );
+				clock.tickAsync( 5000 );
+				await expect( promise )
+					.to.be.rejectedWith( ApiErrors );
 			} );
 
 			it( 'disabled', async () => {
@@ -269,7 +298,7 @@ describe( 'Session', () => {
 					headers: { 'retry-after': '5' },
 					body: { response: true },
 				} );
-				const response = await session.request( {}, { maxRetries: 0 } );
+				const response = await session.request( {}, { maxRetriesSeconds: 0 } );
 				expect( response ).to.eql( { response: true } );
 			} );
 

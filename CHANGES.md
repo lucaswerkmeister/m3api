@@ -7,6 +7,12 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
+- A new request option, `maxRetriesSeconds`, limits the total duration of retried requests,
+  replacing the previous `maxRetries` option that limited the *number* of retried requests.
+  It defaults to 65 seconds, which should be enough to cover a typical brief read-only period on Wikimedia wikis.
+  Interactive applications may wish to use a lower value,
+  to show an error to users earlier rather than waiting for a long time.
+  The previous `maxRetries` option should no longer be used.
 - Requests with technically different options can be combined in some more situations.
   Specifically, a request explicitly specifying a default option is compatible
   with a request not specifying the option at all (both will use the default),

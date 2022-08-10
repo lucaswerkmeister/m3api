@@ -250,11 +250,11 @@ describe( 'CombiningSession', () => {
 			const session = singleRequestSession( {}, response, 'POST' );
 			const promise1 = session.request( {}, {
 				method: 'POST',
-				maxRetries: 10,
+				maxRetriesSeconds: 120,
 			} );
 			const promise2 = session.request( {}, {
 				method: 'POST',
-				maxRetries: 10,
+				maxRetriesSeconds: 120,
 			} );
 			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
 			expect( response1 ).to.equal( response );
@@ -267,7 +267,7 @@ describe( 'CombiningSession', () => {
 				method: 'GET',
 			} );
 			const promise2 = session.request( {}, {
-				maxRetries: 1,
+				maxRetriesSeconds: 65,
 			} );
 			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
 			expect( response1 ).to.equal( response );
@@ -631,7 +631,7 @@ describe( 'CombiningSession', () => {
 			} );
 
 			for ( const [ optionName, optionA, optionB ] of [
-				[ 'maxRetries', 0, 1 ],
+				[ 'maxRetriesSeconds', 0, 65 ],
 				[ 'userAgent', 'foo', 'bar' ],
 				[ 'different-package/unknownOption', 'x', 'y' ],
 				[
@@ -662,7 +662,7 @@ describe( 'CombiningSession', () => {
 					{ expectedParams: params, response },
 					{ expectedParams: params, response },
 				] );
-				const promise1 = session.request( params, { maxRetries: 0 } );
+				const promise1 = session.request( params, { maxRetriesSeconds: 0 } );
 				const promise2 = session.request( params );
 				const responses = await Promise.all( [ promise1, promise2 ] );
 				expect( responses[ 0 ] ).to.equal( response );
@@ -677,7 +677,7 @@ describe( 'CombiningSession', () => {
 					{ expectedParams: params, response },
 				] );
 				const promise1 = session.request( params );
-				const promise2 = session.request( params, { maxRetries: 0 } );
+				const promise2 = session.request( params, { maxRetriesSeconds: 0 } );
 				const responses = await Promise.all( [ promise1, promise2 ] );
 				expect( responses[ 0 ] ).to.equal( response );
 				expect( responses[ 1 ] ).to.equal( response );

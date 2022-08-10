@@ -6,7 +6,7 @@
  */
 const DEFAULT_OPTIONS = {
 	method: 'GET',
-	maxRetries: 1,
+	maxRetriesSeconds: 65,
 	warn: console.warn,
 	dropTruncatedResultWarning: false,
 };
@@ -172,9 +172,11 @@ class Session {
 	 * Default options from the constructor are added to these,
 	 * with per-request options overriding default options in case of collision.
 	 * @param {string} [options.method] The method, either GET (default) or POST.
-	 * @param {number} [options.maxRetries] The maximum number of automatic retries,
-	 * i.e. times the request will be repeated if the response contains a Retry-After header.
-	 * Defaults to 1; set to 0 to disable automatic retries.
+	 * @param {number} [options.maxRetriesSeconds] The maximum duration for automatic retries,
+	 * i.e. a time interval (in seconds) during which the request will be automatically repeated
+	 * according to the Retry-After response header if it is present.
+	 * Defaults to 65 seconds; set to 0 to disable automatic retries.
+	 * (Can also be a fractional number for sub-second precision.)
 	 * @param {string} [options.userAgent] The User-Agent header to send.
 	 * (Usually specified as a default option in the constructor.)
 	 * @param {Function} [options.warn] A handler for warnings from this API request.
@@ -196,7 +198,8 @@ class Session {
 	async request( params, options = {} ) {
 		const {
 			method,
-			maxRetries,
+			maxRetries, // only for warning
+			maxRetriesSeconds,
 			userAgent,
 			warn,
 			dropTruncatedResultWarning,
@@ -205,6 +208,10 @@ class Session {
 			...this.defaultOptions,
 			...options,
 		};
+		if ( maxRetries !== undefined ) {
+			warn( new Error( 'The maxRetries option is no longer supported, ' +
+				'use maxRetriesSeconds instead.' ) );
+		}
 		let fullUserAgent;
 		if ( userAgent ) {
 			fullUserAgent = `${userAgent} ${DEFAULT_USER_AGENT}`;
@@ -215,12 +222,13 @@ class Session {
 			}
 			fullUserAgent = DEFAULT_USER_AGENT;
 		}
+		const retryUntil = performance.now() + maxRetriesSeconds * 1000;
 
 		const response = await this.internalRequest( method, this.transformParams( {
 			...this.defaultParams,
 			...params,
 			format: 'json',
-		} ), fullUserAgent, maxRetries );
+		} ), fullUserAgent, retryUntil );
 		this.throwErrors( response );
 		this.handleWarnings( response, warn, dropTruncatedResultWarning );
 		return response;
@@ -365,10 +373,10 @@ class Session {
 	 * @param {string} method
 	 * @param {Object} params
 	 * @param {string} userAgent
-	 * @param {number} maxRetries
+	 * @param {number} retryUntil (performance.now() clock)
 	 * @return {Object}
 	 */
-	async internalRequest( method, params, userAgent, maxRetries ) {
+	async internalRequest( method, params, userAgent, retryUntil ) {
 		let result;
 		if ( method === 'GET' ) {
 			result = this.internalGet( params, userAgent );
@@ -384,11 +392,14 @@ class Session {
 			body,
 		} = await result;
 
-		if ( maxRetries > 0 && 'retry-after' in headers ) {
-			await new Promise( ( resolve ) => {
-				setTimeout( resolve, 1000 * parseInt( headers[ 'retry-after' ] ) );
-			} );
-			return this.internalRequest( method, params, userAgent, maxRetries - 1 );
+		if ( 'retry-after' in headers ) {
+			const retryAfterMillis = 1000 * parseInt( headers[ 'retry-after' ] );
+			if ( performance.now() + retryAfterMillis <= retryUntil ) {
+				await new Promise( ( resolve ) => {
+					setTimeout( resolve, retryAfterMillis );
+				} );
+				return this.internalRequest( method, params, userAgent, retryUntil );
+			}
 		}
 
 		if ( status !== 200 ) {

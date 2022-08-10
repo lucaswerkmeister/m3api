@@ -137,11 +137,11 @@ Other features not demonstrated above:
 
 - If the API response contains a Retry-After header
   (most common case: you specified the `maxlag` parameter and lag is currently higher),
-  the request will automatically be retried once by default
-  (after waiting for the amount of time specified in the header).
-  You can change this with the `maxRetries` request option:
-  e.g. `request( { ... }, { maxRetries: 3 } )`.
-  Set `maxRetries` to 0 to disable this feature entirely.
+  the request will automatically be retried for up to 65 seconds by default
+  (after waiting for the amount of time specified in the header each time).
+  You can change this with the `maxRetriesSeconds` request option:
+  e.g. `request( { ... }, { maxRetriesSeconds: 10 } )` to stop retrying sooner.
+  Set `maxRetriesSeconds` to 0 to disable this feature entirely.
 
 - Apart from strings, numbers, and arrays and sets thereof,
   parameter values can also be booleans, `null`, or `undefined`.
