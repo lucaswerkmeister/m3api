@@ -172,13 +172,13 @@ class Session {
 	 * Default options from the constructor are added to these,
 	 * with per-request options overriding default options in case of collision.
 	 * @param {string} [options.method] The method, either GET (default) or POST.
+	 * @param {string} [options.userAgent] The User-Agent header to send.
+	 * (Usually specified as a default option in the constructor.)
 	 * @param {number} [options.maxRetriesSeconds] The maximum duration for automatic retries,
 	 * i.e. a time interval (in seconds) during which the request will be automatically repeated
 	 * according to the Retry-After response header if it is present.
 	 * Defaults to 65 seconds; set to 0 to disable automatic retries.
 	 * (Can also be a fractional number for sub-second precision.)
-	 * @param {string} [options.userAgent] The User-Agent header to send.
-	 * (Usually specified as a default option in the constructor.)
 	 * @param {Function} [options.warn] A handler for warnings from this API request.
 	 * Called with a single instance of a subclass of Error, such as {@link ApiWarnings}.
 	 * The default is console.warn (interactive CLI applications may wish to change this).
