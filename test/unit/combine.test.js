@@ -274,6 +274,161 @@ describe( 'CombiningSession', () => {
 			expect( response2 ).to.equal( response );
 		} );
 
+		it( 'token + query', async () => {
+			const session = sequentialRequestSession( [
+				{
+					expectedParams: {
+						action: 'query',
+						meta: 'tokens|siteinfo',
+						type: 'csrf|rollback',
+						siprop: 'general',
+					},
+					response: {
+						query: {
+							general: { lang: 'en' },
+							tokens: {
+								csrftoken: 'csrftoken+\\',
+								rollbacktoken: 'rollbacktoken+\\',
+							},
+						},
+					},
+				},
+				{
+					expectedParams: {
+						action: 'edit',
+						title: 'T1',
+						token: 'csrftoken+\\',
+					},
+					response: { edit: 'T1' },
+					method: 'POST',
+				},
+				{
+					expectedParams: {
+						action: 'edit',
+						title: 'T2',
+						token: 'csrftoken+\\',
+					},
+					response: { edit: 'T2' },
+					method: 'POST',
+				},
+				{
+					expectedParams: {
+						action: 'rollback',
+						token: 'rollbacktoken+\\',
+					},
+					response: { rollback: true },
+					method: 'POST',
+				},
+			] );
+
+			const promise1 = session.request(
+				{ action: 'edit', title: 'T1' },
+				{ tokenType: 'csrf', method: 'POST' },
+			);
+			const promise2 = session.request(
+				{ action: 'edit', title: 'T2' },
+				{ tokenType: 'csrf', method: 'POST' },
+			);
+			const promise3 = session.request(
+				{ action: 'rollback' },
+				{ tokenType: 'rollback', method: 'POST' },
+			);
+			const promise4 = session.request( {
+				action: 'query',
+				meta: set( 'siteinfo' ),
+				siprop: set( 'general' ),
+			} );
+			const [
+				response1,
+				response2,
+				response3,
+				response4,
+			] = await Promise.all( [ promise1, promise2, promise3, promise4 ] );
+
+			expect( response1 ).to.eql( { edit: 'T1' } );
+			expect( response2 ).to.eql( { edit: 'T2' } );
+			expect( response3 ).to.eql( { rollback: true } );
+			expect( response4.query.general ).to.eql( { lang: 'en' } );
+		} );
+
+		it( 'token (also query) + query', async () => {
+			const session = sequentialRequestSession( [
+				{
+					expectedParams: {
+						action: 'query',
+						meta: 'tokens|siteinfo',
+						type: 'csrf',
+					},
+					response: {
+						query: {
+							general: { lang: 'en' },
+							tokens: { csrftoken: 'csrftoken+\\' },
+						},
+					},
+				},
+				{
+					expectedParams: {
+						action: 'query',
+						list: 'checkuser',
+						cutoken: 'csrftoken+\\',
+					},
+					response: { checkuser: true },
+					method: 'POST',
+				},
+			] );
+
+			const promise1 = session.request(
+				{ action: 'query', list: set( 'checkuser' ) },
+				{ tokenType: 'csrf', tokenName: 'cutoken', method: 'POST' },
+			);
+			const promise2 = session.request(
+				{ action: 'query', meta: set( 'siteinfo' ) },
+			);
+			const [
+				response1,
+				response2,
+			] = await Promise.all( [ promise1, promise2 ] );
+
+			expect( response1 ).to.eql( { checkuser: true } );
+			expect( response2.query.general ).to.eql( { lang: 'en' } );
+		} );
+
+		it( 'different tokenName but null tokenType', async () => {
+			const session = singleRequestSession( {}, response );
+			const promise1 = session.request( {}, { tokenName: 'token' } );
+			const promise2 = session.request( {}, { tokenName: 'lgtoken' } );
+			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+			expect( response1 ).to.equal( response );
+			expect( response2 ).to.equal( response );
+		} );
+
+		it( 'same tokenType + tokenName', async () => {
+			const session = sequentialRequestSession( [
+				{
+					expectedParams: {
+						action: 'query',
+						meta: 'tokens',
+						type: 'csrf',
+					},
+					response: {
+						query: {
+							tokens: { csrftoken: 'csrftoken+\\' },
+						},
+					},
+				},
+				{
+					expectedParams: { token: 'csrftoken+\\' },
+					response,
+				},
+			] );
+
+			const promise1 = session.request( {}, { tokenType: 'csrf' } );
+			const promise2 = session.request( {}, { tokenType: 'csrf', tokenName: 'token' } );
+			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+			expect( response1 ).to.equal( response );
+			expect( response2 ).to.equal( response );
+		} );
+
 	} );
 
 	it( 'propagates errors', async () => {
@@ -681,6 +836,30 @@ describe( 'CombiningSession', () => {
 				const responses = await Promise.all( [ promise1, promise2 ] );
 				expect( responses[ 0 ] ).to.equal( response );
 				expect( responses[ 1 ] ).to.equal( response );
+			} );
+
+			it( 'same tokenType but different tokenName', async () => {
+				const session = sequentialRequestSession( [
+					{
+						expectedParams: {
+							action: 'query',
+							meta: 'tokens',
+							type: 'csrf',
+						},
+						response: {
+							query: {
+								tokens: { csrftoken: 't' },
+							},
+						},
+					},
+					{ expectedParams: { token1: 't' }, response: { response: 1 } },
+					{ expectedParams: { token2: 't' }, response: { response: 2 } },
+				] );
+				const promise1 = session.request( {}, { tokenType: 'csrf', tokenName: 'token1' } );
+				const promise2 = session.request( {}, { tokenType: 'csrf', tokenName: 'token2' } );
+				const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+				expect( response1 ).to.eql( { response: 1 } );
+				expect( response2 ).to.eql( { response: 2 } );
 			} );
 
 		} );
