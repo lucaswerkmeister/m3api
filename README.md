@@ -116,6 +116,32 @@ This code works in Node.js, but also in the browser with only two changes:
 
 Other features not demonstrated above:
 
+- m3api can automatically fetch and add tokens to requests,
+  using the `tokenType` and `tokenName` request options.
+  Example usage:
+  
+  ```js
+  await session.request( {
+  	action: 'login',
+  	lgname: 'username',
+  	lgpassword: 'password',
+  }, {
+  	method: 'POST',
+  	tokenType: 'login',
+  	tokenName: 'lgtoken',
+  } );
+  session.tokens.clear(); // any cached tokens are invalid after login
+  await session.request( {
+  	action: 'edit',
+  	title: 'Test page',
+  	text: 'Test content',
+  }, {
+  	method: 'POST',
+  	tokenType: 'csrf', // usual token type for most actions
+  	// tokenName: 'token' is the default
+  } );
+  ```
+
 - m3api detects any error(s) returned by the API,
   and throws them as an `ApiErrors` instance
   (the class can be imported as a non-default export
