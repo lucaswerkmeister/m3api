@@ -7,6 +7,13 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
+- m3api can now automatically add token parameters to requests,
+  controlled by the two new request options `tokenType` and `tokenName`.
+  The most common case, e.g. for `action=edit`,
+  is to use `tokenType: 'csrf'` with the default `tokenName` (`'token'`).
+  m3api will automatically fetch and cache the token
+  (and this internal request can be automatically combined with other `action=query` requests),
+  discarding stale tokens and retrying upon encountering a `badtoken` error.
 - A new request option, `maxRetriesSeconds`, limits the total duration of retried requests,
   replacing the previous `maxRetries` option that limited the *number* of retried requests.
   It defaults to 65 seconds, which should be enough to cover a typical brief read-only period on Wikimedia wikis.

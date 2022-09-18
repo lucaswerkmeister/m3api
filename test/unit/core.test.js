@@ -91,6 +91,397 @@ describe( 'Session', () => {
 				.to.be.rejectedWith( '502' );
 		} );
 
+		describe( 'tokens', () => {
+
+			it( 'GETs token of tokenType using continuation', async () => {
+				const session = sequentialRequestSession( [
+					{
+						expectedParams: {
+							action: 'query',
+							meta: 'tokens',
+							type: 'csrf',
+						},
+						response: {
+							query: {
+								pages: [ /* ... */ ],
+								// no tokens
+							},
+							continue: { continue: '-||' },
+						},
+					},
+					{
+						expectedParams: {
+							action: 'query',
+							meta: 'tokens',
+							type: 'csrf',
+							continue: '-||',
+						},
+						response: {
+							query: {
+								tokens: {
+									othertoken: '...+\\',
+									// no csrftoken
+								},
+							},
+							continue: { continue: '-||', type: 'csrf|-other' },
+						},
+					},
+					{
+						expectedParams: {
+							action: 'query',
+							meta: 'tokens',
+							type: 'csrf|-other',
+							continue: '-||',
+						},
+						response: {
+							query: {
+								tokens: {
+									csrftoken: 'csrftoken+\\',
+									unrelatedtoken: '...+\\',
+								},
+							},
+							// should not follow continuation past this point
+							continue: { continue: '-||' },
+						},
+					},
+					{
+						expectedParams: {
+							action: 'edit',
+							token: 'csrftoken+\\',
+						},
+						response: { edit: true },
+						method: 'POST',
+					},
+				] );
+
+				const response = await session.request(
+					{ action: 'edit' },
+					{ method: 'POST', tokenType: 'csrf' },
+				);
+				expect( response ).to.eql( { edit: true } );
+			} );
+
+			it( 'uses tokenName', async () => {
+				const session = sequentialRequestSession( [
+					{
+						expectedParams: {
+							action: 'query',
+							meta: 'tokens',
+							type: 'login',
+						},
+						response: { query: { tokens: { logintoken: 'logintoken+\\' } } },
+					},
+					{
+						expectedParams: {
+							action: 'login',
+							lgtoken: 'logintoken+\\',
+						},
+						response: { login: true },
+						method: 'POST',
+					},
+				] );
+
+				const response = await session.request(
+					{ action: 'login' },
+					{ method: 'POST', tokenType: 'login', tokenName: 'lgtoken' },
+				);
+				expect( response ).to.eql( { login: true } );
+			} );
+
+			it( 'reuses tokens', async () => {
+				const session = sequentialRequestSession( [
+					{
+						expectedParams: {
+							action: 'query',
+							meta: 'tokens',
+							type: 'csrf',
+						},
+						response: { query: { tokens: { csrftoken: 'csrftoken+\\' } } },
+					},
+					{
+						expectedParams: {
+							action: 'edit',
+							token: 'csrftoken+\\',
+						},
+						response: { edit: 1 },
+						method: 'POST',
+					},
+					// no second tokens request in between
+					{
+						expectedParams: {
+							action: 'edit',
+							token: 'csrftoken+\\',
+						},
+						response: { edit: 2 },
+						method: 'POST',
+					},
+				] );
+
+				const params = { action: 'edit' };
+				const options = { method: 'POST', tokenType: 'csrf' };
+				expect( await session.request( params, options ) ).to.eql( { edit: 1 } );
+				expect( await session.request( params, options ) ).to.eql( { edit: 2 } );
+			} );
+
+			it( 'sends token with each continuation request', async () => {
+				const firstResponse = {
+					other: 'whatever',
+					continue: { continue: 'other' },
+				};
+				const secondResponse = {
+					other: 'done',
+					continue: { continue: 'checkuser' },
+				};
+				const thirdResponse = {
+					batchcomplete: true,
+					checkuser: 'done',
+				};
+				const session = sequentialRequestSession( [
+					{
+						expectedParams: {
+							action: 'query',
+							meta: 'tokens',
+							type: 'csrf',
+						},
+						response: { query: { tokens: { csrftoken: 'csrftoken+\\' } } },
+					},
+					{
+						expectedParams: {
+							action: 'query',
+							list: 'other|checkuser',
+							cutoken: 'csrftoken+\\',
+						},
+						response: firstResponse,
+						method: 'POST',
+					},
+					{
+						expectedParams: {
+							action: 'query',
+							list: 'other|checkuser',
+							cutoken: 'csrftoken+\\',
+							continue: 'other',
+						},
+						response: secondResponse,
+						method: 'POST',
+					},
+					{
+						expectedParams: {
+							action: 'query',
+							list: 'other|checkuser',
+							cutoken: 'csrftoken+\\',
+							continue: 'checkuser',
+						},
+						response: thirdResponse,
+						method: 'POST',
+					},
+				] );
+
+				const params = {
+					action: 'query',
+					list: set( 'other', 'checkuser' ),
+				};
+				const options = {
+					tokenType: 'csrf',
+					tokenName: 'cutoken',
+					method: 'POST',
+				};
+				let iteration = 0;
+				for await ( const response of session.requestAndContinue( params, options ) ) {
+					switch ( ++iteration ) {
+						case 1:
+							expect( response ).to.eql( firstResponse );
+							break;
+						case 2:
+							expect( response ).to.eql( secondResponse );
+							break;
+						case 3:
+							expect( response ).to.eql( thirdResponse );
+							break;
+						default:
+							throw new Error( `Unexpected iteration #${iteration}` );
+					}
+				}
+
+				expect( iteration ).to.equal( 3 );
+			} );
+
+			it( 'uses userAgent option for token request', async () => {
+				let called = false;
+				class TestSession extends BaseTestSession {
+					async internalGet( params, userAgent ) {
+						expect( userAgent ).to.match( /^user-agent / );
+						expect( called, 'not called yet' ).to.be.false;
+						called = true;
+						return {
+							status: 200,
+							headers: {},
+							body: { error: { code: 'unknown' } },
+						};
+					}
+				}
+
+				const session = new TestSession( 'en.wikipedia.org' );
+				await expect( session.request( {}, { userAgent: 'user-agent' } ) )
+					.to.be.rejectedWith( ApiErrors );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'uses warn option for token request', async () => {
+				let warnCalled = false;
+				function warn( warnings ) {
+					expect( warnings ).to.be.instanceof( ApiWarnings );
+					expect( warnings.warnings ).to.eql( [
+						{ code: 'whatever' },
+					] );
+					expect( warnCalled, 'warn() not called yet' ).to.be.false;
+					warnCalled = true;
+				}
+
+				const session = sequentialRequestSession( [
+					{
+						expectedParams: {
+							action: 'query',
+							meta: 'tokens',
+							type: 'csrf',
+						},
+						response: {
+							query: { tokens: { csrftoken: 'csrftoken+\\' } },
+							warnings: [ { code: 'whatever' } ],
+						},
+					},
+					{
+						expectedParams: {
+							edit: '',
+							token: 'csrftoken+\\',
+						},
+						response: { edited: true },
+					},
+				] );
+				expect( await session.request( { edit: '' }, { warn, tokenType: 'csrf' } ) )
+					.to.eql( { edited: true } );
+				expect( warnCalled ).to.be.true;
+			} );
+
+			it( 'uses retry options for token request', async () => {
+				const clock = FakeTimers.install();
+				clock.tickAsync( 1000 ); // just so it doesn’t start at 0
+
+				try {
+					const expectedParams = {
+						action: 'query',
+						meta: 'tokens',
+						type: 'csrf',
+					};
+					const session = sequentialRequestSession( [
+						{ // retry this one
+							expectedParams,
+							response: { error: { code: 'maxlag' } },
+						},
+						{ // retry this one
+							expectedParams,
+							response: { error: { code: 'readonly' } },
+						},
+						{ // don’t retry this one, exceeds maxRetriesSeconds
+							expectedParams,
+							response: { error: { code: 'maxlag' } },
+						},
+					] );
+					const promise = session.request( {}, {
+						maxRetriesSeconds: 5,
+						retryAfterMaxlagSeconds: 2,
+						retryAfterReadonlySeconds: 3,
+						tokenType: 'csrf',
+					} );
+					clock.tickAsync( 5000 );
+					await expect( promise )
+						.to.be.rejectedWith( ApiErrors );
+				} finally {
+					clock.uninstall();
+					expect( clock.countTimers() ).to.equal( 0 );
+				}
+			} );
+
+			describe( 'badtoken error', () => {
+
+				it( 'discards tokens and retries with maxRetriesSeconds > 0', async () => {
+					const session = sequentialRequestSession( [
+						{
+							expectedParams: {
+								action: 'edit',
+								token: 'badtoken+\\',
+							},
+							response: { errors: [ { code: 'badtoken' } ] },
+							method: 'POST',
+						},
+						{
+							expectedParams: {
+								action: 'query',
+								meta: 'tokens',
+								type: 'csrf',
+							},
+							response: { query: { tokens: { csrftoken: 'csrftoken+\\' } } },
+						},
+						{
+							expectedParams: {
+								action: 'edit',
+								token: 'csrftoken+\\',
+							},
+							response: { edit: true },
+							method: 'POST',
+						},
+					] );
+					session.tokens.set( 'csrf', 'badtoken+\\' );
+					session.tokens.set( 'other', 'othertoken+\\' );
+
+					const response = await session.request(
+						{ action: 'edit' },
+						{ method: 'POST', tokenType: 'csrf' },
+					);
+					expect( response ).to.eql( { edit: true } );
+					expect( session.tokens ).not.to.have.keys( 'other' );
+				} );
+
+				it( 'discards tokens but does not retry with maxRetriesSeconds = 0', async () => {
+					const session = singleRequestSession(
+						{
+							action: 'edit',
+							token: 'badtoken+\\',
+						},
+						{ errors: [ { code: 'badtoken' } ] },
+						'POST',
+					);
+					session.tokens.set( 'csrf', 'badtoken+\\' );
+					session.tokens.set( 'other', 'othertoken+\\' );
+
+					await expect( session.request(
+						{ action: 'edit' },
+						{ method: 'POST', tokenType: 'csrf', maxRetriesSeconds: 0 },
+					) ).to.be.rejectedWith( 'badtoken' );
+					expect( session.tokens ).to.be.empty;
+				} );
+
+				it( 'does nothing special if token specified manually', async () => {
+					const session = singleRequestSession(
+						{
+							action: 'edit',
+							token: 'customtoken+\\',
+						},
+						{ errors: [ { code: 'badtoken' } ] },
+						'POST',
+					);
+					session.tokens.set( 'csrf', 'csrftoken+\\' );
+
+					await expect( session.request( {
+						action: 'edit',
+						token: 'customtoken+\\',
+					}, { method: 'POST' } ) ).to.be.rejectedWith( 'badtoken' );
+					expect( session.tokens ).not.to.be.empty; // not cleared
+				} );
+
+			} );
+
+		} );
+
 		describe( 'user agent', () => {
 
 			it( 'from default options', async () => {

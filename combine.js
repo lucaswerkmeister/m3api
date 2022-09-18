@@ -15,7 +15,19 @@ class CombiningSession extends Session {
 	 * you also have to add it to mixCombiningSessionInto().
 	 */
 
-	request( params, options = {} ) {
+	async request( params, options = {} ) {
+		const { tokenType } = {
+			...DEFAULT_OPTIONS,
+			...this.defaultOptions,
+			...options,
+		};
+		if ( tokenType !== null ) {
+			// getToken() calls request(), let that be combined with other requests;
+			// actually adding the token is left to core.js
+			// (we just preload the token for this.tokens)
+			await this.getToken( tokenType, options );
+		}
+
 		const pendingRequests = this.pendingRequests || ( this.pendingRequests = new Set() );
 		const newRequest = { params, options };
 		for ( const pendingRequest of pendingRequests ) {
@@ -123,13 +135,18 @@ class CombiningSession extends Session {
 		const {
 			warn: warnA = defaultOptions.warn,
 			dropTruncatedResultWarning: dtrwA = defaultOptions.dropTruncatedResultWarning,
+			tokenType: tokenTypeA = defaultOptions.tokenType,
+			tokenName: tokenNameA = defaultOptions.tokenName,
 			...otherOptionsA
 		} = optionsA;
 		const {
 			warn: warnB = defaultOptions.warn,
 			dropTruncatedResultWarning: dtrwB = defaultOptions.dropTruncatedResultWarning,
+			tokenType: tokenTypeB = defaultOptions.tokenType,
+			tokenName: tokenNameB = defaultOptions.tokenName,
 			...otherOptionsB
 		} = optionsB;
+
 		const realWarnA = dtrwA ? makeWarnDroppingTruncatedResultWarning( warnA ) : warnA;
 		const realWarnB = dtrwB ? makeWarnDroppingTruncatedResultWarning( warnB ) : warnB;
 		const options = {
@@ -139,7 +156,20 @@ class CombiningSession extends Session {
 				return realWarnB( ...args );
 			},
 			dropTruncatedResultWarning: false,
+			tokenType: tokenTypeA, // if !== tokenTypeB, we return below
 		};
+
+		if ( tokenTypeA === null && tokenTypeB === null ) {
+			// compatible as far as tokens are concerned,
+			// ignore tokenName when checking remaining options
+		} else if ( tokenTypeA === tokenTypeB ) {
+			// tokenType compatible, include tokenName in options check
+			otherOptionsA.tokenName = tokenNameA;
+			otherOptionsB.tokenName = tokenNameB;
+		} else {
+			// tokenType incompatible
+			return null;
+		}
 
 		for ( const [ key, optionB ] of Object.entries( otherOptionsB ) ) {
 			if ( Object.prototype.hasOwnProperty.call( otherOptionsA, key ) ) {
