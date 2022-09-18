@@ -9,6 +9,9 @@
 		"plugin:chai-friendly/recommended",
 		"plugin:compat/recommended"
 	],
+	"parserOptions": {
+		"sourceType": "module"
+	},
 	"rules": {
 		"comma-dangle": [ "error", "always-multiline" ],
 		"no-use-before-define": [ "error", "nofunc" ],

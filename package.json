@@ -10,8 +10,8 @@
 		"test:lint": "eslint .",
 		"test:unit": "mocha test/unit/",
 		"test:node": "mocha test/integration/node.test.js",
-		"test:browser": "mocha-headless test/integration/browser.test.js",
-		"test:readme": "sed -n '/```/,/```/ { /```$/q; /```/n; p; }' README.md | node --input-type=module --harmony-top-level-await"
+		"test:browser": "mocha test/integration/browser.test.js # #23",
+		"test:readme": "sed -n '/```/,/```/ { /```$/q; /```/n; p; }' README.md | { node --input-type=module --harmony-top-level-await || node --input-type=module; }"
 	},
 	"homepage": "https://github.com/lucaswerkmeister/m3api#readme",
 	"bugs": "https://github.com/lucaswerkmeister/m3api/issues",

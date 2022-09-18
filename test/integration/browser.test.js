@@ -1,7 +1,24 @@
 /* eslint-env mocha */
 
+/*
+ * This test is supposed to run in a browser,
+ * but there’s currently no great way to do that automatically,
+ * so in CI and `npm t` it actually runs in Node.js,
+ * using its experimental fetch() support.
+ * It would be great to fix this – see #23.
+ * (You can still manually run it in a browser using browser-test.html.)
+ */
+
 import BrowserSession, { set } from '../../browser.js';
-import '../../node_modules/chai/chai.js'; /* globals expect */
+import '../../node_modules/chai/chai.js'; /* globals chai */
+
+/* chai isn’t a proper module so we have to import it differently in Node */
+let expect;
+if ( 'chai' in globalThis ) {
+	expect = chai.expect;
+} else {
+	expect = ( await import( '../../node_modules/chai/chai.js' ) ).default.expect;
+}
 
 describe( 'BrowserSession', function () {
 

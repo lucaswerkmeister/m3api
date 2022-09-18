@@ -1,0 +1,8 @@
+{
+	"parserOptions": {
+		"ecmaVersion": "latest"
+	},
+	"rules": {
+		"es/no-global-this": "off"
+	}
+}
