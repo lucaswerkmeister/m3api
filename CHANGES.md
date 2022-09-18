@@ -7,7 +7,12 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- Requests with technically different options can be combined in some more situations.
+  Specifically, a request explicitly specifying a default option is compatible
+  with a request not specifying the option at all (both will use the default),
+  and the `dropTruncatedResultWarning` option does not affect compatibility at all
+  (the option is handled while combining requests,
+  so that truncated result warnings are only sent to the correct requests).
 
 ## v0.6.1 (2022-05-21)
 

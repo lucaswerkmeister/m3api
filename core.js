@@ -1,10 +1,13 @@
 /* eslint no-unused-vars: [ "error", { "args": "none" } ] */
 // Session has abstract methods with parameters only used in subclasses
 
+/**
+ * @private
+ */
 const DEFAULT_OPTIONS = {
 	method: 'GET',
 	maxRetries: 1,
-	warn: console.warn, // copied in combine.js
+	warn: console.warn,
 	dropTruncatedResultWarning: false,
 };
 
@@ -32,10 +35,12 @@ function splitPostParameters( params ) {
 
 /**
  * @private
+ * Return whether the given warning is *not* a truncatedresult warning.
+ *
  * @param {Object} warning
  * @return {boolean}
  */
-function isTruncatedResultWarning( warning ) {
+function notTruncatedResultWarning( warning ) {
 	return warning.code ?
 		warning.code !== 'truncatedresult' :
 		!TRUNCATED_RESULT.test( warning.warnings || warning[ '*' ] );
@@ -78,6 +83,33 @@ class ApiWarnings extends Error {
 		this.warnings = warnings;
 	}
 
+}
+
+/**
+ * Decorate the given warn handler so that warnings about truncated results are dropped.
+ *
+ * Most of the time, you should use the dropTruncatedResultWarning request option
+ * instead of using this function directly.
+ *
+ * @param {Function} warn The original warn function.
+ * @return {Function} A new function that, when called,
+ * will call the original warn functions,
+ * but with all truncated result warnings dropped;
+ * when there are no other warnings, the original function is not called.
+ */
+function makeWarnDroppingTruncatedResultWarning( warn ) {
+	return function ( error ) {
+		if ( error instanceof ApiWarnings ) {
+			const warnings = error.warnings.filter( notTruncatedResultWarning );
+			if ( warnings.length > 0 ) {
+				return warn( warnings.length === error.warnings.length ?
+					error :
+					new ApiWarnings( warnings ) );
+			}
+		} else {
+			return warn( error );
+		}
+	};
 }
 
 class DefaultUserAgentWarning extends Error {
@@ -435,10 +467,7 @@ class Session {
 		}
 
 		if ( dropTruncatedResultWarning ) {
-			warnings = warnings.filter( isTruncatedResultWarning );
-			if ( !warnings.length ) {
-				return;
-			}
+			warn = makeWarnDroppingTruncatedResultWarning( warn );
 		}
 
 		warn( new ApiWarnings( warnings ) );
@@ -483,10 +512,12 @@ function set( ...elements ) {
 }
 
 export {
+	DEFAULT_OPTIONS,
 	ApiErrors,
 	ApiWarnings,
 	DefaultUserAgentWarning,
 	Session,
+	makeWarnDroppingTruncatedResultWarning,
 	responseBoolean,
 	set,
 };

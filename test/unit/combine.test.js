@@ -246,6 +246,34 @@ describe( 'CombiningSession', () => {
 			expect( response2 ).to.equal( response );
 		} );
 
+		it( 'same options', async () => {
+			const session = singleRequestSession( {}, response, 'POST' );
+			const promise1 = session.request( {}, {
+				method: 'POST',
+				maxRetries: 10,
+			} );
+			const promise2 = session.request( {}, {
+				method: 'POST',
+				maxRetries: 10,
+			} );
+			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+			expect( response1 ).to.equal( response );
+			expect( response2 ).to.equal( response );
+		} );
+
+		it( 'explicit default options', async () => {
+			const session = singleRequestSession( {} );
+			const promise1 = session.request( {}, {
+				method: 'GET',
+			} );
+			const promise2 = session.request( {}, {
+				maxRetries: 1,
+			} );
+			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+			expect( response1 ).to.equal( response );
+			expect( response2 ).to.equal( response );
+		} );
+
 	} );
 
 	it( 'propagates errors', async () => {
@@ -328,6 +356,26 @@ describe( 'CombiningSession', () => {
 			};
 			await Promise.all( [ session.request( {} ), session.request( {} ) ] );
 			expect( call ).to.equal( 2 );
+		} );
+
+		it( 'drops truncated result warnings when specified', async () => {
+			const response = {
+				warnings: [ { code: 'truncatedresult' } ],
+			};
+			const session = singleRequestSession( {}, response );
+			let called = false;
+			function warn( warnings ) {
+				expect( called, 'warn already called' ).to.be.false;
+				called = true;
+				expect( warnings ).to.be.instanceof( ApiWarnings );
+				expect( warnings.warnings ).to.eql( [ { code: 'truncatedresult' } ] );
+			}
+			const promise1 = session.request( {}, { warn } );
+			const promise2 = session.request( {}, { dropTruncatedResultWarning: true } );
+			const [ response1, response2 ] = await Promise.all( [ promise1, promise2 ] );
+			expect( response1 ).to.equal( response );
+			expect( response2 ).to.equal( response );
+			expect( called ).to.be.true;
 		} );
 
 	} );
@@ -566,8 +614,9 @@ describe( 'CombiningSession', () => {
 			expect( responses[ 1 ] ).to.equal( response2 );
 		} );
 
-		describe( 'different options', () => {
-			it( 'method', async () => {
+		describe( 'incompatible options', () => {
+
+			it( 'different method', async () => {
 				const params = { action: 'foo' };
 				const response = { foo: 'foo' };
 				const session = sequentialRequestSession( [
@@ -584,8 +633,14 @@ describe( 'CombiningSession', () => {
 			for ( const [ optionName, optionA, optionB ] of [
 				[ 'maxRetries', 0, 1 ],
 				[ 'userAgent', 'foo', 'bar' ],
+				[ 'different-package/unknownOption', 'x', 'y' ],
+				[
+					'callableOption',
+					function x() {},
+					function y() {},
+				],
 			] ) {
-				it( optionName, async () => {
+				it( `different ${optionName}`, async () => {
 					const params = { action: 'foo' };
 					const response = { foo: 'foo' };
 					const session = sequentialRequestSession( [
@@ -599,6 +654,35 @@ describe( 'CombiningSession', () => {
 					expect( responses[ 1 ] ).to.equal( response );
 				} );
 			}
+
+			it( 'explicit non-default option in first request', async () => {
+				const params = { action: 'foo' };
+				const response = { foo: 'foo' };
+				const session = sequentialRequestSession( [
+					{ expectedParams: params, response },
+					{ expectedParams: params, response },
+				] );
+				const promise1 = session.request( params, { maxRetries: 0 } );
+				const promise2 = session.request( params );
+				const responses = await Promise.all( [ promise1, promise2 ] );
+				expect( responses[ 0 ] ).to.equal( response );
+				expect( responses[ 1 ] ).to.equal( response );
+			} );
+
+			it( 'explicit non-default option in second request', async () => {
+				const params = { action: 'foo' };
+				const response = { foo: 'foo' };
+				const session = sequentialRequestSession( [
+					{ expectedParams: params, response },
+					{ expectedParams: params, response },
+				] );
+				const promise1 = session.request( params );
+				const promise2 = session.request( params, { maxRetries: 0 } );
+				const responses = await Promise.all( [ promise1, promise2 ] );
+				expect( responses[ 0 ] ).to.equal( response );
+				expect( responses[ 1 ] ).to.equal( response );
+			} );
+
 		} );
 
 	} );
