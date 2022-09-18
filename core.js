@@ -6,7 +6,9 @@
  */
 const DEFAULT_OPTIONS = {
 	method: 'GET',
-	maxRetries: 1,
+	maxRetriesSeconds: 65,
+	retryAfterMaxlagSeconds: 5,
+	retryAfterReadonlySeconds: 30,
 	warn: console.warn,
 	dropTruncatedResultWarning: false,
 };
@@ -44,6 +46,51 @@ function notTruncatedResultWarning( warning ) {
 	return warning.code ?
 		warning.code !== 'truncatedresult' :
 		!TRUNCATED_RESULT.test( warning.warnings || warning[ '*' ] );
+}
+
+/**
+ * @private
+ * Return the errors of a response (if any).
+ *
+ * @param {Object} response
+ * @return {Array.<Object>}
+ */
+function responseErrors( response ) {
+	if ( 'error' in response ) {
+		return [ response.error ];
+	}
+	if ( 'errors' in response ) {
+		return response.errors;
+	}
+	return [];
+}
+
+/**
+ * @private
+ * Return the warnings of a response (if any).
+ *
+ * @param {Object} response
+ * @return {Array.<Object>}
+ */
+function responseWarnings( response ) {
+	let warnings = response.warnings;
+	if ( !warnings ) {
+		return [];
+	}
+
+	if ( !Array.isArray( warnings ) ) {
+		const bcWarnings = Object.entries( warnings );
+		if ( bcWarnings[ 0 ][ 0 ] === 'main' ) {
+			// move to end of list
+			bcWarnings.push( bcWarnings.shift() );
+		}
+		warnings = [];
+		for ( const [ module, warning ] of bcWarnings ) {
+			warning.module = module;
+			warnings.push( warning );
+		}
+	}
+	return warnings;
 }
 
 /**
@@ -172,11 +219,24 @@ class Session {
 	 * Default options from the constructor are added to these,
 	 * with per-request options overriding default options in case of collision.
 	 * @param {string} [options.method] The method, either GET (default) or POST.
-	 * @param {number} [options.maxRetries] The maximum number of automatic retries,
-	 * i.e. times the request will be repeated if the response contains a Retry-After header.
-	 * Defaults to 1; set to 0 to disable automatic retries.
 	 * @param {string} [options.userAgent] The User-Agent header to send.
 	 * (Usually specified as a default option in the constructor.)
+	 * @param {number} [options.maxRetriesSeconds] The maximum duration for automatic retries,
+	 * i.e. a time interval (in seconds) during which the request will be automatically repeated
+	 * according to the Retry-After response header if it is present.
+	 * Defaults to 65 seconds; set to 0 to disable automatic retries.
+	 * (Can also be a fractional number for sub-second precision.)
+	 * @param {number} [options.retryAfterMaxlagSeconds] Default Retry-After header value
+	 * in case of a maxlag error. Only used when the response is missing the header.
+	 * Since MediaWiki usually sends this header for maxlag errors, this option is rarely used.
+	 * Defaults to five seconds, which is the recommended maxlag value for bots.
+	 * @param {number} [options.retryAfterReadonlySeconds] Default Retry-After header value
+	 * in case of a readonly error. Only used when the response is missing the header.
+	 * MediaWiki does not usually send this header for readonly errors,
+	 * so this option is more important than the retryAfterMaxlagSeconds option.
+	 * The default of 30 seconds is thought to be appropriate for Wikimedia wikis;
+	 * for third-party wikis, higher values may be useful
+	 * (remember to also increase the maxRetriesSeconds option accordingly).
 	 * @param {Function} [options.warn] A handler for warnings from this API request.
 	 * Called with a single instance of a subclass of Error, such as {@link ApiWarnings}.
 	 * The default is console.warn (interactive CLI applications may wish to change this).
@@ -196,7 +256,10 @@ class Session {
 	async request( params, options = {} ) {
 		const {
 			method,
-			maxRetries,
+			maxRetries, // only for warning
+			maxRetriesSeconds,
+			retryAfterMaxlagSeconds,
+			retryAfterReadonlySeconds,
 			userAgent,
 			warn,
 			dropTruncatedResultWarning,
@@ -205,6 +268,10 @@ class Session {
 			...this.defaultOptions,
 			...options,
 		};
+		if ( maxRetries !== undefined && !( 'maxRetriesSeconds' in { ...this.defaultOptions, ...options } ) ) {
+			warn( new Error( 'The maxRetries option is no longer supported, ' +
+				'use maxRetriesSeconds instead.' ) );
+		}
 		let fullUserAgent;
 		if ( userAgent ) {
 			fullUserAgent = `${userAgent} ${DEFAULT_USER_AGENT}`;
@@ -215,14 +282,25 @@ class Session {
 			}
 			fullUserAgent = DEFAULT_USER_AGENT;
 		}
+		const actualWarn = dropTruncatedResultWarning ?
+			makeWarnDroppingTruncatedResultWarning( warn ) :
+			warn;
+		const retryUntil = performance.now() + maxRetriesSeconds * 1000;
 
-		const response = await this.internalRequest( method, this.transformParams( {
-			...this.defaultParams,
-			...params,
-			format: 'json',
-		} ), fullUserAgent, maxRetries );
-		this.throwErrors( response );
-		this.handleWarnings( response, warn, dropTruncatedResultWarning );
+		const response = await this.internalRequest(
+			method,
+			this.transformParams( {
+				...this.defaultParams,
+				...params,
+				format: 'json',
+			} ),
+			fullUserAgent,
+			actualWarn,
+			retryUntil,
+			retryAfterMaxlagSeconds,
+			retryAfterReadonlySeconds,
+		);
+
 		return response;
 	}
 
@@ -365,10 +443,21 @@ class Session {
 	 * @param {string} method
 	 * @param {Object} params
 	 * @param {string} userAgent
-	 * @param {number} maxRetries
+	 * @param {Function} warn
+	 * @param {number} retryUntil (performance.now() clock)
+	 * @param {number} retryAfterMaxlagSeconds
+	 * @param {number} retryAfterReadonlySeconds
 	 * @return {Object}
 	 */
-	async internalRequest( method, params, userAgent, maxRetries ) {
+	async internalRequest(
+		method,
+		params,
+		userAgent,
+		warn,
+		retryUntil,
+		retryAfterMaxlagSeconds,
+		retryAfterReadonlySeconds,
+	) {
 		let result;
 		if ( method === 'GET' ) {
 			result = this.internalGet( params, userAgent );
@@ -384,15 +473,61 @@ class Session {
 			body,
 		} = await result;
 
-		if ( maxRetries > 0 && 'retry-after' in headers ) {
-			await new Promise( ( resolve ) => {
-				setTimeout( resolve, 1000 * parseInt( headers[ 'retry-after' ] ) );
-			} );
-			return this.internalRequest( method, params, userAgent, maxRetries - 1 );
-		}
-
 		if ( status !== 200 ) {
 			throw new Error( `API request returned non-200 HTTP status code: ${status}` );
+		}
+
+		const retryIfBefore = ( retryAfterSeconds ) => {
+			const retryAfterMillis = 1000 * retryAfterSeconds;
+			if ( performance.now() + retryAfterMillis <= retryUntil ) {
+				return new Promise( ( resolve ) => {
+					setTimeout( resolve, retryAfterMillis );
+				} ).then( () => this.internalRequest(
+					method,
+					params,
+					userAgent,
+					warn,
+					retryUntil,
+					retryAfterMaxlagSeconds,
+					retryAfterReadonlySeconds,
+				) );
+			} else {
+				return null;
+			}
+		};
+		let retryPromise = null;
+
+		const hasRetryAfterHeader = 'retry-after' in headers;
+		if ( hasRetryAfterHeader ) {
+			retryPromise = retryIfBefore( parseInt( headers[ 'retry-after' ] ) );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
+		const errors = responseErrors( body );
+
+		if ( !hasRetryAfterHeader && errors.some( ( { code } ) => code === 'maxlag' ) ) {
+			retryPromise = retryIfBefore( retryAfterMaxlagSeconds );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
+		if ( !hasRetryAfterHeader && errors.some( ( { code } ) => code === 'readonly' ) ) {
+			retryPromise = retryIfBefore( retryAfterReadonlySeconds );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
+		if ( errors.length > 0 ) {
+			throw new ApiErrors( errors );
+		}
+
+		const warnings = responseWarnings( body );
+		if ( warnings.length > 0 ) {
+			warn( new ApiWarnings( warnings ) );
 		}
 
 		return body;
@@ -425,52 +560,6 @@ class Session {
 	 */
 	internalPost( urlParams, bodyParams, userAgent ) {
 		throw new Error( 'Abstract method internalPost not implemented!' );
-	}
-
-	/**
-	 * @private
-	 * @param {Object} response
-	 * @throws {ApiErrors}
-	 */
-	throwErrors( response ) {
-		if ( 'error' in response ) {
-			throw new ApiErrors( [ response.error ] );
-		}
-		if ( 'errors' in response ) {
-			throw new ApiErrors( response.errors );
-		}
-	}
-
-	/**
-	 * @private
-	 * @param {Object} response
-	 * @param {Function} warn
-	 * @param {boolean} dropTruncatedResultWarning
-	 */
-	handleWarnings( response, warn, dropTruncatedResultWarning ) {
-		let warnings = response.warnings;
-		if ( !warnings ) {
-			return;
-		}
-
-		if ( !Array.isArray( warnings ) ) {
-			const bcWarnings = Object.entries( warnings );
-			if ( bcWarnings[ 0 ][ 0 ] === 'main' ) {
-				// move to end of list
-				bcWarnings.push( bcWarnings.shift() );
-			}
-			warnings = [];
-			for ( const [ module, warning ] of bcWarnings ) {
-				warning.module = module;
-				warnings.push( warning );
-			}
-		}
-
-		if ( dropTruncatedResultWarning ) {
-			warn = makeWarnDroppingTruncatedResultWarning( warn );
-		}
-
-		warn( new ApiWarnings( warnings ) );
 	}
 
 }
