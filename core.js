@@ -473,7 +473,7 @@ class Session {
 	 * @return {string}
 	 */
 	transformParamArray( value ) {
-		if ( value.some( ( element ) => /[|]/.test( element ) ) ) {
+		if ( value.some( ( element ) => String.prototype.includes.call( element, '|' ) ) ) {
 			return '\x1f' + value.join( '\x1f' );
 		} else {
 			return value.join( '|' );
