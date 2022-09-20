@@ -29,7 +29,7 @@
 	},
 	"dependencies": {
 		"axios": "^0.27.2",
-		"axios-cookiejar-support": "^2.0.3",
+		"http-cookie-agent": "^1.0.6",
 		"tough-cookie": "^4.0.0"
 	},
 	"devDependencies": {

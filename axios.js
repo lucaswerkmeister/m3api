@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { wrapper as axiosCookieJarSupport } from 'axios-cookiejar-support';
-import tough from 'tough-cookie';
+import { HttpCookieAgent, HttpsCookieAgent } from 'http-cookie-agent';
+import { CookieJar } from 'tough-cookie';
 import { Session } from './core.js';
 
 function transformResponse( response ) {
@@ -18,12 +18,14 @@ class AxiosSession extends Session {
 
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
 		super( apiUrl, defaultParams, defaultOptions );
+		const agentOptions = {
+			jar: new CookieJar(),
+			keepAlive: true,
+		};
 		this.session = axios.create( {
 			baseURL: this.apiUrl,
-		} );
-		axiosCookieJarSupport( this.session );
-		Object.assign( this.session.defaults, { // must happen after axiosCookieJarSupport
-			jar: new tough.CookieJar(),
+			httpAgent: new HttpCookieAgent( agentOptions ),
+			httpsAgent: new HttpsCookieAgent( agentOptions ),
 		} );
 	}
 

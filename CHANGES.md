@@ -27,6 +27,9 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   control the default retry delay (in seconds) for these errors.
   The defaults of 5 and 30 seconds respectively are intended to be useful for Wikimedia wikis.
   If you increase these values, don’t forget to increase `maxRetriesSeconds` as well.
+- The Node.js backend (specifically `axios.js`)
+  now keeps the network connection alive (using Node’s default Keep-Alive settings),
+  which can speed up consecutive API requests (e.g. to get and then use a token).
 - Requests with technically different options can be combined in some more situations.
   Specifically, a request explicitly specifying a default option is compatible
   with a request not specifying the option at all (both will use the default),
