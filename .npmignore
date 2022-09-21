@@ -4,4 +4,5 @@
 # additional exclusions irrelevant for published packages
 /.github/
 /test/
+/browser-test.html
 /RELEASE.md
