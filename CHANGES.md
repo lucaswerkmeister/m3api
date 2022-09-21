@@ -36,6 +36,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   and the `dropTruncatedResultWarning` option does not affect compatibility at all
   (the option is handled while combining requests,
   so that truncated result warnings are only sent to the correct requests).
+- Updated dependencies.
 
 ## v0.6.1 (2022-05-21)
 

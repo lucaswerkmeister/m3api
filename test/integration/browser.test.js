@@ -13,12 +13,14 @@ import BrowserSession, { set } from '../../browser.js';
 import '../../node_modules/chai/chai.js'; /* globals chai */
 
 /* chai isn’t a proper module so we have to import it differently in Node */
+/* eslint-disable es-x/no-global-this, es-x/no-top-level-await, es-x/no-dynamic-import */
 let expect;
 if ( 'chai' in globalThis ) {
 	expect = chai.expect;
 } else {
 	expect = ( await import( '../../node_modules/chai/chai.js' ) ).default.expect;
 }
+/* eslint-enable es-x/no-global-this, es-x/no-top-level-await, es-x/no-dynamic-import */
 
 describe( 'BrowserSession', function () {
 
