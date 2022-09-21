@@ -30,7 +30,7 @@
 	"dependencies": {
 		"axios": "^0.27.2",
 		"http-cookie-agent": "^1.0.6",
-		"tough-cookie": "^4.0.0"
+		"tough-cookie": "^4.1.2"
 	},
 	"devDependencies": {
 		"@sinonjs/fake-timers": "^9.1.0",
