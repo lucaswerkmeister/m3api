@@ -102,6 +102,13 @@ function responseWarnings( response ) {
  */
 class ApiErrors extends Error {
 
+	/**
+	 * @param {Object[]} errors The error objects from the API.
+	 * Must be nonempty, and each error must contain at least a code.
+	 * Other error members depend on the errorformat of the request.
+	 * @param {...*} params Any other params for the Error constructor.
+	 * (Not including the message: the first error code is used for that.)
+	 */
 	constructor( errors, ...params ) {
 		super( errors[ 0 ].code, ...params );
 
@@ -110,6 +117,12 @@ class ApiErrors extends Error {
 		}
 
 		this.name = 'ApiErrors';
+
+		/**
+		 * The error objects from the API.
+		 *
+		 * @member {Object[]}
+		 */
 		this.errors = errors;
 	}
 
@@ -120,6 +133,12 @@ class ApiErrors extends Error {
  */
 class ApiWarnings extends Error {
 
+	/**
+	 * @param {Object[]} warnings The warning objects from the API.
+	 * Must be nonempty; the warning members depend on the errorformat of the request.
+	 * @param {...*} params Any other params for the Error constructor.
+	 * (Not including the message: the first warning is used for that.)
+	 */
 	constructor( warnings, ...params ) {
 		super(
 			warnings[ 0 ].code || warnings[ 0 ].warnings || warnings[ 0 ][ '*' ],
@@ -131,6 +150,12 @@ class ApiWarnings extends Error {
 		}
 
 		this.name = 'ApiWarnings';
+
+		/**
+		 * The warning objects from the API.
+		 *
+		 * @member {Object[]}
+		 */
 		this.warnings = warnings;
 	}
 
@@ -163,15 +188,23 @@ function makeWarnDroppingTruncatedResultWarning( warn ) {
 	};
 }
 
+/**
+ * An Error used as a warning when a request with no custom user agent is made.
+ */
 class DefaultUserAgentWarning extends Error {
 
-	constructor() {
+	/**
+	 * @param {...*} params Any additional params for the Error constructor,
+	 * not including the message (which is hard-coded).
+	 */
+	constructor( ...params ) {
 		super(
 			'm3api: Sending request with default User-Agent. ' +
 				'You should set the userAgent request option, ' +
 				'either as a default option for the session (third constructor argument) ' +
 				'or as a custom option for each request (second request argument). ' +
 				'See w.wiki/4PLr for the User-Agent policy.',
+			...params,
 		);
 
 		if ( Error.captureStackTrace ) {
