@@ -235,9 +235,36 @@ class Session {
 	 * {@link https://meta.wikimedia.org/wiki/User-Agent_policy User-Agent policy}.
 	 */
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
+		/** @private */
 		this.apiUrl = apiUrl;
+
+		/**
+		 * Parameters to include in every API request.
+		 * Can be modified after construction,
+		 * e.g. to add assert=user after logging in.
+		 *
+		 * @member {Object}
+		 */
 		this.defaultParams = defaultParams;
+
+		/**
+		 * Options to set for each request.
+		 * Can be modified after construction.
+		 *
+		 * @member {Object}
+		 */
 		this.defaultOptions = defaultOptions;
+
+		/**
+		 * Saved/cached tokens.
+		 * Can be modified after construction,
+		 * particularly to call `clear()` after logging in or out;
+		 * apart from that, however,
+		 * using the tokenType/tokenName options or {@link #getToken}
+		 * is generally more convenient.
+		 *
+		 * @member {Map}
+		 */
 		this.tokens = new Map();
 
 		if ( !this.apiUrl.includes( '/' ) ) {
