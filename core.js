@@ -2,7 +2,20 @@
 // Session has abstract methods with parameters only used in subclasses
 
 /**
- * @private
+ * Default options for requests across all sessions.
+ *
+ * Packages extending m3api’s capabilities (“extension packages”)
+ * may add their own options here,
+ * conventionally prefixed with the package name and a slash.
+ * For example, a package named 'abc' may add options 'abc/x' and 'abc/y',
+ * while a package named '@abc/def' may add '@abc/def/x' and '@abc/def/y'.
+ * Extension packages are encouraged to use a single options object
+ * for their own options as well as ones that are passed through to m3api,
+ * rather than e.g. separate options or individual parameters;
+ * both kinds of options can then have per-session and global defaults.
+ *
+ * Changing or removing any default options here is strongly discouraged,
+ * and may result in unpredictable behavior.
  */
 const DEFAULT_OPTIONS = {
 	method: 'GET',
