@@ -14,6 +14,9 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   m3api will automatically fetch and cache the token
   (and this internal request can be automatically combined with other `action=query` requests),
   discarding stale tokens and retrying upon encountering a `badtoken` error.
+  Tokens are cached in the public `Session.tokens` Map,
+  which users and extension packages are encouraged to `clear()` after changing the session state (e.g. login),
+  to avoid the overhead of a `badtoken` error.
 - A new request option, `maxRetriesSeconds`, limits the total duration of retried requests,
   replacing the previous `maxRetries` option that limited the *number* of retried requests.
   It defaults to 65 seconds, which should be enough to cover a typical brief read-only period on Wikimedia wikis.
@@ -36,6 +39,10 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   and the `dropTruncatedResultWarning` option does not affect compatibility at all
   (the option is handled while combining requests,
   so that truncated result warnings are only sent to the correct requests).
+- The public interface of m3api has been clarified.
+  Most importantly, `Session.defaultParams`,
+  `Session.defaultOptions` and `DEFAULT_OPTIONS` have been declared public,
+  and extension packages are encouraged to use the latter two for their own options as well.
 - Updated dependencies.
 
 ## v0.6.1 (2022-05-21)
