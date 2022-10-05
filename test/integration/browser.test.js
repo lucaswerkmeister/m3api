@@ -22,6 +22,8 @@ if ( 'chai' in globalThis ) {
 }
 /* eslint-enable es-x/no-global-this, es-x/no-top-level-await, es-x/no-dynamic-import */
 
+const userAgent = 'm3api-integration-tests (https://github.com/lucaswerkmeister/m3api/)';
+
 describe( 'BrowserSession', function () {
 
 	this.timeout( 60000 );
@@ -31,7 +33,7 @@ describe( 'BrowserSession', function () {
 			formatversion: 2,
 			origin: '*',
 		}, {
-			userAgent: 'm3api-integration-tests',
+			userAgent,
 		} );
 		const response = await session.request( {
 			action: 'query',
@@ -49,7 +51,7 @@ describe( 'BrowserSession', function () {
 			formatversion: 2,
 			origin: '*',
 		}, {
-			userAgent: 'm3api-integration-tests',
+			userAgent,
 		} );
 		const response = await session.request( {
 			action: 'validatepassword',

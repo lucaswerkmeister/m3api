@@ -5,6 +5,8 @@ import { expect } from 'chai';
 import fs from 'fs';
 import process from 'process';
 
+const userAgent = 'm3api-integration-tests (https://github.com/lucaswerkmeister/m3api/)';
+
 describe( 'NodeSession', function () {
 
 	this.timeout( 60000 );
@@ -61,7 +63,7 @@ describe( 'NodeSession', function () {
 		const session = new NodeSession( 'en.wikipedia.org', {
 			formatversion: 2,
 		}, {
-			userAgent: 'm3api-integration-tests',
+			userAgent,
 		} );
 		const response = await session.request( {
 			action: 'query',
@@ -78,7 +80,7 @@ describe( 'NodeSession', function () {
 		const session = new NodeSession( 'en.wikipedia.org', {
 			formatversion: 2,
 		}, {
-			userAgent: 'm3api-integration-tests',
+			userAgent,
 		} );
 		const response = await session.request( {
 			action: 'validatepassword',
@@ -94,7 +96,7 @@ describe( 'NodeSession', function () {
 		const session = new NodeSession( 'en.wikipedia.beta.wmflabs.org', {
 			formatversion: 2,
 		}, {
-			userAgent: 'm3api-integration-tests',
+			userAgent,
 		} );
 		const { login: { lgusername: username } } = await session.request( {
 			action: 'login',
