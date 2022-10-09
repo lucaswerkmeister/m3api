@@ -14,6 +14,7 @@ describe( 'NodeSession', function () {
 	let mediawikiUsername, mediawikiPassword;
 
 	before( 'load credentials', async () => {
+		// note: m3api-botpassword has a copy of this code
 		mediawikiUsername = process.env.MEDIAWIKI_USERNAME;
 		mediawikiPassword = process.env.MEDIAWIKI_PASSWORD;
 
