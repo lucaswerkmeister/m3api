@@ -283,6 +283,91 @@ To avoid just relying on default parameter values, you have several options:
    you may be able to process both `formatversion=1` and `formatversion=2` responses
    (see also the `responseBoolean` helper function).
 
+## Extension packages
+
+While m3api itself aims to be a minimal library,
+its functionality can be extended by other packages,
+which make it easier to use certain APIs correctly.
+Available extension packages include:
+
+- [m3api-query][], for the `action=query` API
+- [m3api-botpassword][], to log in using a [bot password][]
+
+If you create an additional extension package,
+feel free to submit a pull request to add it to this list.
+(Also, have a look at the guidelines [below](#creating-extension-packages).)
+
+### Using extension packages
+
+For the most part, m3api extension packages can be used like other packages:
+you install them using npm, import functions from them, etc.
+
+However, they require some setup to be used in the browser.
+As they can’t import `m3api` using a relative path,
+and bare `m3api` imports only work out of the box in Node.js,
+something needs to resolve the imports for the browser.
+The most convenient way is to use a bundler or build system:
+for example, [Vite][] has been tested and works out of the box.
+
+Alternatively, you can specify an import map, like in this example:
+```html
+<script type="importmap">
+{
+	"imports": {
+		"m3api/": "./node_modules/m3api/",
+		"m3api-query/": "./node_modules/m3api-query/"
+	}
+}
+</script>
+<script type="module">
+	import Session, { set } from 'm3api/browser.js';
+	import { queryFullPageByTitle } from 'm3api-query/index.js';
+	// ...
+</script>
+```
+Note that import maps are not as widely supported as ES6 modules in general.
+
+### Creating extension packages
+
+Here are some guidelines or recommendations for creating m3api extension packages:
+
+- Combine your options with those from m3api.
+  Functions that make requests should take a single (optional) `options` argument,
+  including both options passed through to m3api and those for your package.
+  The package’s options should be named beginning with the package name and a slash,
+  e.g. `somePkg/someOption` or `@someScope/somePkg/someOption`.
+  When reading the options, use the session’s `defaultOptions` and m3api’s `DEFAULT_OPTIONS`;
+  you may add your options to the `DEFAULT_OPTIONS` at package load time.
+  For example:
+  ```js
+  import { DEFAULT_OPTIONS } from 'm3api';
+  
+  Object.assign( DEFAULT_OPTIONS, {
+  	'somePkg/optionA': true,
+  	'somePkg/optionB': false,
+  } );
+  
+  function someFunction( session, options = {} ) {
+  	const {
+  		'somePkg/optionA': optionA,
+  		'somePkg/optionB': optionB,
+  	} = {
+  		...DEFAULT_OPTIONS,
+  		...session.defaultOptions,
+  		...options,
+  	};
+  	// use optionA, optionB
+  	session.request( ..., options );
+  }
+  ```
+- Functions that make requests or process responses
+  should be able to deal with either formatversion,
+  rather than forcing your users to use `formatversion=2` (or even `formatversion=1`).
+  The `responseBoolean` helper from `core.js` can be helpful.
+- If you need to import anything from m3api,
+  import it from `m3api/`, not `../m3api/` or anything like that.
+  (npm might move m3api further up the dependency tree.)
+
 ## Compatibility
 
 In Node.js, m3api is compatible with Node 14.17.0 or later,
@@ -321,4 +406,8 @@ you agree to publish your contribution under the same license.
 [API sandbox]: https://en.wikipedia.org/wiki/Special:ApiSandbox
 [m3api-ApiSandbox-helper]: https://meta.wikimedia.org/wiki/User:Lucas_Werkmeister/m3api-ApiSandbox-helper
 [mediawiki-js]: https://github.com/brettz9/mediawiki-js
+[m3api-query]: https://github.com/lucaswerkmeister/m3api-query
+[m3api-botpassword]: https://github.com/lucaswerkmeister/m3api-botpassword
+[bot password]: https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Bot_passwords
+[Vite]: https://vitejs.dev/
 [ISC License]: https://spdx.org/licenses/ISC.html

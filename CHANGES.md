@@ -43,6 +43,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   Most importantly, `Session.defaultParams`,
   `Session.defaultOptions` and `DEFAULT_OPTIONS` have been declared public,
   and extension packages are encouraged to use the latter two for their own options as well.
+  Guidelines for extension packages have also been added to the README.
 - Updated dependencies.
 
 ## v0.6.1 (2022-05-21)
