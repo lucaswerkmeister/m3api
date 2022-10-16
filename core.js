@@ -759,6 +759,8 @@ function set( ...elements ) {
 	return new Set( elements );
 }
 
+// note: exports that are useful to end-users / applications
+// should be re-exported from browser.js and node.js
 export {
 	DEFAULT_OPTIONS,
 	ApiErrors,
