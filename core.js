@@ -43,7 +43,7 @@ function splitPostParameters( params ) {
 	const urlParams = {};
 	const bodyParams = {};
 	for ( const [ key, value ] of Object.entries( params ) ) {
-		if ( key === 'origin' ) {
+		if ( key === 'action' || key === 'origin' ) {
 			urlParams[ key ] = value;
 		} else {
 			bodyParams[ key ] = value;

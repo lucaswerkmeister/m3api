@@ -75,6 +75,16 @@ export function makeResponse( bodyOrResponse ) {
 	}
 }
 
+function checkPostParams( urlParams, bodyParams ) {
+	const urlParamNames = Object.keys( urlParams );
+	const commonParamNames = urlParamNames.filter(
+		( name ) => name in bodyParams );
+	expect( commonParamNames ).to.be.empty;
+	const unexpectedUrlParamNames = urlParamNames.filter(
+		( name ) => name !== 'action' && name !== 'origin' );
+	expect( unexpectedUrlParamNames ).to.be.empty;
+}
+
 /**
  * Create a Session that expects a single internal request.
  *
@@ -99,7 +109,8 @@ export function singleRequestSession( expectedParams = {}, response = {}, method
 			expect( 'POST', `${method} request expected` ).to.equal( method );
 			expect( called, 'internalPost already called' ).to.be.false;
 			called = true;
-			expect( bodyParams ).to.eql( expectedParams );
+			expect( { ...urlParams, ...bodyParams } ).to.eql( expectedParams );
+			checkPostParams( urlParams, bodyParams );
 			return makeResponse( response );
 		}
 	}
@@ -139,7 +150,8 @@ export function sequentialRequestSession( expectedCalls ) {
 			} ] = expectedCalls.splice( -1 );
 			expect( 'POST', `${method} request expected` ).to.equal( method );
 			expectedParams.format = 'json';
-			expect( bodyParams ).to.eql( expectedParams );
+			expect( { ...urlParams, ...bodyParams } ).to.eql( expectedParams );
+			checkPostParams( urlParams, bodyParams );
 			return makeResponse( response );
 		}
 	}
