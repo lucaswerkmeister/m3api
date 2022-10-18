@@ -7,6 +7,13 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
+- BREAKING CHANGE:
+  A new request option, `maxRetriesSeconds`, limits the total duration of retried requests,
+  replacing the previous `maxRetries` option that limited the *number* of retried requests.
+  It defaults to 65 seconds, which should be enough to cover a typical brief read-only period on Wikimedia wikis.
+  Interactive applications may wish to use a lower value,
+  to show an error to users earlier rather than waiting for a long time.
+  The previous `maxRetries` option should no longer be used.
 - m3api can now automatically add token parameters to requests,
   controlled by the two new request options `tokenType` and `tokenName`.
   The most common case, e.g. for `action=edit`,
@@ -17,12 +24,11 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   Tokens are cached in the public `Session.tokens` Map,
   which users and extension packages are encouraged to `clear()` after changing the session state (e.g. login),
   to avoid the overhead of a `badtoken` error.
-- A new request option, `maxRetriesSeconds`, limits the total duration of retried requests,
-  replacing the previous `maxRetries` option that limited the *number* of retried requests.
-  It defaults to 65 seconds, which should be enough to cover a typical brief read-only period on Wikimedia wikis.
-  Interactive applications may wish to use a lower value,
-  to show an error to users earlier rather than waiting for a long time.
-  The previous `maxRetries` option should no longer be used.
+- The public interface of m3api has been clarified.
+  Most importantly, `Session.defaultParams`,
+  `Session.defaultOptions` and `DEFAULT_OPTIONS` have been declared public,
+  and extension packages are encouraged to use the latter two for their own options as well.
+  Guidelines for extension packages have also been added to the README.
 - Requests that produced `maxlag` or `readonly` errors are now automatically retried,
   even if the response did not include a `Retry-After` response header.
   (Currently, MediaWiki only sends this header for `maxlag` errors.)
@@ -39,11 +45,6 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   and the `dropTruncatedResultWarning` option does not affect compatibility at all
   (the option is handled while combining requests,
   so that truncated result warnings are only sent to the correct requests).
-- The public interface of m3api has been clarified.
-  Most importantly, `Session.defaultParams`,
-  `Session.defaultOptions` and `DEFAULT_OPTIONS` have been declared public,
-  and extension packages are encouraged to use the latter two for their own options as well.
-  Guidelines for extension packages have also been added to the README.
 - Updated dependencies.
 
 ## v0.6.1 (2022-05-21)
