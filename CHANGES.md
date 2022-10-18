@@ -24,6 +24,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   Tokens are cached in the public `Session.tokens` Map,
   which users and extension packages are encouraged to `clear()` after changing the session state (e.g. login),
   to avoid the overhead of a `badtoken` error.
+  (Note that the [m3api-botpassword][] extension package does this for you.)
 - The public interface of m3api has been clarified.
   Most importantly, `Session.defaultParams`,
   `Session.defaultOptions` and `DEFAULT_OPTIONS` have been declared public,
@@ -223,3 +224,4 @@ but I see no reason to recreate the tag now.
 [CVE-2021-3749]: https://github.com/advisories/GHSA-cph5-m8f7-6c5x
 [User-Agent policy]: https://meta.wikimedia.org/wiki/Special:MyLanguage/User-Agent_policy
 [m3api-query]: https://github.com/lucaswerkmeister/m3api-query
+[m3api-botpassword]: https://github.com/lucaswerkmeister/m3api-botpassword
