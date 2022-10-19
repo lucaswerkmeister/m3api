@@ -28,7 +28,7 @@ const DEFAULT_OPTIONS = {
 	dropTruncatedResultWarning: false,
 };
 
-const DEFAULT_USER_AGENT = 'm3api/0.6.1 (https://www.npmjs.com/package/m3api)';
+const DEFAULT_USER_AGENT = 'm3api/0.7.0 (https://www.npmjs.com/package/m3api)';
 
 const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes$/;
 
