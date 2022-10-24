@@ -2,7 +2,10 @@
 /.env
 
 # additional exclusions irrelevant for published packages
+/.browserslistrc
+/.env.example
+/.eslintrc.json
 /.github/
-/test/
-/browser-test.html
 /RELEASE.md
+/browser-test.html
+/test/
