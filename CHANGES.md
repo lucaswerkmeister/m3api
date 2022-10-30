@@ -227,5 +227,5 @@ but I see no reason to recreate the tag now.
 
 [CVE-2021-3749]: https://github.com/advisories/GHSA-cph5-m8f7-6c5x
 [User-Agent policy]: https://meta.wikimedia.org/wiki/Special:MyLanguage/User-Agent_policy
-[m3api-query]: https://github.com/lucaswerkmeister/m3api-query
-[m3api-botpassword]: https://github.com/lucaswerkmeister/m3api-botpassword
+[m3api-query]: https://www.npmjs.com/package/m3api-query
+[m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
