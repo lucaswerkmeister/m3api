@@ -53,9 +53,9 @@ function splitPostParameters( params ) {
 }
 
 /**
- * @private
  * Return whether the given warning is *not* a truncatedresult warning.
  *
+ * @private
  * @param {Object} warning
  * @return {boolean}
  */
@@ -66,9 +66,9 @@ function notTruncatedResultWarning( warning ) {
 }
 
 /**
- * @private
  * Return the errors of a response (if any).
  *
+ * @private
  * @param {Object} response
  * @return {Array.<Object>}
  */
@@ -83,9 +83,9 @@ function responseErrors( response ) {
 }
 
 /**
- * @private
  * Return the warnings of a response (if any).
  *
+ * @private
  * @param {Object} response
  * @return {Array.<Object>}
  */
@@ -542,7 +542,7 @@ class Session {
 
 	/**
 	 * @private
-	 * @param {(string|number)[]} value
+	 * @param {Array<string|number>} value
 	 * @return {string}
 	 */
 	transformParamArray( value ) {

@@ -45,9 +45,9 @@ class CombiningSession extends Session {
 	}
 
 	/**
-	 * @private
 	 * Try to merge the a new request into an existing one.
 	 *
+	 * @private
 	 * @param {Object} requestA The existing request.
 	 * If the requests are compatible, this request’s params and options will be replaced.
 	 * @param {Object} requestB The new request. (Not modified.)
@@ -68,9 +68,9 @@ class CombiningSession extends Session {
 	}
 
 	/**
-	 * @private
 	 * Try to combine the two sets of parameters.
 	 *
+	 * @private
 	 * @param {Object} paramsA The first set of params. (Not modified.)
 	 * @param {Object} paramsB The other set of params. (Not modified.)
 	 * @return {Object|null} A new set of combined params, if possible, else null.
@@ -121,9 +121,9 @@ class CombiningSession extends Session {
 	}
 
 	/**
-	 * @private
 	 * Try to combine the two sets of options.
 	 *
+	 * @private
 	 * @param {Object} optionsA The first set of options. (Not modified.)
 	 * @param {Object} optionsB The other set of options. (Not modified.)
 	 * @return {Object|null} A new set of combined options, if possible, else null.
