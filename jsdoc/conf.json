@@ -1,0 +1,26 @@
+{
+	"source": {
+		"include": [
+			"."
+		],
+		"exclude": [
+			"test"
+		]
+	},
+	"templates": {
+		"default": {
+			"layoutFile": "jsdoc/layout.tmpl",
+			"staticFiles": {
+				"include": [
+					"jsdoc/version-warning.css"
+				]
+			}
+		}
+	},
+	"opts": {
+		"destination": "doc"
+	},
+	"plugins": [
+		"plugins/markdown"
+	]
+}

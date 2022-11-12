@@ -1,5 +1,6 @@
 # copied from .gitignore (which this overrides)
 /.env
+/doc/
 
 # additional exclusions irrelevant for published packages
 /.browserslistrc
@@ -8,4 +9,5 @@
 /.github/
 /RELEASE.md
 /browser-test.html
+/jsdoc/
 /test/
