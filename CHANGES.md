@@ -16,6 +16,8 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   so you can safely get the `userAgent` value as `headers['user-agent']`.
 - m3api now has a stable interface policy, see [README.md § stability](README.md#Stability).
   Internal breaking changes, such as the one above, do not require bumping the major version number.
+- The new `authorization` request option can be used to set an `Authorization:` request header.
+  This will be used by the upcoming m3api-oauth package to support OAuth 2.0.
 
 ## v0.7.1 (2022-11-12)
 

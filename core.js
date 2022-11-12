@@ -79,6 +79,7 @@ const DEFAULT_OPTIONS = {
 	retryAfterReadonlySeconds: 30,
 	warn: console.warn,
 	dropTruncatedResultWarning: false,
+	authorization: null,
 };
 
 const DEFAULT_USER_AGENT = 'm3api/0.7.1 (https://www.npmjs.com/package/m3api)';
@@ -364,6 +365,7 @@ class Session {
 			userAgent,
 			warn,
 			dropTruncatedResultWarning,
+			authorization,
 		} = {
 			...DEFAULT_OPTIONS,
 			...this.defaultOptions,
@@ -408,6 +410,7 @@ class Session {
 			retryUntil,
 			retryAfterMaxlagSeconds,
 			retryAfterReadonlySeconds,
+			authorization,
 		);
 
 		return response;
@@ -596,6 +599,7 @@ class Session {
 	 * @param {number} retryUntil (performance.now() clock)
 	 * @param {number} retryAfterMaxlagSeconds
 	 * @param {number} retryAfterReadonlySeconds
+	 * @param {string|null} authorization
 	 * @return {Object}
 	 */
 	async internalRequest(
@@ -608,6 +612,7 @@ class Session {
 		retryUntil,
 		retryAfterMaxlagSeconds,
 		retryAfterReadonlySeconds,
+		authorization,
 	) {
 		let tokenParams = null;
 		if ( params[ tokenName ] === TOKEN_PLACEHOLDER ) {
@@ -622,6 +627,9 @@ class Session {
 		const requestHeaders = {
 			'user-agent': userAgent,
 		};
+		if ( authorization ) {
+			requestHeaders.authorization = authorization;
+		}
 
 		let result;
 		if ( method === 'GET' ) {

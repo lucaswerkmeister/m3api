@@ -593,6 +593,53 @@ describe( 'Session', () => {
 
 		} );
 
+		describe( 'Authorization header', () => {
+			it( 'not by default', async () => {
+				let called = false;
+				class TestSession extends BaseTestSession {
+					async internalGet( apiUrl, params, headers ) {
+						expect( headers ).not.to.have.property( 'authorization' );
+						expect( called, 'not called yet' ).to.be.false;
+						called = true;
+						return {
+							status: 200,
+							headers: {},
+							body: { response: true },
+						};
+					}
+				}
+
+				const session = new TestSession( 'en.wikipedia.org' );
+				await session.request( {} );
+				expect( called ).to.be.true;
+			} );
+
+			for ( const [ name, defaultOptions, options ] of [
+				[ 'defaultOptions', { authorization: 'the-authorization-header' }, {} ],
+				[ 'options', {}, { authorization: 'the-authorization-header' } ],
+			] ) {
+				it( `in ${name}`, async () => {
+					let called = false;
+					class TestSession extends BaseTestSession {
+						async internalGet( apiUrl, params, { authorization } ) {
+							expect( authorization ).to.equal( 'the-authorization-header' );
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return {
+								status: 200,
+								headers: {},
+								body: { response: true },
+							};
+						}
+					}
+
+					const session = new TestSession( 'en.wikipedia.org', {}, defaultOptions );
+					await session.request( {}, options );
+					expect( called ).to.be.true;
+				} );
+			}
+		} );
+
 		describe( 'automatic retry', () => {
 
 			let clock;
