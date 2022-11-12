@@ -10,37 +10,37 @@
  *
  * @typedef Options
  * @type {Object}
- * @property {string} [options.method] The method, either GET (default) or POST.
- * @property {string|null} [options.tokenType] Include a token parameter of this type,
+ * @property {string} [method] The method, either GET (default) or POST.
+ * @property {string|null} [tokenType] Include a token parameter of this type,
  * automatically getting it from the API if necessary.
  * The most common token type is 'csrf' (some actions use a different type);
  * you will also want to set the method option to POST.
- * @property {string} [options.tokenName] The name of the token parameter.
+ * @property {string} [tokenName] The name of the token parameter.
  * Only used if the tokenType option is not null.
  * Defaults to 'token', but some modules need a different name
  * (e.g. action=login needs 'lgtoken').
- * @property {string} [options.userAgent] The User-Agent header to send.
+ * @property {string} [userAgent] The User-Agent header to send.
  * (Usually specified as a default option in the constructor.)
- * @property {number} [options.maxRetriesSeconds] The maximum duration for automatic retries,
+ * @property {number} [maxRetriesSeconds] The maximum duration for automatic retries,
  * i.e. a time interval (in seconds) during which the request will be automatically repeated
  * according to the Retry-After response header if it is present.
  * Defaults to 65 seconds; set to 0 to disable automatic retries.
  * (Can also be a fractional number for sub-second precision.)
- * @property {number} [options.retryAfterMaxlagSeconds] Default Retry-After header value
+ * @property {number} [retryAfterMaxlagSeconds] Default Retry-After header value
  * in case of a maxlag error. Only used when the response is missing the header.
  * Since MediaWiki usually sends this header for maxlag errors, this option is rarely used.
  * Defaults to five seconds, which is the recommended maxlag value for bots.
- * @property {number} [options.retryAfterReadonlySeconds] Default Retry-After header value
+ * @property {number} [retryAfterReadonlySeconds] Default Retry-After header value
  * in case of a readonly error. Only used when the response is missing the header.
  * MediaWiki does not usually send this header for readonly errors,
  * so this option is more important than the retryAfterMaxlagSeconds option.
  * The default of 30 seconds is thought to be appropriate for Wikimedia wikis;
  * for third-party wikis, higher values may be useful
  * (remember to also increase the maxRetriesSeconds option accordingly).
- * @property {Function} [options.warn] A handler for warnings from this API request.
+ * @property {Function} [warn] A handler for warnings from this API request.
  * Called with a single instance of a subclass of Error, such as {@link ApiWarnings}.
  * The default is console.warn (interactive CLI applications may wish to change this).
- * @property {boolean} [options.dropTruncatedResultWarning]
+ * @property {boolean} [dropTruncatedResultWarning]
  * Whether to drop warnings about truncated results instead of passing them to the warn handler.
  * Occasionally, an API result may not fit into a single network response;
  * in such cases, the API will add a warning about the result being truncated,
