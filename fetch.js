@@ -21,8 +21,8 @@ class FetchSession extends Session {
 		super( apiUrl, defaultParams, defaultOptions );
 	}
 
-	async internalGet( params, headers ) {
-		const url = new URL( this.apiUrl );
+	async internalGet( apiUrl, params, headers ) {
+		const url = new URL( apiUrl );
 		url.search = new URLSearchParams( params );
 		const { 'user-agent': userAgent, ...otherHeaders } = headers;
 		const response = await fetch( url, {
@@ -34,8 +34,8 @@ class FetchSession extends Session {
 		return transformResponse( response );
 	}
 
-	async internalPost( urlParams, bodyParams, headers ) {
-		const url = new URL( this.apiUrl );
+	async internalPost( apiUrl, urlParams, bodyParams, headers ) {
+		const url = new URL( apiUrl );
 		url.search = new URLSearchParams( urlParams );
 		const { 'user-agent': userAgent, ...otherHeaders } = headers;
 		const response = await fetch( url, {

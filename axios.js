@@ -23,24 +23,25 @@ class AxiosSession extends Session {
 			keepAlive: true,
 		};
 		this.session = axios.create( {
-			baseURL: this.apiUrl,
 			httpAgent: new HttpCookieAgent( agentOptions ),
 			httpsAgent: new HttpsCookieAgent( agentOptions ),
 		} );
 	}
 
-	async internalGet( params, headers ) {
+	async internalGet( apiUrl, params, headers ) {
 		const response = await this.session.request( {
 			method: 'GET',
+			baseURL: apiUrl,
 			params,
 			headers,
 		} );
 		return transformResponse( response );
 	}
 
-	async internalPost( urlParams, bodyParams, headers ) {
+	async internalPost( apiUrl, urlParams, bodyParams, headers ) {
 		const response = await this.session.request( {
 			method: 'POST',
+			baseURL: apiUrl,
 			params: urlParams,
 			data: new URLSearchParams( bodyParams ),
 			headers,

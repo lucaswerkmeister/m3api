@@ -312,7 +312,7 @@ describe( 'Session', () => {
 			it( 'uses userAgent option for token request', async () => {
 				let called = false;
 				class TestSession extends BaseTestSession {
-					async internalGet( params, { 'user-agent': userAgent } ) {
+					async internalGet( apiUrl, params, { 'user-agent': userAgent } ) {
 						expect( userAgent ).to.match( /^user-agent / );
 						expect( called, 'not called yet' ).to.be.false;
 						called = true;
@@ -491,7 +491,7 @@ describe( 'Session', () => {
 			it( 'from default options', async () => {
 				let called = false;
 				class TestSession extends BaseTestSession {
-					async internalGet( params, { 'user-agent': userAgent } ) {
+					async internalGet( apiUrl, params, { 'user-agent': userAgent } ) {
 						expect( userAgent ).to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
 						expect( called, 'not called yet' ).to.be.false;
 						called = true;
@@ -513,7 +513,7 @@ describe( 'Session', () => {
 			it( 'from request options', async () => {
 				let called = false;
 				class TestSession extends BaseTestSession {
-					async internalGet( params, { 'user-agent': userAgent } ) {
+					async internalGet( apiUrl, params, { 'user-agent': userAgent } ) {
 						expect( userAgent ).to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
 						expect( called, 'not called yet' ).to.be.false;
 						called = true;
@@ -537,7 +537,7 @@ describe( 'Session', () => {
 				it( 'value', async () => {
 					let called = false;
 					class TestSession extends BaseTestSession {
-						async internalGet( params, { 'user-agent': userAgent } ) {
+						async internalGet( apiUrl, params, { 'user-agent': userAgent } ) {
 							expect( userAgent ).to.match( /^m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
 							expect( called, 'not called yet' ).to.be.false;
 							called = true;

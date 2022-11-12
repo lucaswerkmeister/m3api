@@ -98,14 +98,14 @@ export function singleRequestSession( expectedParams = {}, response = {}, method
 	expectedParams.format = 'json';
 	let called = false;
 	class TestSession extends BaseTestSession {
-		async internalGet( params ) {
+		async internalGet( apiUrl, params ) {
 			expect( 'GET', `${method} request expected` ).to.equal( method );
 			expect( called, 'internalGet already called' ).to.be.false;
 			called = true;
 			expect( params ).to.eql( expectedParams );
 			return makeResponse( response );
 		}
-		async internalPost( urlParams, bodyParams ) {
+		async internalPost( apiUrl, urlParams, bodyParams ) {
 			expect( 'POST', `${method} request expected` ).to.equal( method );
 			expect( called, 'internalPost already called' ).to.be.false;
 			called = true;
@@ -129,7 +129,7 @@ export function singleRequestSession( expectedParams = {}, response = {}, method
 export function sequentialRequestSession( expectedCalls ) {
 	expectedCalls.reverse();
 	class TestSession extends BaseTestSession {
-		async internalGet( params ) {
+		async internalGet( apiUrl, params ) {
 			expect( expectedCalls ).to.not.be.empty;
 			const [ {
 				expectedParams = {},
@@ -141,7 +141,7 @@ export function sequentialRequestSession( expectedCalls ) {
 			expect( params ).to.eql( expectedParams );
 			return makeResponse( response );
 		}
-		async internalPost( urlParams, bodyParams ) {
+		async internalPost( apiUrl, urlParams, bodyParams ) {
 			expect( expectedCalls ).to.not.be.empty;
 			const [ {
 				expectedParams = {},

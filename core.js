@@ -625,10 +625,10 @@ class Session {
 
 		let result;
 		if ( method === 'GET' ) {
-			result = this.internalGet( { ...params, ...tokenParams }, requestHeaders );
+			result = this.internalGet( this.apiUrl, { ...params, ...tokenParams }, requestHeaders );
 		} else if ( method === 'POST' ) {
 			const [ urlParams, bodyParams ] = splitPostParameters( { ...params, ...tokenParams } );
-			result = this.internalPost( urlParams, bodyParams, requestHeaders );
+			result = this.internalPost( this.apiUrl, urlParams, bodyParams, requestHeaders );
 		} else {
 			throw new Error( `Unknown request method: ${method}` );
 		}
@@ -713,13 +713,14 @@ class Session {
 	 *
 	 * @abstract
 	 * @protected
+	 * @param {string} apiUrl
 	 * @param {Object} params
 	 * @param {Object} headers Header names must be all-lowercase.
 	 * @return {Promise<Object>} Object with members status (number),
 	 * headers (object mapping lowercase names to string values, without set-cookie),
 	 * and body (JSON-decoded).
 	 */
-	internalGet( params, headers ) {
+	internalGet( apiUrl, params, headers ) {
 		throw new Error( 'Abstract method internalGet not implemented!' );
 	}
 
@@ -728,12 +729,13 @@ class Session {
 	 *
 	 * @abstract
 	 * @protected
+	 * @param {string} apiUrl
 	 * @param {Object} urlParams
 	 * @param {Object} bodyParams
 	 * @param {Object} headers Header names must be all-lowercase.
 	 * @return {Promise<Object>} Same as for internalGet.
 	 */
-	internalPost( urlParams, bodyParams, headers ) {
+	internalPost( apiUrl, urlParams, bodyParams, headers ) {
 		throw new Error( 'Abstract method internalPost not implemented!' );
 	}
 
