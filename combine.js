@@ -124,9 +124,9 @@ class CombiningSession extends Session {
 	 * Try to combine the two sets of options.
 	 *
 	 * @private
-	 * @param {Object} optionsA The first set of options. (Not modified.)
-	 * @param {Object} optionsB The other set of options. (Not modified.)
-	 * @return {Object|null} A new set of combined options, if possible, else null.
+	 * @param {Options} optionsA The first set of options. (Not modified.)
+	 * @param {Options} optionsB The other set of options. (Not modified.)
+	 * @return {Options|null} A new set of combined options, if possible, else null.
 	 */
 	combineOptions( optionsA, optionsB ) {
 		const defaultOptions = { ...DEFAULT_OPTIONS, ...this.defaultOptions };

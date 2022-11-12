@@ -2,6 +2,57 @@
 // Session has abstract methods with parameters only used in subclasses
 
 /**
+ * Request options for {@link request} and related methods.
+ * The actual effective options are merged from
+ * the builtin {@link DEFAULT_OPTIONS},
+ * the default options passed into the {@link Session} constructor,
+ * and the options given with a particular request call.
+ *
+ * @typedef Options
+ * @type {Object}
+ * @property {string} [options.method] The method, either GET (default) or POST.
+ * @property {string|null} [options.tokenType] Include a token parameter of this type,
+ * automatically getting it from the API if necessary.
+ * The most common token type is 'csrf' (some actions use a different type);
+ * you will also want to set the method option to POST.
+ * @property {string} [options.tokenName] The name of the token parameter.
+ * Only used if the tokenType option is not null.
+ * Defaults to 'token', but some modules need a different name
+ * (e.g. action=login needs 'lgtoken').
+ * @property {string} [options.userAgent] The User-Agent header to send.
+ * (Usually specified as a default option in the constructor.)
+ * @property {number} [options.maxRetriesSeconds] The maximum duration for automatic retries,
+ * i.e. a time interval (in seconds) during which the request will be automatically repeated
+ * according to the Retry-After response header if it is present.
+ * Defaults to 65 seconds; set to 0 to disable automatic retries.
+ * (Can also be a fractional number for sub-second precision.)
+ * @property {number} [options.retryAfterMaxlagSeconds] Default Retry-After header value
+ * in case of a maxlag error. Only used when the response is missing the header.
+ * Since MediaWiki usually sends this header for maxlag errors, this option is rarely used.
+ * Defaults to five seconds, which is the recommended maxlag value for bots.
+ * @property {number} [options.retryAfterReadonlySeconds] Default Retry-After header value
+ * in case of a readonly error. Only used when the response is missing the header.
+ * MediaWiki does not usually send this header for readonly errors,
+ * so this option is more important than the retryAfterMaxlagSeconds option.
+ * The default of 30 seconds is thought to be appropriate for Wikimedia wikis;
+ * for third-party wikis, higher values may be useful
+ * (remember to also increase the maxRetriesSeconds option accordingly).
+ * @property {Function} [options.warn] A handler for warnings from this API request.
+ * Called with a single instance of a subclass of Error, such as {@link ApiWarnings}.
+ * The default is console.warn (interactive CLI applications may wish to change this).
+ * @property {boolean} [options.dropTruncatedResultWarning]
+ * Whether to drop warnings about truncated results instead of passing them to the warn handler.
+ * Occasionally, an API result may not fit into a single network response;
+ * in such cases, the API will add a warning about the result being truncated,
+ * as well as continuation parameters that will result in the remaining information
+ * being included in the next request, if continuation is followed.
+ * If you follow continuation and are prepared to merge truncated responses back together,
+ * you don’t need to see this warning and can use this option to suppress it.
+ * This option defaults to false in {@link request} (i.e. treat the warning like any other),
+ * but to true in {@link requestAndContinueReducingBatch}.
+ */
+
+/**
  * Default options for requests across all sessions.
  *
  * Packages extending m3api’s capabilities (“extension packages”)
@@ -16,6 +67,8 @@
  *
  * Changing or removing any default options here is strongly discouraged,
  * and may result in unpredictable behavior.
+ *
+ * @type {Options}
  */
 const DEFAULT_OPTIONS = {
 	method: 'GET',
@@ -242,7 +295,7 @@ class Session {
 	 * See {@link #request} for supported value types.
 	 * You are strongly encouraged to specify formatversion: 2 here;
 	 * other useful global parameters include uselang, errorformat, maxlag.
-	 * @param {Object} [defaultOptions] Options to set for each request.
+	 * @param {Options} [defaultOptions] Options to set for each request.
 	 * See {@link #request} for supported options.
 	 * You are strongly encouraged to specify a userAgent according to the
 	 * {@link https://meta.wikimedia.org/wiki/User-Agent_policy User-Agent policy}.
@@ -264,7 +317,7 @@ class Session {
 		 * Options to set for each request.
 		 * Can be modified after construction.
 		 *
-		 * @member {Object}
+		 * @member {Options}
 		 */
 		this.defaultOptions = defaultOptions;
 
@@ -293,49 +346,9 @@ class Session {
 	 * Parameters with values false, null, or undefined are completely removed.
 	 * Default parameters from the constructor are added to these,
 	 * with per-request parameters overriding default parameters in case of collision.
-	 * @param {Object} [options] Other options for the request.
-	 * Default options from the constructor are added to these,
-	 * with per-request options overriding default options in case of collision.
-	 * @param {string} [options.method] The method, either GET (default) or POST.
-	 * @param {string|null} [options.tokenType] Include a token parameter of this type,
-	 * automatically getting it from the API if necessary.
-	 * The most common token type is 'csrf' (some actions use a different type);
-	 * you will also want to set the method option to POST.
-	 * @param {string} [options.tokenName] The name of the token parameter.
-	 * Only used if the tokenType option is not null.
-	 * Defaults to 'token', but some modules need a different name
-	 * (e.g. action=login needs 'lgtoken').
-	 * @param {string} [options.userAgent] The User-Agent header to send.
-	 * (Usually specified as a default option in the constructor.)
-	 * @param {number} [options.maxRetriesSeconds] The maximum duration for automatic retries,
-	 * i.e. a time interval (in seconds) during which the request will be automatically repeated
-	 * according to the Retry-After response header if it is present.
-	 * Defaults to 65 seconds; set to 0 to disable automatic retries.
-	 * (Can also be a fractional number for sub-second precision.)
-	 * @param {number} [options.retryAfterMaxlagSeconds] Default Retry-After header value
-	 * in case of a maxlag error. Only used when the response is missing the header.
-	 * Since MediaWiki usually sends this header for maxlag errors, this option is rarely used.
-	 * Defaults to five seconds, which is the recommended maxlag value for bots.
-	 * @param {number} [options.retryAfterReadonlySeconds] Default Retry-After header value
-	 * in case of a readonly error. Only used when the response is missing the header.
-	 * MediaWiki does not usually send this header for readonly errors,
-	 * so this option is more important than the retryAfterMaxlagSeconds option.
-	 * The default of 30 seconds is thought to be appropriate for Wikimedia wikis;
-	 * for third-party wikis, higher values may be useful
-	 * (remember to also increase the maxRetriesSeconds option accordingly).
-	 * @param {Function} [options.warn] A handler for warnings from this API request.
-	 * Called with a single instance of a subclass of Error, such as {@link ApiWarnings}.
-	 * The default is console.warn (interactive CLI applications may wish to change this).
-	 * @param {boolean} [options.dropTruncatedResultWarning]
-	 * Whether to drop warnings about truncated results instead of passing them to the warn handler.
-	 * Occasionally, an API result may not fit into a single network response;
-	 * in such cases, the API will add a warning about the result being truncated,
-	 * as well as continuation parameters that will result in the remaining information
-	 * being included in the next request, if continuation is followed.
-	 * If you follow continuation and are prepared to merge truncated responses back together,
-	 * you don’t need to see this warning and can use this option to suppress it.
-	 * This option defaults to false here (i.e. treat the warning like any other),
-	 * but in {@link requestAndContinueReducingBatch} it defaults to true.
+	 * @param {Options} [options] Other options for the request.
+	 * The per-request options extend and override the options passed into the constructor,
+	 * which in turn extend and override the builtin {@link DEFAULT_OPTIONS}.
 	 * @return {Object}
 	 * @throws {ApiErrors}
 	 */
@@ -405,7 +418,7 @@ class Session {
 	 *
 	 * @param {Object} params Same as for request.
 	 * Continuation parameters will be added automatically.
-	 * @param {Object} [options] Same as for request.
+	 * @param {Options} [options] Same as for request.
 	 * @yield {Object}
 	 * @throws {ApiErrors}
 	 */
@@ -442,7 +455,7 @@ class Session {
 	 * but other values are also possible: sets or maps may be useful.
 	 *
 	 * @param {Object} params Same as for request.
-	 * @param {Object} options Same as for request. (But not optional here!)
+	 * @param {Options} options Same as for request. (But not optional here!)
 	 * The dropTruncatedResultWarning option defaults to true here,
 	 * since continuation will produce the rest of the truncated result automatically.
 	 * @param {Function} reducer A callback like for Array.reduce().
@@ -477,7 +490,7 @@ class Session {
 	 * call {@link #request} with the tokenType/tokenName options instead.
 	 *
 	 * @param {string} type
-	 * @param {Object} options Options for the request to get the token.
+	 * @param {Options} options Options for the request to get the token.
 	 * @return {string}
 	 */
 	async getToken( type, options ) {
