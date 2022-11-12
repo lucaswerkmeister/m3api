@@ -1,4 +1,6 @@
 # m3api
+[![npm](https://img.shields.io/npm/v/m3api.svg)](https://www.npmjs.com/package/m3api)
+[![documentation](https://img.shields.io/badge/documentation-informational)](https://lucaswerkmeister.github.io/m3api/)
 
 m3api is a **minimal, modern MediaWiki API client**,
 a library for interacting with the [MediaWiki Action API][] from JavaScript.
