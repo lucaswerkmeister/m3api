@@ -15,7 +15,7 @@
 
 <div id="main">
 
-    <p class="version-warning"><strong>Warning:</strong> This is an old version. The latest stable version is <a href="../v0.7.1/Session.html">v0.7.1</a>.</p>
+    <!-- VERSION-WARNING -->
 
     <h1 class="page-title">Class: Session</h1>
 
@@ -162,7 +162,7 @@ other useful global parameters include uselang, errorformat, maxlag.</p></td>
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="global.html#Options">Options</a></span>
 
 
             
@@ -226,7 +226,7 @@ You are strongly encouraged to specify a userAgent according to the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line235">line 235</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line288">line 288</a>
     </li></ul></dd>
     
 
@@ -276,7 +276,7 @@ You are strongly encouraged to specify a userAgent according to the
 
         
             
-<h4 class="name" id="defaultOptions"><span class="type-signature"></span>defaultOptions<span class="type-signature"> :Object</span></h4>
+<h4 class="name" id="defaultOptions"><span class="type-signature"></span>defaultOptions<span class="type-signature"> :<a href="global.html#Options">Options</a></span></h4>
 
 
 
@@ -292,7 +292,7 @@ Can be modified after construction.</p>
     <ul>
         <li>
             
-<span class="param-type">Object</span>
+<span class="param-type"><a href="global.html#Options">Options</a></span>
 
 
         </li>
@@ -331,7 +331,7 @@ Can be modified after construction.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line269">line 269</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line322">line 322</a>
     </li></ul></dd>
     
 
@@ -405,7 +405,7 @@ e.g. to add assert=user after logging in.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line261">line 261</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line314">line 314</a>
     </li></ul></dd>
     
 
@@ -482,7 +482,7 @@ is generally more convenient.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line281">line 281</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line334">line 334</a>
     </li></ul></dd>
     
 
@@ -585,7 +585,7 @@ call #request with the tokenType/tokenName options instead.</p>
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="global.html#Options">Options</a></span>
 
 
             
@@ -636,7 +636,7 @@ call #request with the tokenType/tokenName options instead.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line483">line 483</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line496">line 496</a>
     </li></ul></dd>
     
 
@@ -814,7 +814,7 @@ call #request with the tokenType/tokenName options instead.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line706">line 706</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line719">line 719</a>
     </li></ul></dd>
     
 
@@ -1021,7 +1021,7 @@ and body (JSON-decoded).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line720">line 720</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line733">line 733</a>
     </li></ul></dd>
     
 
@@ -1166,7 +1166,7 @@ with per-request parameters overriding default parameters in case of collision.<
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="global.html#Options">Options</a></span>
 
 
             
@@ -1187,366 +1187,8 @@ with per-request parameters overriding default parameters in case of collision.<
             
 
             <td class="description last"><p>Other options for the request.
-Default options from the constructor are added to these,
-with per-request options overriding default options in case of collision.</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>method</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The method, either GET (default) or POST.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>tokenType</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">null</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Include a token parameter of this type,
-automatically getting it from the API if necessary.
-The most common token type is 'csrf' (some actions use a different type);
-you will also want to set the method option to POST.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>tokenName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The name of the token parameter.
-Only used if the tokenType option is not null.
-Defaults to 'token', but some modules need a different name
-(e.g. action=login needs 'lgtoken').</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>userAgent</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The User-Agent header to send.
-(Usually specified as a default option in the constructor.)</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>maxRetriesSeconds</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The maximum duration for automatic retries,
-i.e. a time interval (in seconds) during which the request will be automatically repeated
-according to the Retry-After response header if it is present.
-Defaults to 65 seconds; set to 0 to disable automatic retries.
-(Can also be a fractional number for sub-second precision.)</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>retryAfterMaxlagSeconds</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Default Retry-After header value
-in case of a maxlag error. Only used when the response is missing the header.
-Since MediaWiki usually sends this header for maxlag errors, this option is rarely used.
-Defaults to five seconds, which is the recommended maxlag value for bots.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>retryAfterReadonlySeconds</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Default Retry-After header value
-in case of a readonly error. Only used when the response is missing the header.
-MediaWiki does not usually send this header for readonly errors,
-so this option is more important than the retryAfterMaxlagSeconds option.
-The default of 30 seconds is thought to be appropriate for Wikimedia wikis;
-for third-party wikis, higher values may be useful
-(remember to also increase the maxRetriesSeconds option accordingly).</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>warn</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>A handler for warnings from this API request.
-Called with a single instance of a subclass of Error, such as <a href="ApiWarnings.html">ApiWarnings</a>.
-The default is console.warn (interactive CLI applications may wish to change this).</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>dropTruncatedResultWarning</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Whether to drop warnings about truncated results instead of passing them to the warn handler.
-Occasionally, an API result may not fit into a single network response;
-in such cases, the API will add a warning about the result being truncated,
-as well as continuation parameters that will result in the remaining information
-being included in the next request, if continuation is followed.
-If you follow continuation and are prepared to merge truncated responses back together,
-you don’t need to see this warning and can use this option to suppress it.
-This option defaults to false here (i.e. treat the warning like any other),
-but in requestAndContinueReducingBatch it defaults to true.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+The per-request options extend and override the options passed into the constructor,
+which in turn extend and override the builtin <a href="global.html#DEFAULT_OPTIONS">DEFAULT_OPTIONS</a>.</p></td>
         </tr>
 
     
@@ -1587,7 +1229,7 @@ but in requestAndContinueReducingBatch it defaults to true.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line342">line 342</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line355">line 355</a>
     </li></ul></dd>
     
 
@@ -1740,7 +1382,7 @@ Continuation parameters will be added automatically.</p></td>
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="global.html#Options">Options</a></span>
 
 
             
@@ -1801,7 +1443,7 @@ Continuation parameters will be added automatically.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line412">line 412</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line425">line 425</a>
     </li></ul></dd>
     
 
@@ -1968,7 +1610,7 @@ but other values are also possible: sets or maps may be useful.</p>
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="global.html#Options">Options</a></span>
 
 
             
@@ -2095,7 +1737,7 @@ Called with no arguments. Defaults to producing empty objects.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line456">line 456</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line469">line 469</a>
     </li></ul></dd>
     
 
