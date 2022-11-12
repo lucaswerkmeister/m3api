@@ -7,7 +7,13 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- Internal Breaking Change:
+  The signature of the `internalGet()` and `internalPost()` methods has changed;
+  they now take a `headers` object instead of a `userAgent` string.
+  The header names are always in all-lowercase,
+  so you can safely get the `userAgent` value as `headers['user-agent']`.
+- m3api now has a stable interface policy, see [README.md § stability](README.md#Stability).
+  Internal breaking changes, such as the one above, do not require bumping the major version number.
 
 ## v0.7.1 (2022-11-12)
 

@@ -619,19 +619,22 @@ class Session {
 				warn,
 			} ) };
 		}
+		const requestHeaders = {
+			'user-agent': userAgent,
+		};
 
 		let result;
 		if ( method === 'GET' ) {
-			result = this.internalGet( { ...params, ...tokenParams }, userAgent );
+			result = this.internalGet( { ...params, ...tokenParams }, requestHeaders );
 		} else if ( method === 'POST' ) {
 			const [ urlParams, bodyParams ] = splitPostParameters( { ...params, ...tokenParams } );
-			result = this.internalPost( urlParams, bodyParams, userAgent );
+			result = this.internalPost( urlParams, bodyParams, requestHeaders );
 		} else {
 			throw new Error( `Unknown request method: ${method}` );
 		}
 		const {
 			status,
-			headers,
+			headers: responseHeaders,
 			body,
 		} = await result;
 
@@ -661,9 +664,9 @@ class Session {
 		};
 		let retryPromise = null;
 
-		const hasRetryAfterHeader = 'retry-after' in headers;
+		const hasRetryAfterHeader = 'retry-after' in responseHeaders;
 		if ( hasRetryAfterHeader ) {
-			retryPromise = retryIfBefore( parseInt( headers[ 'retry-after' ] ) );
+			retryPromise = retryIfBefore( parseInt( responseHeaders[ 'retry-after' ] ) );
 			if ( retryPromise !== null ) {
 				return retryPromise;
 			}
@@ -711,12 +714,12 @@ class Session {
 	 * @abstract
 	 * @protected
 	 * @param {Object} params
-	 * @param {string} userAgent
+	 * @param {Object} headers Header names must be all-lowercase.
 	 * @return {Promise<Object>} Object with members status (number),
 	 * headers (object mapping lowercase names to string values, without set-cookie),
 	 * and body (JSON-decoded).
 	 */
-	internalGet( params, userAgent ) {
+	internalGet( params, headers ) {
 		throw new Error( 'Abstract method internalGet not implemented!' );
 	}
 
@@ -727,10 +730,10 @@ class Session {
 	 * @protected
 	 * @param {Object} urlParams
 	 * @param {Object} bodyParams
-	 * @param {string} userAgent
+	 * @param {Object} headers Header names must be all-lowercase.
 	 * @return {Promise<Object>} Same as for internalGet.
 	 */
-	internalPost( urlParams, bodyParams, userAgent ) {
+	internalPost( urlParams, bodyParams, headers ) {
 		throw new Error( 'Abstract method internalPost not implemented!' );
 	}
 

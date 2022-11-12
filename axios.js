@@ -29,25 +29,21 @@ class AxiosSession extends Session {
 		} );
 	}
 
-	async internalGet( params, userAgent ) {
+	async internalGet( params, headers ) {
 		const response = await this.session.request( {
 			method: 'GET',
 			params,
-			headers: {
-				'user-agent': userAgent,
-			},
+			headers,
 		} );
 		return transformResponse( response );
 	}
 
-	async internalPost( urlParams, bodyParams, userAgent ) {
+	async internalPost( urlParams, bodyParams, headers ) {
 		const response = await this.session.request( {
 			method: 'POST',
 			params: urlParams,
 			data: new URLSearchParams( bodyParams ),
-			headers: {
-				'user-agent': userAgent,
-			},
+			headers,
 		} );
 		return transformResponse( response );
 	}
