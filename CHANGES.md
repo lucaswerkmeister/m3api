@@ -5,7 +5,7 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## next (not yet released)
+## v0.7.1 (2022-11-12)
 
 - Publish documentation on GitHub pages:
   [latest version][m3api-doc-latest], [v0.7.1][m3api-doc-v0.7.1].
