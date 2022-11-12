@@ -7,7 +7,7 @@
 	"scripts": {
 		"test": "npm-run-all test:*",
 		"test-quick": "npm-run-all test:lint test:unit",
-		"test:lint": "eslint .",
+		"test:lint": "eslint --max-warnings=0 .",
 		"test:unit": "mocha test/unit/",
 		"test:node": "mocha test/integration/node.test.js",
 		"test:browser": "mocha test/integration/browser.test.js # #23",
