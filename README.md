@@ -7,8 +7,9 @@ a library for interacting with the [MediaWiki Action API][] from JavaScript.
 
 - It is **minimal**: It wraps the MediaWiki API, without much more.
   This library does not have many abstractions above the API,
-  as you might find in other libraries (“get page”, “make edit”).
-  It’s for people who are comfortable working with the API directly –
+  as you might find in other libraries (“get page”, “make edit”);
+  instead, these are left to [§ extension packages](#Extension-packages), see below.
+  m3api itself is for people who are comfortable working with the API directly –
   you pass in the same parameters that you’d find in e.g. the [API sandbox][],
   and get back the original MediaWiki response, JSON-decoded.
   (And if you use the API sandbox, check out [this user script][m3api-ApiSandbox-helper]!)
@@ -18,7 +19,7 @@ a library for interacting with the [MediaWiki Action API][] from JavaScript.
 
 - It is **modern**: It’s based on Promises, provides iterators,
   uses ES6 modules, and so on.
-  (See [§ Compatibility](#Compatibility) below for details.)
+  (See [§ compatibility](#Compatibility) below for details.)
 
 It supports both Node.js (using axios) and browsers (using `fetch`).
 The browser version has no external dependencies.
