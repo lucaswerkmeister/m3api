@@ -399,6 +399,46 @@ it should be possible to use m3api on older platforms as well.
 If you try this, feel free to send a pull request
 updating this paragraph with your experience.
 
+## Stability
+
+m3api follows a slightly modified version of semantic versioning.
+The public interface, which most users will use,
+is stable between minor versions (only changing incompatibly between major versions);
+however, the internal interface, which some extension packages may use,
+is only stable between patch versions, and may change incompatibly between minor versions.
+Most users are encouraged to use the “caret” operator in their m3api dependency (e.g. `^1`),
+but extension packages depending on the internal interface should use the “tilde” operator (e.g. `~1.0`),
+and list all m3api versions they’re compatible with (e.g. `~1.0||~1.1`).
+
+The stable, public interface comprises the following items:
+
+- The paths / existence of the `core.js`, `node.js` and `browser.js` files.
+- All exports of those files that have not been marked `@protected` or `@private`.
+- All members of those exports (class methods and properties) that have not been marked `@protected` or `@private`.
+
+The internal interface additionally comprises the following items:
+
+- The paths / existence of the `axios.js`, `fetch.js`, `combine.js` and `add-performance-global.js` files.
+- All exports of those files, or of files in the public interface, that have not been marked `@private`.
+- All members of those exports that have not been marked `@private`.
+
+That is, public code only changes incompatibly between major versions,
+`@protected` code only changes incompatibly between minor versions,
+and `@private` code may change incompatibly at any time.
+
+For methods, the stable interface only includes calling them;
+overriding them is part of the internal interface.
+(That is, changes that are compatible for callers but will require overriders to adjust may take place between minor versions.)
+
+Incompatible changes to the stable interface will be mentioned in the [changelog](CHANGES.md),
+always at the beginning of the entry for an release (before compatible changes in the same release),
+using the words “BREAKING CHANGE” (in all caps).
+Incompatible changes to the internal interface will be mentioned using the words “Internal Breaking Change”,
+not necessarily at the beginning of the entry.
+
+The usual semver interpretation of pre-1.0 versions applies,
+i.e. in `0.x.y`, *x* is the “major” version and *y* the “minor” one.
+
 ## License
 
 Published under the [ISC License][].

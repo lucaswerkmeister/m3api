@@ -111,7 +111,7 @@ No changes yet.
 
 ## v0.5.0 (2021-12-04)
 
-- BREAKING CHANGE (internal):
+- Internal Breaking Change:
   The `Session` constructor now requires the default request options to include `warn`,
   which must be a function.
   The `fetch.js` and `axios.js` backends already add a default for this option,
@@ -154,7 +154,7 @@ No changes yet.
   and the user agent string is just one option, under the `userAgent` key.
   Convert constructor calls like `new Session( ..., {}, 'user-agent' )`
   to `new Session( ..., {}, { userAgent: 'user-agent' } )` instead.
-- BREAKING CHANGE (internal):
+- Internal Breaking Change:
   The `internalGet` and `internalPost` methods now receive an additional parameter,
   the user agent string, which should be used instead of the constructor option.
   This is only relevant for you if you wrote a custom network implementation;
@@ -201,7 +201,7 @@ No changes yet.
 
 First proper update over a previous release.
 
-- BREAKING CHANGE (internal):
+- Internal Breaking Change:
   The `internalGet` and `internalPost` methods now return additional data.
   This is only relevant for you if you wrote a custom network implementation;
   if you just import `browser.js` or `node.js`, it doesn’t matter.
