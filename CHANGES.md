@@ -7,7 +7,10 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- Publish documentation on GitHub pages:
+  [latest version][m3api-doc-latest], [v0.7.1][m3api-doc-v0.7.1].
+- Add a `@typedef` for `Options`, the request options;
+  this may help if you are using m3api with TypeScript or in an IDE.
 
 ## v0.7.0 (2022-10-19)
 
@@ -229,3 +232,5 @@ but I see no reason to recreate the tag now.
 [User-Agent policy]: https://meta.wikimedia.org/wiki/Special:MyLanguage/User-Agent_policy
 [m3api-query]: https://www.npmjs.com/package/m3api-query
 [m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
+[m3api-doc-latest]: https://lucaswerkmeister.github.io/m3api/
+[m3api-doc-v0.7.1]: https://lucaswerkmeister.github.io/m3api/v0.7.1/
