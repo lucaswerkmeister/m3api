@@ -11,6 +11,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   [latest version][m3api-doc-latest], [v0.7.1][m3api-doc-v0.7.1].
 - Add a `@typedef` for `Options`, the request options;
   this may help if you are using m3api with TypeScript or in an IDE.
+- Updated dependencies.
 
 ## v0.7.0 (2022-10-19)
 
