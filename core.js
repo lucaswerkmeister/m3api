@@ -302,7 +302,16 @@ class Session {
 	 * {@link https://meta.wikimedia.org/wiki/User-Agent_policy User-Agent policy}.
 	 */
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
-		/** @private */
+		if ( !apiUrl.includes( '/' ) ) {
+			apiUrl = `https://${apiUrl}/w/api.php`;
+		}
+
+		/**
+		 * The URL to the api.php endpoint.
+		 * Must not be reassigned.
+		 *
+		 * @member {string}
+		 */
 		this.apiUrl = apiUrl;
 
 		/**
@@ -333,10 +342,6 @@ class Session {
 		 * @member {Map}
 		 */
 		this.tokens = new Map();
-
-		if ( !this.apiUrl.includes( '/' ) ) {
-			this.apiUrl = `https://${this.apiUrl}/w/api.php`;
-		}
 	}
 
 	/**

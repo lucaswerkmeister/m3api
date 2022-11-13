@@ -18,6 +18,8 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   Internal breaking changes, such as the one above, do not require bumping the major version number.
 - The new `authorization` request option can be used to set an `Authorization:` request header.
   This will be used by the upcoming m3api-oauth package to support OAuth 2.0.
+- The `apiUrl` member of a `Session` is now public.
+  This will be used by the upcoming m3api-oauth package.
 - A new protected method, `getUserAgent()`, can be used to get the user agent for a request.
   This will be used by the upcoming m3api-oauth package.
 
