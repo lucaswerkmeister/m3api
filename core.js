@@ -362,7 +362,6 @@ class Session {
 			maxRetriesSeconds,
 			retryAfterMaxlagSeconds,
 			retryAfterReadonlySeconds,
-			userAgent,
 			warn,
 			dropTruncatedResultWarning,
 			authorization,
@@ -375,16 +374,7 @@ class Session {
 			warn( new Error( 'The maxRetries option is no longer supported, ' +
 				'use maxRetriesSeconds instead.' ) );
 		}
-		let fullUserAgent;
-		if ( userAgent ) {
-			fullUserAgent = `${userAgent} ${DEFAULT_USER_AGENT}`;
-		} else {
-			if ( !this.warnedDefaultUserAgent ) {
-				warn( new DefaultUserAgentWarning() );
-				this.warnedDefaultUserAgent = true;
-			}
-			fullUserAgent = DEFAULT_USER_AGENT;
-		}
+		const userAgent = this.getUserAgent( options );
 		const actualWarn = dropTruncatedResultWarning ?
 			makeWarnDroppingTruncatedResultWarning( warn ) :
 			warn;
@@ -403,7 +393,7 @@ class Session {
 				...params,
 				format: 'json',
 			} ),
-			fullUserAgent,
+			userAgent,
 			actualWarn,
 			tokenType,
 			tokenName,
@@ -522,6 +512,35 @@ class Session {
 			}
 		}
 		return this.tokens.get( type );
+	}
+
+	/**
+	 * Get the effective user agent string for these options.
+	 *
+	 * @protected
+	 * @param {Options} options
+	 * @return {string}
+	 */
+	getUserAgent( options ) {
+		const {
+			userAgent,
+			warn,
+		} = {
+			...DEFAULT_OPTIONS,
+			...this.defaultOptions,
+			...options,
+		};
+
+		if ( userAgent ) {
+			return `${userAgent} ${DEFAULT_USER_AGENT}`;
+		} else {
+			if ( !this.warnedDefaultUserAgent ) {
+				warn( new DefaultUserAgentWarning() );
+				/** @private */
+				this.warnedDefaultUserAgent = true;
+			}
+			return DEFAULT_USER_AGENT;
+		}
 	}
 
 	/**

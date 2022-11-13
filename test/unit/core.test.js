@@ -489,28 +489,21 @@ describe( 'Session', () => {
 		describe( 'user agent', () => {
 
 			it( 'from default options', async () => {
-				let called = false;
-				class TestSession extends BaseTestSession {
-					async internalGet( apiUrl, params, { 'user-agent': userAgent } ) {
-						expect( userAgent ).to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
-						expect( called, 'not called yet' ).to.be.false;
-						called = true;
-						return {
-							status: 200,
-							headers: {},
-							body: { response: true },
-						};
-					}
-				}
-
-				const session = new TestSession( 'en.wikipedia.org', {}, {
+				const session = new BaseTestSession( 'en.wikipedia.org', {}, {
 					userAgent: 'user-agent',
 				} );
-				await session.request( {} );
-				expect( called ).to.be.true;
+				expect( session.getUserAgent( {} ) )
+					.to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
 			} );
 
 			it( 'from request options', async () => {
+				const session = new BaseTestSession( 'en.wikipedia.org' );
+				expect( session.getUserAgent( {
+					userAgent: 'user-agent',
+				} ) ).to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
+			} );
+
+			it( 'is used for internalGet()', async () => {
 				let called = false;
 				class TestSession extends BaseTestSession {
 					async internalGet( apiUrl, params, { 'user-agent': userAgent } ) {
@@ -535,23 +528,11 @@ describe( 'Session', () => {
 			describe( 'default', () => {
 
 				it( 'value', async () => {
-					let called = false;
-					class TestSession extends BaseTestSession {
-						async internalGet( apiUrl, params, { 'user-agent': userAgent } ) {
-							expect( userAgent ).to.match( /^m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
-							expect( called, 'not called yet' ).to.be.false;
-							called = true;
-							return {
-								status: 200,
-								headers: {},
-								body: { response: true },
-							};
-						}
-					}
-
-					const session = new TestSession( 'en.wikipedia.org' );
-					await session.request( {}, { userAgent: undefined, warn: () => {} } );
-					expect( called ).to.be.true;
+					const session = new BaseTestSession( 'en.wikipedia.org' );
+					expect( session.getUserAgent( {
+						userAgent: undefined,
+						warn: () => {},
+					} ) ).to.match( /^m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
 				} );
 
 				it( 'warns once per session', async () => {
