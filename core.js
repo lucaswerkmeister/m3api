@@ -84,7 +84,7 @@ const DEFAULT_OPTIONS = {
 
 const DEFAULT_USER_AGENT = 'm3api/0.7.1 (https://www.npmjs.com/package/m3api)';
 
-const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes$/;
+const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes\.?$/;
 
 const TOKEN_PLACEHOLDER = Symbol( 'm3api/token-placeholder' );
 

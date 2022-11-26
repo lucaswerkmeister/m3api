@@ -991,19 +991,34 @@ describe( 'Session', () => {
 					}
 
 					for ( const [ description, warnings ] of [
-						[ 'errorformat=bc, formatversion=1, 1.37', {
+						// warning message was introduced in commit d8a241f6a7
+						// and remained constant up to and including 1.23
+						[ 'errorformat=bc, formatversion=1, 1.23.17', {
 							main: {
 								'*': 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
 							},
 						} ],
-						[ 'errorformat=bc, formatversion=1, 1.27', {
+						// change I7b37295e88 (commit 1c57794e37 on master or 453c558e5f on REL1_25)
+						// accidentally introduced an extra space
+						[ 'errorformat=bc, formatversion=1, 1.25.0', {
 							main: {
 								'*': 'This result was truncated because it would otherwise  be larger than the limit of 1 bytes',
 							},
 						} ],
+						// change I5888d617ab (commit f465c7feb4) fixed the double space,
+						// making 1.28 identical to 1.23 again
+						// change Iae0e2ce3bd (commit 4e6810e4a2) added i18n for the warning,
+						// adding a period in the process
+						[ 'errorformat=bc, formatversion=1, 1.29.0', {
+							main: {
+								'*': 'This result was truncated because it would otherwise be larger than the limit of 1 bytes.',
+							},
+						} ],
+						// since then, the English version of the message hasn’t changed;
+						// test other formatversion/errorformat now
 						[ 'errorformat=bc, formatversion=2', {
 							main: {
-								warnings: 'This result was truncated because it would otherwise be larger than the limit of 1 bytes',
+								warnings: 'This result was truncated because it would otherwise be larger than the limit of 1 bytes.',
 							},
 						} ],
 						[ 'errorformat=none', [
