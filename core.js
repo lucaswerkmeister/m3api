@@ -275,7 +275,7 @@ class DefaultUserAgentWarning extends Error {
 		);
 
 		if ( Error.captureStackTrace ) {
-			Error.captureStackTrace( this, ApiWarnings );
+			Error.captureStackTrace( this, DefaultUserAgentWarning );
 		}
 
 		this.name = 'DefaultUserAgentWarning';
