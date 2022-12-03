@@ -36,6 +36,7 @@ jobs:
       - name: Update old documentation
         run: |
           cd gh-pages;
+          shopt -s nullglob;
           for file in */*.html; do
             base=${file##*/};
             # replace any existing version warnings with the marker (that is also in layout.tmpl)
