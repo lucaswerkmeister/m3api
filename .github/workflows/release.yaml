@@ -2,6 +2,11 @@ name: Release
 on:
   release:
     types: [published]
+  workflow_call:
+    secrets:
+      NPM_TOKEN:
+        description: 'An access token for npm, used to publish the package'
+        required: true
 jobs:
   release:
     runs-on: ubuntu-latest
