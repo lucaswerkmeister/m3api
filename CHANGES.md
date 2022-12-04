@@ -264,4 +264,4 @@ but I see no reason to recreate the tag now.
 [m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
 [m3api-doc-latest]: https://lucaswerkmeister.github.io/m3api/
 [m3api-doc-v0.7.1]: https://lucaswerkmeister.github.io/m3api/v0.7.1/
-[m3api-oauth2]: https://github.com/lucaswerkmeister/m3api-oauth2
+[m3api-oauth2]: https://www.npmjs.com/package/m3api-oauth2

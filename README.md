@@ -457,7 +457,7 @@ you agree to publish your contribution under the same license.
 [API sandbox]: https://en.wikipedia.org/wiki/Special:ApiSandbox
 [m3api-ApiSandbox-helper]: https://meta.wikimedia.org/wiki/User:Lucas_Werkmeister/m3api-ApiSandbox-helper
 [mediawiki-js]: https://github.com/brettz9/mediawiki-js
-[m3api-oauth2]: https://github.com/lucaswerkmeister/m3api-oauth2
+[m3api-oauth2]: https://www.npmjs.com/package/m3api-oauth2
 [m3api-query]: https://www.npmjs.com/package/m3api-query
 [m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
 [bot password]: https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Bot_passwords
