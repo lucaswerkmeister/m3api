@@ -17,11 +17,12 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 - m3api now has a stable interface policy, see [README.md § stability](README.md#Stability).
   Internal breaking changes, such as the one above, do not require bumping the major version number.
 - The new `authorization` request option can be used to set an `Authorization:` request header.
-  This will be used by the upcoming m3api-oauth2 package to support OAuth 2.0.
+  This will be used by the upcoming [m3api-oauth2][] package to support OAuth 2.0;
+  you can also use it directly using the access token of an owner-only client.
 - The `apiUrl` member of a `Session` is now public.
-  This will be used by the upcoming m3api-oauth2 package.
+  This will be used by m3api-oauth2.
 - A new protected method, `getUserAgent()`, can be used to get the user agent for a request.
-  This will be used by the upcoming m3api-oauth2 package.
+  This will be used by m3api-oauth2.
 - The `dropTruncatedResultWarning` didn’t work properly
   when using the default `errorformat` on current MediaWiki versions;
   this has been fixed.
@@ -259,3 +260,4 @@ but I see no reason to recreate the tag now.
 [m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
 [m3api-doc-latest]: https://lucaswerkmeister.github.io/m3api/
 [m3api-doc-v0.7.1]: https://lucaswerkmeister.github.io/m3api/v0.7.1/
+[m3api-oauth2]: https://github.com/lucaswerkmeister/m3api-oauth2

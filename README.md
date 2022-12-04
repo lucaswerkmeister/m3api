@@ -187,6 +187,13 @@ Other features not demonstrated above:
   This is mostly useful in library code, when you don’t know the `formatversion` of the response;
   you can import the helper from `core.js` (but not `browser.js` or `node.js`).
 
+- The `authorization` request option can be used to set the `Authorization` request header.
+  You can use this directly with an owner-only OAuth 2.0 client,
+  by setting the option to the string `Bearer ACCESS_TOKEN`
+  (where *ACCESS_TOKEN* is the access token MediaWiki generated for you);
+  to use a regular OAuth 2.0 client and make requests authenticated as another user,
+  use the [m3api-oauth2][] extension package.
+
 For more details, see also the code-level documentation (JSdoc comments).
 
 ### Automatically combining requests
@@ -295,6 +302,7 @@ Available extension packages include:
 
 - [m3api-query][], for the `action=query` API
 - [m3api-botpassword][], to log in using a [bot password][]
+- [m3api-oauth2][], to authenticate using OAuth 2.0
 
 If you create an additional extension package,
 feel free to submit a pull request to add it to this list.
@@ -449,6 +457,7 @@ you agree to publish your contribution under the same license.
 [API sandbox]: https://en.wikipedia.org/wiki/Special:ApiSandbox
 [m3api-ApiSandbox-helper]: https://meta.wikimedia.org/wiki/User:Lucas_Werkmeister/m3api-ApiSandbox-helper
 [mediawiki-js]: https://github.com/brettz9/mediawiki-js
+[m3api-oauth2]: https://github.com/lucaswerkmeister/m3api-oauth2
 [m3api-query]: https://www.npmjs.com/package/m3api-query
 [m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
 [bot password]: https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Bot_passwords
