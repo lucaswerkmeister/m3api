@@ -22,7 +22,7 @@ For the release notes (for users), see [CHANGES.md](./CHANGES.md).
    the first body line may be a quick summary;
    the rest of the body should be the `CHANGES.md` section
    (in Vim, use `:r CHANGES.md`, then remove other sections),
-   reflown to a maximum width of 72 characters (`gqip` in Vim).
+   reflowed to a maximum width of 72 characters (`gqip` in Vim).
 
 6. Push the tag.
 
