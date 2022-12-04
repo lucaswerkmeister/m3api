@@ -26,6 +26,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   when using the default `errorformat` on current MediaWiki versions;
   this has been fixed.
   (It’s still a good idea to set a non-`bc` error format in general.)
+- Exclude axios 1.2.0, which should not be used due to a bug.
 
 ## v0.7.1 (2022-11-12)
 
