@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>m3api: Class: ApiErrors</title>
+    <title>m3api: Class: ApiWarnings</title>
 
     <script defer src="scripts/prettify/prettify.js"></script>
     <script defer src="scripts/prettify/lang-css.js"></script>
@@ -15,9 +15,9 @@
 
 <div id="main">
 
-    <p class="version-warning"><strong>Warning:</strong> This is an old version. The latest stable version is <a href="../v0.7.2/ApiErrors.html">v0.7.2</a>.</p>
+    <!-- VERSION-WARNING -->
 
-    <h1 class="page-title">Class: ApiErrors</h1>
+    <h1 class="page-title">Class: ApiWarnings</h1>
 
     
 
@@ -28,9 +28,9 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>ApiErrors<span class="signature">(errors, &hellip;params)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>ApiWarnings<span class="signature">(warnings, &hellip;params)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description"><p>An Error wrapping one or more API errors.</p></div>
+            <div class="class-description"><p>An Error wrapping one or more API warnings.</p></div>
         
     
 </header>
@@ -45,7 +45,7 @@
     
 
     
-    <h4 class="name" id="ApiErrors"><span class="type-signature"></span>new ApiErrors<span class="signature">(errors, &hellip;params)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="ApiWarnings"><span class="type-signature"></span>new ApiWarnings<span class="signature">(warnings, &hellip;params)</span><span class="type-signature"></span></h4>
     
 
     
@@ -87,7 +87,7 @@
 
         <tr>
             
-                <td class="name"><code>errors</code></td>
+                <td class="name"><code>warnings</code></td>
             
 
             <td class="type">
@@ -111,9 +111,8 @@
 
             
 
-            <td class="description last"><p>The error objects from the API.
-Must be nonempty, and each error must contain at least a code.
-Other error members depend on the errorformat of the request.</p></td>
+            <td class="description last"><p>The warning objects from the API.
+Must be nonempty; the warning members depend on the errorformat of the request.</p></td>
         </tr>
 
     
@@ -147,7 +146,7 @@ Other error members depend on the errorformat of the request.</p></td>
             
 
             <td class="description last"><p>Any other params for the Error constructor.
-(Not including the message: the first error code is used for that.)</p></td>
+(Not including the message: the first warning is used for that.)</p></td>
         </tr>
 
     
@@ -188,7 +187,7 @@ Other error members depend on the errorformat of the request.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line169">line 169</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line201">line 201</a>
     </li></ul></dd>
     
 
@@ -238,13 +237,13 @@ Other error members depend on the errorformat of the request.</p></td>
 
         
             
-<h4 class="name" id="errors"><span class="type-signature"></span>errors<span class="type-signature"> :Array.&lt;Object></span></h4>
+<h4 class="name" id="warnings"><span class="type-signature"></span>warnings<span class="type-signature"> :Array.&lt;Object></span></h4>
 
 
 
 
 <div class="description">
-    <p>The error objects from the API.</p>
+    <p>The warning objects from the API.</p>
 </div>
 
 
@@ -292,7 +291,7 @@ Other error members depend on the errorformat of the request.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line192">line 192</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line226">line 226</a>
     </li></ul></dd>
     
 

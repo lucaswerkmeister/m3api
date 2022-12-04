@@ -15,7 +15,7 @@
 
 <div id="main">
 
-    <p class="version-warning"><strong>Warning:</strong> This is an old version. The latest stable version is <a href="../v0.7.2/core.js.html">v0.7.2</a>.</p>
+    <!-- VERSION-WARNING -->
 
     <h1 class="page-title">Source: core.js</h1>
 
@@ -107,11 +107,12 @@ const DEFAULT_OPTIONS = {
 	retryAfterReadonlySeconds: 30,
 	warn: console.warn,
 	dropTruncatedResultWarning: false,
+	authorization: null,
 };
 
-const DEFAULT_USER_AGENT = 'm3api/0.7.1 (https://www.npmjs.com/package/m3api)';
+const DEFAULT_USER_AGENT = 'm3api/0.7.2 (https://www.npmjs.com/package/m3api)';
 
-const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes$/;
+const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes\.?$/;
 
 const TOKEN_PLACEHOLDER = Symbol( 'm3api/token-placeholder' );
 
@@ -302,7 +303,7 @@ class DefaultUserAgentWarning extends Error {
 		);
 
 		if ( Error.captureStackTrace ) {
-			Error.captureStackTrace( this, ApiWarnings );
+			Error.captureStackTrace( this, DefaultUserAgentWarning );
 		}
 
 		this.name = 'DefaultUserAgentWarning';
@@ -329,7 +330,16 @@ class Session {
 	 * {@link https://meta.wikimedia.org/wiki/User-Agent_policy User-Agent policy}.
 	 */
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
-		/** @private */
+		if ( !apiUrl.includes( '/' ) ) {
+			apiUrl = `https://${apiUrl}/w/api.php`;
+		}
+
+		/**
+		 * The URL to the api.php endpoint.
+		 * Must not be reassigned.
+		 *
+		 * @member {string}
+		 */
 		this.apiUrl = apiUrl;
 
 		/**
@@ -360,10 +370,6 @@ class Session {
 		 * @member {Map}
 		 */
 		this.tokens = new Map();
-
-		if ( !this.apiUrl.includes( '/' ) ) {
-			this.apiUrl = `https://${this.apiUrl}/w/api.php`;
-		}
 	}
 
 	/**
@@ -389,9 +395,9 @@ class Session {
 			maxRetriesSeconds,
 			retryAfterMaxlagSeconds,
 			retryAfterReadonlySeconds,
-			userAgent,
 			warn,
 			dropTruncatedResultWarning,
+			authorization,
 		} = {
 			...DEFAULT_OPTIONS,
 			...this.defaultOptions,
@@ -401,16 +407,7 @@ class Session {
 			warn( new Error( 'The maxRetries option is no longer supported, ' +
 				'use maxRetriesSeconds instead.' ) );
 		}
-		let fullUserAgent;
-		if ( userAgent ) {
-			fullUserAgent = `${userAgent} ${DEFAULT_USER_AGENT}`;
-		} else {
-			if ( !this.warnedDefaultUserAgent ) {
-				warn( new DefaultUserAgentWarning() );
-				this.warnedDefaultUserAgent = true;
-			}
-			fullUserAgent = DEFAULT_USER_AGENT;
-		}
+		const userAgent = this.getUserAgent( options );
 		const actualWarn = dropTruncatedResultWarning ?
 			makeWarnDroppingTruncatedResultWarning( warn ) :
 			warn;
@@ -429,13 +426,14 @@ class Session {
 				...params,
 				format: 'json',
 			} ),
-			fullUserAgent,
+			userAgent,
 			actualWarn,
 			tokenType,
 			tokenName,
 			retryUntil,
 			retryAfterMaxlagSeconds,
 			retryAfterReadonlySeconds,
+			authorization,
 		);
 
 		return response;
@@ -550,6 +548,35 @@ class Session {
 	}
 
 	/**
+	 * Get the effective user agent string for these options.
+	 *
+	 * @protected
+	 * @param {Options} options
+	 * @return {string}
+	 */
+	getUserAgent( options ) {
+		const {
+			userAgent,
+			warn,
+		} = {
+			...DEFAULT_OPTIONS,
+			...this.defaultOptions,
+			...options,
+		};
+
+		if ( userAgent ) {
+			return `${userAgent} ${DEFAULT_USER_AGENT}`;
+		} else {
+			if ( !this.warnedDefaultUserAgent ) {
+				warn( new DefaultUserAgentWarning() );
+				/** @private */
+				this.warnedDefaultUserAgent = true;
+			}
+			return DEFAULT_USER_AGENT;
+		}
+	}
+
+	/**
 	 * @private
 	 * @param {Object} params
 	 * @return {Object}
@@ -624,6 +651,7 @@ class Session {
 	 * @param {number} retryUntil (performance.now() clock)
 	 * @param {number} retryAfterMaxlagSeconds
 	 * @param {number} retryAfterReadonlySeconds
+	 * @param {string|null} authorization
 	 * @return {Object}
 	 */
 	async internalRequest(
@@ -636,6 +664,7 @@ class Session {
 		retryUntil,
 		retryAfterMaxlagSeconds,
 		retryAfterReadonlySeconds,
+		authorization,
 	) {
 		let tokenParams = null;
 		if ( params[ tokenName ] === TOKEN_PLACEHOLDER ) {
@@ -647,19 +676,25 @@ class Session {
 				warn,
 			} ) };
 		}
+		const requestHeaders = {
+			'user-agent': userAgent,
+		};
+		if ( authorization ) {
+			requestHeaders.authorization = authorization;
+		}
 
 		let result;
 		if ( method === 'GET' ) {
-			result = this.internalGet( { ...params, ...tokenParams }, userAgent );
+			result = this.internalGet( this.apiUrl, { ...params, ...tokenParams }, requestHeaders );
 		} else if ( method === 'POST' ) {
 			const [ urlParams, bodyParams ] = splitPostParameters( { ...params, ...tokenParams } );
-			result = this.internalPost( urlParams, bodyParams, userAgent );
+			result = this.internalPost( this.apiUrl, urlParams, bodyParams, requestHeaders );
 		} else {
 			throw new Error( `Unknown request method: ${method}` );
 		}
 		const {
 			status,
-			headers,
+			headers: responseHeaders,
 			body,
 		} = await result;
 
@@ -689,9 +724,9 @@ class Session {
 		};
 		let retryPromise = null;
 
-		const hasRetryAfterHeader = 'retry-after' in headers;
+		const hasRetryAfterHeader = 'retry-after' in responseHeaders;
 		if ( hasRetryAfterHeader ) {
-			retryPromise = retryIfBefore( parseInt( headers[ 'retry-after' ] ) );
+			retryPromise = retryIfBefore( parseInt( responseHeaders[ 'retry-after' ] ) );
 			if ( retryPromise !== null ) {
 				return retryPromise;
 			}
@@ -738,13 +773,14 @@ class Session {
 	 *
 	 * @abstract
 	 * @protected
+	 * @param {string} apiUrl
 	 * @param {Object} params
-	 * @param {string} userAgent
+	 * @param {Object} headers Header names must be all-lowercase.
 	 * @return {Promise&lt;Object>} Object with members status (number),
 	 * headers (object mapping lowercase names to string values, without set-cookie),
 	 * and body (JSON-decoded).
 	 */
-	internalGet( params, userAgent ) {
+	internalGet( apiUrl, params, headers ) {
 		throw new Error( 'Abstract method internalGet not implemented!' );
 	}
 
@@ -753,12 +789,13 @@ class Session {
 	 *
 	 * @abstract
 	 * @protected
+	 * @param {string} apiUrl
 	 * @param {Object} urlParams
 	 * @param {Object} bodyParams
-	 * @param {string} userAgent
+	 * @param {Object} headers Header names must be all-lowercase.
 	 * @return {Promise&lt;Object>} Same as for internalGet.
 	 */
-	internalPost( urlParams, bodyParams, userAgent ) {
+	internalPost( apiUrl, urlParams, bodyParams, headers ) {
 		throw new Error( 'Abstract method internalPost not implemented!' );
 	}
 

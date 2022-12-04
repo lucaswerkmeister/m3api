@@ -15,7 +15,7 @@
 
 <div id="main">
 
-    <p class="version-warning"><strong>Warning:</strong> This is an old version. The latest stable version is <a href="../v0.7.2/Session.html">v0.7.2</a>.</p>
+    <!-- VERSION-WARNING -->
 
     <h1 class="page-title">Class: Session</h1>
 
@@ -226,7 +226,7 @@ You are strongly encouraged to specify a userAgent according to the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line288">line 288</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line289">line 289</a>
     </li></ul></dd>
     
 
@@ -273,6 +273,79 @@ You are strongly encouraged to specify a userAgent according to the
 
     
         <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="apiUrl"><span class="type-signature"></span>apiUrl<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    <p>The URL to the api.php endpoint.
+Must not be reassigned.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line315">line 315</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
 
         
             
@@ -331,7 +404,7 @@ Can be modified after construction.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line322">line 322</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line332">line 332</a>
     </li></ul></dd>
     
 
@@ -405,7 +478,7 @@ e.g. to add assert=user after logging in.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line314">line 314</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line324">line 324</a>
     </li></ul></dd>
     
 
@@ -482,7 +555,7 @@ is generally more convenient.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line334">line 334</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line344">line 344</a>
     </li></ul></dd>
     
 
@@ -636,7 +709,7 @@ call #request with the tokenType/tokenName options instead.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line496">line 496</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line494">line 494</a>
     </li></ul></dd>
     
 
@@ -690,7 +763,7 @@ call #request with the tokenType/tokenName options instead.</p>
     
 
     
-    <h4 class="name" id="internalGet"><span class="type-signature">(abstract, protected) </span>internalGet<span class="signature">(params, userAgent)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+    <h4 class="name" id="getUserAgent"><span class="type-signature">(protected) </span>getUserAgent<span class="signature">(options)</span><span class="type-signature"> &rarr; {string}</span></h4>
     
 
     
@@ -698,7 +771,7 @@ call #request with the tokenType/tokenName options instead.</p>
 
 
 <div class="description">
-    <p>Actually make a GET request.</p>
+    <p>Get the effective user agent string for these options.</p>
 </div>
 
 
@@ -734,36 +807,13 @@ call #request with the tokenType/tokenName options instead.</p>
 
         <tr>
             
-                <td class="name"><code>params</code></td>
+                <td class="name"><code>options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>userAgent</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
+<span class="param-type"><a href="global.html#Options">Options</a></span>
 
 
             
@@ -814,7 +864,208 @@ call #request with the tokenType/tokenName options instead.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line719">line 719</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line529">line 529</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="internalGet"><span class="type-signature">(abstract, protected) </span>internalGet<span class="signature">(apiUrl, params, headers)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Actually make a GET request.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>apiUrl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>headers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Header names must be all-lowercase.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line755">line 755</a>
     </li></ul></dd>
     
 
@@ -874,7 +1125,7 @@ and body (JSON-decoded).</p>
     
 
     
-    <h4 class="name" id="internalPost"><span class="type-signature">(abstract, protected) </span>internalPost<span class="signature">(urlParams, bodyParams, userAgent)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
+    <h4 class="name" id="internalPost"><span class="type-signature">(abstract, protected) </span>internalPost<span class="signature">(apiUrl, urlParams, bodyParams, headers)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
     
 
     
@@ -914,6 +1165,29 @@ and body (JSON-decoded).</p>
     </thead>
 
     <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>apiUrl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
     
 
         <tr>
@@ -964,13 +1238,13 @@ and body (JSON-decoded).</p>
 
         <tr>
             
-                <td class="name"><code>userAgent</code></td>
+                <td class="name"><code>headers</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Object</span>
 
 
             
@@ -980,7 +1254,7 @@ and body (JSON-decoded).</p>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Header names must be all-lowercase.</p></td>
         </tr>
 
     
@@ -1021,7 +1295,7 @@ and body (JSON-decoded).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line733">line 733</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line770">line 770</a>
     </li></ul></dd>
     
 
@@ -1229,7 +1503,7 @@ which in turn extend and override the builtin <a href="global.html#DEFAULT_OPTIO
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line355">line 355</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line361">line 361</a>
     </li></ul></dd>
     
 
@@ -1443,7 +1717,7 @@ Continuation parameters will be added automatically.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line425">line 425</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line423">line 423</a>
     </li></ul></dd>
     
 
@@ -1737,7 +2011,7 @@ Called with no arguments. Defaults to producing empty objects.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line469">line 469</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line467">line 467</a>
     </li></ul></dd>
     
 

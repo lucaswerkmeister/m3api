@@ -15,7 +15,7 @@
 
 <div id="main">
 
-    <p class="version-warning"><strong>Warning:</strong> This is an old version. The latest stable version is <a href="../v0.7.2/index.html">v0.7.2</a>.</p>
+    <!-- VERSION-WARNING -->
 
     <h1 class="page-title">Home</h1>
 
@@ -234,6 +234,14 @@ if <code>response.query.general</code> had <code>rtl: &quot;&quot;</code> (<code
 This is mostly useful in library code, when you don’t know the <code>formatversion</code> of the response;
 you can import the helper from <code>core.js</code> (but not <code>browser.js</code> or <code>node.js</code>).</p>
 </li>
+<li>
+<p>The <code>authorization</code> request option can be used to set the <code>Authorization</code> request header.
+You can use this directly with an owner-only OAuth 2.0 client,
+by setting the option to the string <code>Bearer ACCESS_TOKEN</code>
+(where <em>ACCESS_TOKEN</em> is the access token MediaWiki generated for you);
+to use a regular OAuth 2.0 client and make requests authenticated as another user,
+use the <a href="https://github.com/lucaswerkmeister/m3api-oauth2">m3api-oauth2</a> extension package.</p>
+</li>
 </ul>
 <p>For more details, see also the code-level documentation (JSdoc comments).</p>
 <h3>Automatically combining requests</h3>
@@ -336,6 +344,7 @@ Available extension packages include:</p>
 <ul>
 <li><a href="https://www.npmjs.com/package/m3api-query">m3api-query</a>, for the <code>action=query</code> API</li>
 <li><a href="https://www.npmjs.com/package/m3api-botpassword">m3api-botpassword</a>, to log in using a <a href="https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Bot_passwords">bot password</a></li>
+<li><a href="https://github.com/lucaswerkmeister/m3api-oauth2">m3api-oauth2</a>, to authenticate using OAuth 2.0</li>
 </ul>
 <p>If you create an additional extension package,
 feel free to submit a pull request to add it to this list.
@@ -429,6 +438,40 @@ and therefore aren’t expected to affect compatibility.</p>
 it should be possible to use m3api on older platforms as well.
 If you try this, feel free to send a pull request
 updating this paragraph with your experience.</p>
+<h2>Stability</h2>
+<p>m3api follows a slightly modified version of semantic versioning.
+The public interface, which most users will use,
+is stable between minor versions (only changing incompatibly between major versions);
+however, the internal interface, which some extension packages may use,
+is only stable between patch versions, and may change incompatibly between minor versions.
+Most users are encouraged to use the “caret” operator in their m3api dependency (e.g. <code>^1</code>),
+but extension packages depending on the internal interface should use the “tilde” operator (e.g. <code>~1.0</code>),
+and list all m3api versions they’re compatible with (e.g. <code>~1.0||~1.1</code>).</p>
+<p>The stable, public interface comprises the following items:</p>
+<ul>
+<li>The paths / existence of the <code>core.js</code>, <code>node.js</code> and <code>browser.js</code> files.</li>
+<li>All exports of those files that have not been marked <code>@protected</code> or <code>@private</code>.</li>
+<li>All members of those exports (class methods and properties) that have not been marked <code>@protected</code> or <code>@private</code>.</li>
+</ul>
+<p>The internal interface additionally comprises the following items:</p>
+<ul>
+<li>The paths / existence of the <code>axios.js</code>, <code>fetch.js</code>, <code>combine.js</code> and <code>add-performance-global.js</code> files.</li>
+<li>All exports of those files, or of files in the public interface, that have not been marked <code>@private</code>.</li>
+<li>All members of those exports that have not been marked <code>@private</code>.</li>
+</ul>
+<p>That is, public code only changes incompatibly between major versions,
+<code>@protected</code> code only changes incompatibly between minor versions,
+and <code>@private</code> code may change incompatibly at any time.</p>
+<p>For methods, the stable interface only includes calling them;
+overriding them is part of the internal interface.
+(That is, changes that are compatible for callers but will require overriders to adjust may take place between minor versions.)</p>
+<p>Incompatible changes to the stable interface will be mentioned in the <a href="CHANGES.md">changelog</a>,
+always at the beginning of the entry for an release (before compatible changes in the same release),
+using the words “BREAKING CHANGE” (in all caps).
+Incompatible changes to the internal interface will be mentioned using the words “Internal Breaking Change”,
+not necessarily at the beginning of the entry.</p>
+<p>The usual semver interpretation of pre-1.0 versions applies,
+i.e. in <code>0.x.y</code>, <em>x</em> is the “major” version and <em>y</em> the “minor” one.</p>
 <h2>License</h2>
 <p>Published under the <a href="https://spdx.org/licenses/ISC.html">ISC License</a>.
 By contributing to this software,
