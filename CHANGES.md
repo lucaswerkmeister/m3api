@@ -27,6 +27,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   this has been fixed.
   (It’s still a good idea to set a non-`bc` error format in general.)
 - Exclude axios 1.2.0, which should not be used due to a bug.
+- Updated other dependencies.
 
 ## v0.7.1 (2022-11-12)
 
