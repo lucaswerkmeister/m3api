@@ -363,7 +363,6 @@ class Session {
 			method,
 			tokenType,
 			tokenName,
-			maxRetries, // only for warning
 			maxRetriesSeconds,
 			retryAfterMaxlagSeconds,
 			retryAfterReadonlySeconds,
@@ -375,10 +374,6 @@ class Session {
 			...this.defaultOptions,
 			...options,
 		};
-		if ( maxRetries !== undefined && !( 'maxRetriesSeconds' in { ...this.defaultOptions, ...options } ) ) {
-			warn( new Error( 'The maxRetries option is no longer supported, ' +
-				'use maxRetriesSeconds instead.' ) );
-		}
 		const userAgent = this.getUserAgent( options );
 		const actualWarn = dropTruncatedResultWarning ?
 			makeWarnDroppingTruncatedResultWarning( warn ) :
