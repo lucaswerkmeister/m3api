@@ -16,6 +16,7 @@
 		"comma-dangle": [ "error", "always-multiline" ],
 		"no-use-before-define": [ "error", "nofunc" ],
 		"no-shadow": "off",
+		"prefer-const": [ "error", { "destructuring": "all" } ],
 		"es/no-promise-any": "off"
 	},
 	"overrides": [

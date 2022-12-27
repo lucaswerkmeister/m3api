@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint jsdoc/no-undefined-types: [ "error", { "definedTypes": [ "Options" ] } ] */
 import {
 	DEFAULT_OPTIONS,
 	Session,
@@ -37,11 +37,12 @@ class CombiningSession extends Session {
 			}
 		}
 		pendingRequests.add( newRequest );
-		return newRequest.promise = new Promise( async ( resolve ) => {
+		// eslint-disable-next-line no-async-promise-executor
+		return ( newRequest.promise = new Promise( async ( resolve ) => {
 			await Promise.resolve(); // brief pause to let other requests join this one
 			pendingRequests.delete( newRequest );
 			resolve( super.request( newRequest.params, newRequest.options ) );
-		} );
+		} ) );
 	}
 
 	/**
@@ -77,12 +78,14 @@ class CombiningSession extends Session {
 	 */
 	combineParams( paramsA, paramsB ) {
 		// never combine generator/continue with titles/pageids/revids
-		const hasParam = ( params, key ) => this.transformParamScalar( params[ key ] ) !== undefined;
-		const hasParams = ( params, ...keys ) => keys.some( ( key ) => hasParam( params, key ) );
-		if ( hasParams( paramsA, 'generator', 'continue' )
-			&& hasParams( paramsB, 'titles', 'pageids', 'revids' )
-			|| hasParams( paramsB, 'generator', 'continue' )
-			&& hasParams( paramsA, 'titles', 'pageids', 'revids' )
+		const hasParam = ( params, key ) =>
+			this.transformParamScalar( params[ key ] ) !== undefined;
+		const hasParams = ( params, ...keys ) =>
+			keys.some( ( key ) => hasParam( params, key ) );
+		if ( hasParams( paramsA, 'generator', 'continue' ) &&
+			hasParams( paramsB, 'titles', 'pageids', 'revids' ) ||
+			hasParams( paramsB, 'generator', 'continue' ) &&
+			hasParams( paramsA, 'titles', 'pageids', 'revids' )
 		) {
 			return null;
 		}
@@ -112,7 +115,7 @@ class CombiningSession extends Session {
 			}
 			return null;
 		}
-		for ( let [ key, valueA ] of Object.entries( paramsA ) ) {
+		for ( const [ key, valueA ] of Object.entries( paramsA ) ) {
 			if ( !Object.prototype.hasOwnProperty.call( paramsB, key ) ) {
 				params[ key ] = valueA;
 			}
