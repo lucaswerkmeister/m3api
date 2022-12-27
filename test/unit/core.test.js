@@ -703,6 +703,17 @@ describe( 'Session', () => {
 				expect( response ).to.eql( { response: true } );
 			} );
 
+			it( 'retryUntil overrides maxRetriesSeconds', async () => {
+				const session = singleRequestSession( {}, {
+					headers: { 'retry-after': '5' },
+					body: { error: { code: 'maxlag' } },
+				} );
+				await expect( session.request( {}, {
+					retryUntil: performance.now() + 4000, // not enough for retry-after: 5
+					maxRetriesSeconds: 6, // enough for retry-after: 5 but overridden by retryUntil
+				} ) ).to.be.rejectedWith( ApiErrors );
+			} );
+
 			it( 'default maxlag retry', async () => {
 				const session = sequentialRequestSession( [
 					{ response: { error: { code: 'maxlag' } } },

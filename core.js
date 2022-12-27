@@ -55,6 +55,10 @@
  * For an owner-only client / consumer, where you have an access token,
  * you can set this option to `Bearer ${accessToken}` directly.
  * Otherwise, use the m3api-oauth extension package.
+ * @property {number} [retryUntil] Internal option.
+ * Retry until the given timestamp (in terms of the performance.now() clock).
+ * Takes precedence over the maxRetriesSeconds option.
+ * This option is only part of the internal interface, not of the stable, public interface.
  */
 
 /**
@@ -374,6 +378,7 @@ class Session {
 			warn,
 			dropTruncatedResultWarning,
 			authorization,
+			retryUntil = performance.now() + maxRetriesSeconds * 1000,
 		} = {
 			...DEFAULT_OPTIONS,
 			...this.defaultOptions,
@@ -383,7 +388,6 @@ class Session {
 		const actualWarn = dropTruncatedResultWarning ?
 			makeWarnDroppingTruncatedResultWarning( warn ) :
 			warn;
-		const retryUntil = performance.now() + maxRetriesSeconds * 1000;
 
 		const tokenParams = {};
 		if ( tokenType !== null ) {
@@ -620,7 +624,7 @@ class Session {
 	 * @param {Function} warn
 	 * @param {string} tokenType
 	 * @param {string} tokenName
-	 * @param {number} retryUntil (performance.now() clock)
+	 * @param {number} retryUntil
 	 * @param {number} retryAfterMaxlagSeconds
 	 * @param {number} retryAfterReadonlySeconds
 	 * @param {string|null} authorization
@@ -641,7 +645,7 @@ class Session {
 		let tokenParams = null;
 		if ( params[ tokenName ] === TOKEN_PLACEHOLDER ) {
 			tokenParams = { [ tokenName ]: await this.getToken( tokenType, {
-				maxRetriesSeconds: ( retryUntil - performance.now() ) / 1000,
+				retryUntil,
 				retryAfterMaxlagSeconds,
 				retryAfterReadonlySeconds,
 				userAgent,
