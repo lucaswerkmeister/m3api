@@ -50,6 +50,11 @@
  * you don’t need to see this warning and can use this option to suppress it.
  * This option defaults to false in {@link request} (i.e. treat the warning like any other),
  * but to true in {@link requestAndContinueReducingBatch}.
+ * @property {string} [authorization] Value for the Authorization request header.
+ * This option can be used to authenticate requests using OAuth 2.0.
+ * For an owner-only client / consumer, where you have an access token,
+ * you can set this option to `Bearer ${accessToken}` directly.
+ * Otherwise, use the m3api-oauth extension package.
  */
 
 /**
