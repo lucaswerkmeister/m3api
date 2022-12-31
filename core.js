@@ -382,9 +382,6 @@ class Session {
 			...options,
 		};
 		const retryOptions = { ...options, retryUntil };
-		const actualWarn = dropTruncatedResultWarning ?
-			makeWarnDroppingTruncatedResultWarning( warn ) :
-			warn;
 
 		let tokenParams = null;
 		if ( tokenType !== null ) {
@@ -467,6 +464,9 @@ class Session {
 
 		const warnings = responseWarnings( body );
 		if ( warnings.length > 0 ) {
+			const actualWarn = dropTruncatedResultWarning ?
+				makeWarnDroppingTruncatedResultWarning( warn ) :
+				warn;
 			actualWarn( new ApiWarnings( warnings ) );
 		}
 
