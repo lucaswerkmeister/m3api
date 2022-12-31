@@ -95,8 +95,6 @@ const DEFAULT_USER_AGENT = 'm3api/0.7.2 (https://www.npmjs.com/package/m3api)';
 
 const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes\.?$/;
 
-const TOKEN_PLACEHOLDER = Symbol( 'm3api/token-placeholder' );
-
 /**
  * @private
  * @param {Object} params
@@ -384,35 +382,102 @@ class Session {
 			...this.defaultOptions,
 			...options,
 		};
+		const retryOptions = { ...options, retryUntil };
 		const userAgent = this.getUserAgent( options );
 		const actualWarn = dropTruncatedResultWarning ?
 			makeWarnDroppingTruncatedResultWarning( warn ) :
 			warn;
 
-		const tokenParams = {};
+		let tokenParams = null;
 		if ( tokenType !== null ) {
-			tokenParams[ tokenName ] = TOKEN_PLACEHOLDER; // replaced in internalRequest()
+			tokenParams = { [ tokenName ]: await this.getToken( tokenType, retryOptions ) };
+		}
+		const allParams = this.transformParams( {
+			...this.defaultParams,
+			...tokenParams,
+			...params,
+			format: 'json',
+		} );
+		const requestHeaders = {
+			'user-agent': userAgent,
+		};
+		if ( authorization ) {
+			requestHeaders.authorization = authorization;
 		}
 
-		const response = await this.internalRequest(
-			method,
-			this.transformParams( {
-				...this.defaultParams,
-				...tokenParams,
-				...params,
-				format: 'json',
-			} ),
-			userAgent,
-			actualWarn,
-			tokenType,
-			tokenName,
-			retryUntil,
-			retryAfterMaxlagSeconds,
-			retryAfterReadonlySeconds,
-			authorization,
-		);
+		let result;
+		if ( method === 'GET' ) {
+			result = this.internalGet( this.apiUrl, allParams, requestHeaders );
+		} else if ( method === 'POST' ) {
+			const [ urlParams, bodyParams ] = splitPostParameters( allParams );
+			result = this.internalPost( this.apiUrl, urlParams, bodyParams, requestHeaders );
+		} else {
+			throw new Error( `Unknown request method: ${method}` );
+		}
+		const {
+			status,
+			headers: responseHeaders,
+			body,
+		} = await result;
 
-		return response;
+		if ( status !== 200 ) {
+			throw new Error( `API request returned non-200 HTTP status code: ${status}` );
+		}
+
+		const retryIfBefore = ( retryAfterSeconds ) => {
+			const retryAfterMillis = 1000 * retryAfterSeconds;
+			if ( performance.now() + retryAfterMillis <= retryUntil ) {
+				return new Promise( ( resolve ) => {
+					setTimeout( resolve, retryAfterMillis );
+				} ).then( () => this.request( params, retryOptions ) );
+			} else {
+				return null;
+			}
+		};
+		let retryPromise = null;
+
+		const hasRetryAfterHeader = 'retry-after' in responseHeaders;
+		if ( hasRetryAfterHeader ) {
+			retryPromise = retryIfBefore( parseInt( responseHeaders[ 'retry-after' ] ) );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
+		const errors = responseErrors( body );
+
+		if ( !hasRetryAfterHeader && errors.some( ( { code } ) => code === 'maxlag' ) ) {
+			retryPromise = retryIfBefore( retryAfterMaxlagSeconds );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
+		if ( !hasRetryAfterHeader && errors.some( ( { code } ) => code === 'readonly' ) ) {
+			retryPromise = retryIfBefore( retryAfterReadonlySeconds );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
+		if ( tokenParams !== null && errors.some( ( { code } ) => code === 'badtoken' ) ) {
+			this.tokens.clear();
+			retryPromise = retryIfBefore( 0 /* no delay */ );
+			if ( retryPromise !== null ) {
+				return retryPromise;
+			}
+		}
+
+		if ( errors.length > 0 ) {
+			throw new ApiErrors( errors );
+		}
+
+		const warnings = responseWarnings( body );
+		if ( warnings.length > 0 ) {
+			actualWarn( new ApiWarnings( warnings ) );
+		}
+
+		return body;
 	}
 
 	/**
@@ -614,134 +679,6 @@ class Session {
 			return undefined;
 		}
 		return value;
-	}
-
-	/**
-	 * @private
-	 * @param {string} method
-	 * @param {Object} params
-	 * @param {string} userAgent
-	 * @param {Function} warn
-	 * @param {string} tokenType
-	 * @param {string} tokenName
-	 * @param {number} retryUntil
-	 * @param {number} retryAfterMaxlagSeconds
-	 * @param {number} retryAfterReadonlySeconds
-	 * @param {string|null} authorization
-	 * @return {Object}
-	 */
-	async internalRequest(
-		method,
-		params,
-		userAgent,
-		warn,
-		tokenType,
-		tokenName,
-		retryUntil,
-		retryAfterMaxlagSeconds,
-		retryAfterReadonlySeconds,
-		authorization,
-	) {
-		let tokenParams = null;
-		if ( params[ tokenName ] === TOKEN_PLACEHOLDER ) {
-			tokenParams = { [ tokenName ]: await this.getToken( tokenType, {
-				retryUntil,
-				retryAfterMaxlagSeconds,
-				retryAfterReadonlySeconds,
-				userAgent,
-				warn,
-			} ) };
-		}
-		const requestHeaders = {
-			'user-agent': userAgent,
-		};
-		if ( authorization ) {
-			requestHeaders.authorization = authorization;
-		}
-
-		let result;
-		if ( method === 'GET' ) {
-			result = this.internalGet( this.apiUrl, { ...params, ...tokenParams }, requestHeaders );
-		} else if ( method === 'POST' ) {
-			const [ urlParams, bodyParams ] = splitPostParameters( { ...params, ...tokenParams } );
-			result = this.internalPost( this.apiUrl, urlParams, bodyParams, requestHeaders );
-		} else {
-			throw new Error( `Unknown request method: ${method}` );
-		}
-		const {
-			status,
-			headers: responseHeaders,
-			body,
-		} = await result;
-
-		if ( status !== 200 ) {
-			throw new Error( `API request returned non-200 HTTP status code: ${status}` );
-		}
-
-		const retryIfBefore = ( retryAfterSeconds ) => {
-			const retryAfterMillis = 1000 * retryAfterSeconds;
-			if ( performance.now() + retryAfterMillis <= retryUntil ) {
-				return new Promise( ( resolve ) => {
-					setTimeout( resolve, retryAfterMillis );
-				} ).then( () => this.internalRequest(
-					method,
-					params,
-					userAgent,
-					warn,
-					tokenType,
-					tokenName,
-					retryUntil,
-					retryAfterMaxlagSeconds,
-					retryAfterReadonlySeconds,
-				) );
-			} else {
-				return null;
-			}
-		};
-		let retryPromise = null;
-
-		const hasRetryAfterHeader = 'retry-after' in responseHeaders;
-		if ( hasRetryAfterHeader ) {
-			retryPromise = retryIfBefore( parseInt( responseHeaders[ 'retry-after' ] ) );
-			if ( retryPromise !== null ) {
-				return retryPromise;
-			}
-		}
-
-		const errors = responseErrors( body );
-
-		if ( !hasRetryAfterHeader && errors.some( ( { code } ) => code === 'maxlag' ) ) {
-			retryPromise = retryIfBefore( retryAfterMaxlagSeconds );
-			if ( retryPromise !== null ) {
-				return retryPromise;
-			}
-		}
-
-		if ( !hasRetryAfterHeader && errors.some( ( { code } ) => code === 'readonly' ) ) {
-			retryPromise = retryIfBefore( retryAfterReadonlySeconds );
-			if ( retryPromise !== null ) {
-				return retryPromise;
-			}
-		}
-
-		if ( tokenParams !== null && errors.some( ( { code } ) => code === 'badtoken' ) ) {
-			this.tokens.clear();
-			retryPromise = retryIfBefore( 0 /* no delay */ );
-			if ( retryPromise !== null ) {
-				return retryPromise;
-			}
-		}
-
-		if ( errors.length > 0 ) {
-			throw new ApiErrors( errors );
-		}
-
-		const warnings = responseWarnings( body );
-		if ( warnings.length > 0 ) {
-			warn( new ApiWarnings( warnings ) );
-		}
-
-		return body;
 	}
 
 	/**
