@@ -375,7 +375,6 @@ class Session {
 			retryAfterReadonlySeconds,
 			warn,
 			dropTruncatedResultWarning,
-			authorization,
 			retryUntil = performance.now() + maxRetriesSeconds * 1000,
 		} = {
 			...DEFAULT_OPTIONS,
@@ -383,7 +382,6 @@ class Session {
 			...options,
 		};
 		const retryOptions = { ...options, retryUntil };
-		const userAgent = this.getUserAgent( options );
 		const actualWarn = dropTruncatedResultWarning ?
 			makeWarnDroppingTruncatedResultWarning( warn ) :
 			warn;
@@ -398,12 +396,7 @@ class Session {
 			...params,
 			format: 'json',
 		} );
-		const requestHeaders = {
-			'user-agent': userAgent,
-		};
-		if ( authorization ) {
-			requestHeaders.authorization = authorization;
-		}
+		const requestHeaders = this.getRequestHeaders( options );
 
 		let result;
 		if ( method === 'GET' ) {
@@ -586,6 +579,28 @@ class Session {
 			}
 		}
 		return this.tokens.get( type );
+	}
+
+	/**
+	 * Get the effective request headers for these options.
+	 *
+	 * @protected
+	 * @param {Options} options
+	 * @return {Object}
+	 */
+	getRequestHeaders( options ) {
+		const requestHeaders = {
+			'user-agent': this.getUserAgent( options ),
+		};
+		const { authorization } = {
+			...DEFAULT_OPTIONS,
+			...this.defaultOptions,
+			...options,
+		};
+		if ( authorization ) {
+			requestHeaders.authorization = authorization;
+		}
+		return requestHeaders;
 	}
 
 	/**
