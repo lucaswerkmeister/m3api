@@ -62,6 +62,20 @@
  */
 
 /**
+ * The internal representation of a full server response,
+ * returned by {@link internalGet} and {@link internalPost}.
+ *
+ * @protected
+ * @typedef InternalResponse
+ * @type {Object}
+ * @property {number} status The HTTP status code (e.g. 200 OK).
+ * @property {Object} headers The response headers.
+ * Header names must be all-lowercase.
+ * (Set-Cookie is not expected to be included.)
+ * @property {Object} body JSON-decoded response body.
+ */
+
+/**
  * Default options for requests across all sessions.
  *
  * Packages extending m3api’s capabilities (“extension packages”)
@@ -704,9 +718,7 @@ class Session {
 	 * @param {string} apiUrl
 	 * @param {Object} params
 	 * @param {Object} headers Header names must be all-lowercase.
-	 * @return {Promise<Object>} Object with members status (number),
-	 * headers (object mapping lowercase names to string values, without set-cookie),
-	 * and body (JSON-decoded).
+	 * @return {Promise<InternalResponse>}
 	 */
 	internalGet( apiUrl, params, headers ) {
 		throw new Error( 'Abstract method internalGet not implemented!' );
@@ -721,7 +733,7 @@ class Session {
 	 * @param {Object} urlParams
 	 * @param {Object} bodyParams
 	 * @param {Object} headers Header names must be all-lowercase.
-	 * @return {Promise<Object>} Same as for internalGet.
+	 * @return {Promise<InternalResponse>}
 	 */
 	internalPost( apiUrl, urlParams, bodyParams, headers ) {
 		throw new Error( 'Abstract method internalPost not implemented!' );
