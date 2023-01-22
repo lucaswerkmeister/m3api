@@ -2,7 +2,7 @@
 // Session has abstract methods with parameters only used in subclasses
 
 /**
- * Request options for {@link request} and related methods.
+ * Request options for {@link Session#request} and related methods.
  * The actual effective options are merged from
  * the builtin {@link DEFAULT_OPTIONS},
  * the default options passed into the {@link Session} constructor,
@@ -48,8 +48,8 @@
  * being included in the next request, if continuation is followed.
  * If you follow continuation and are prepared to merge truncated responses back together,
  * you don’t need to see this warning and can use this option to suppress it.
- * This option defaults to false in {@link request} (i.e. treat the warning like any other),
- * but to true in {@link requestAndContinueReducingBatch}.
+ * This option defaults to false in {@link Session#request} (i.e. treat the warning like any other),
+ * but to true in {@link Session#requestAndContinueReducingBatch}.
  * @property {string} [authorization] Value for the Authorization request header.
  * This option can be used to authenticate requests using OAuth 2.0.
  * For an owner-only client / consumer, where you have an access token,
@@ -63,7 +63,7 @@
 
 /**
  * The internal representation of a full server response,
- * returned by {@link internalGet} and {@link internalPost}.
+ * returned by {@link Session#internalGet} and {@link Session#internalPost}.
  *
  * @protected
  * @typedef InternalResponse
@@ -314,11 +314,10 @@ class Session {
 	 * such as {@link https://en.wikipedia.org/w/api.php}.
 	 * Can also be just the domain, such as en.wikipedia.org.
 	 * @param {Object} [defaultParams] Parameters to include in every API request.
-	 * See {@link #request} for supported value types.
+	 * See {@link Session#request} for supported value types.
 	 * You are strongly encouraged to specify formatversion: 2 here;
 	 * other useful global parameters include uselang, errorformat, maxlag.
 	 * @param {Options} [defaultOptions] Options to set for each request.
-	 * See {@link #request} for supported options.
 	 * You are strongly encouraged to specify a userAgent according to the
 	 * {@link https://meta.wikimedia.org/wiki/User-Agent_policy User-Agent policy}.
 	 */
@@ -357,7 +356,7 @@ class Session {
 		 * Can be modified after construction,
 		 * particularly to call `clear()` after logging in or out;
 		 * apart from that, however,
-		 * using the tokenType/tokenName options or {@link #getToken}
+		 * using the tokenType/tokenName options or {@link Session#getToken}
 		 * is generally more convenient.
 		 *
 		 * @member {Map}
@@ -490,9 +489,9 @@ class Session {
 	/**
 	 * Make a series of API requests, following API continuation.
 	 *
-	 * @param {Object} params Same as for request.
+	 * @param {Object} params Same as for {@link Session#request}.
 	 * Continuation parameters will be added automatically.
-	 * @param {Options} [options] Same as for request.
+	 * @param {Options} [options] Same as for {@link Session#request}.
 	 * @yield {Object}
 	 * @throws {ApiErrors}
 	 */
@@ -528,8 +527,8 @@ class Session {
 	 * The initial callback defaults to producing empty objects,
 	 * but other values are also possible: sets or maps may be useful.
 	 *
-	 * @param {Object} params Same as for request.
-	 * @param {Options} options Same as for request. (But not optional here!)
+	 * @param {Object} params Same as for {@link Session#request}.
+	 * @param {Options} options Same as for {@link Session#request}. (But not optional here!)
 	 * The dropTruncatedResultWarning option defaults to true here,
 	 * since continuation will produce the rest of the truncated result automatically.
 	 * @param {Function} reducer A callback like for Array.reduce().
@@ -561,7 +560,7 @@ class Session {
 	 * Get a token of the specified type.
 	 *
 	 * Though this method is public, it should generally not be used directly:
-	 * call {@link #request} with the tokenType/tokenName options instead.
+	 * call {@link Session#request} with the tokenType/tokenName options instead.
 	 *
 	 * @param {string} type
 	 * @param {Options} options Options for the request to get the token.
