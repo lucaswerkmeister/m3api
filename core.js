@@ -55,10 +55,40 @@
  * For an owner-only client / consumer, where you have an access token,
  * you can set this option to `Bearer ${accessToken}` directly.
  * Otherwise, use the m3api-oauth2 extension package.
+ * @property {Object.<string, ErrorHandler>} [errorHandlers] Internal option.
+ * Define handlers for API errors, which can retry the request if appropriate.
+ * This option is only part of the internal interface, not of the stable, public interface.
  * @property {number} [retryUntil] Internal option.
  * Retry until the given timestamp (in terms of the performance.now() clock).
  * Takes precedence over the maxRetriesSeconds option.
  * This option is only part of the internal interface, not of the stable, public interface.
+ */
+
+/**
+ * An error handler callback, which can be registered in the errorHandlers option.
+ *
+ * The callback is called if an API request results in an error
+ * and the callback has been registered for that error code.
+ * It may retry the request or perform any other action.
+ *
+ * @callback ErrorHandler
+ * @param {Session} session The session to which the request belongs.
+ * @param {Object} params The request parameters.
+ * @param {Options} options The request options.
+ * The retryUntil option is always set here,
+ * and the error handler should not retry the request if this timestamp has already passed.
+ * @param {InternalResponse} internalResponse The full response sent by the server.
+ * @param {Object} error The specific error returned to the API that matched this handler.
+ * @return {Object|null|Promise<Object|null>} A synchronous or asynchronous result.
+ * If the handler returns an object (or a promise resolving to an object),
+ * that object is used as the result of the API request;
+ * this can be used to retry the request
+ * (the handler makes another request to the session with the same params and options,
+ * and returns its result).
+ * If the handler returns null (or a promise resolving to null),
+ * the error could not be handled;
+ * m3api will call error handlers for the remaining errors (if any)
+ * and eventually throw ApiErrors if none of them returned an object either.
  */
 
 /**
@@ -103,6 +133,42 @@ const DEFAULT_OPTIONS = {
 	warn: console.warn,
 	dropTruncatedResultWarning: false,
 	authorization: null,
+	errorHandlers: {
+		maxlag: ( session, params, options, internalResponse, error ) => {
+			if ( 'retry-after' in internalResponse.headers ) {
+				return null; // header takes precedence over option
+			}
+			const { retryAfterMaxlagSeconds } = {
+				...DEFAULT_OPTIONS,
+				...session.defaultOptions,
+				...options,
+			};
+			return retryIfBefore( session, params, options, retryAfterMaxlagSeconds );
+		},
+		readonly: ( session, params, options, internalResponse, error ) => {
+			if ( 'retry-after' in internalResponse.headers ) {
+				return null; // header takes precedence over option
+			}
+			const { retryAfterReadonlySeconds } = {
+				...DEFAULT_OPTIONS,
+				...session.defaultOptions,
+				...options,
+			};
+			return retryIfBefore( session, params, options, retryAfterReadonlySeconds );
+		},
+		badtoken: ( session, params, options, internalResponse, error ) => {
+			const { tokenType } = {
+				...DEFAULT_OPTIONS,
+				...session.defaultOptions,
+				...options,
+			};
+			if ( tokenType === null ) {
+				return null; // bad token was supplied manually, nothing for us to do
+			}
+			session.tokens.clear();
+			return retryIfBefore( session, params, options, 0 /* no delay */ );
+		},
+	},
 };
 
 const DEFAULT_USER_AGENT = 'm3api/0.7.2 (https://www.npmjs.com/package/m3api)';
@@ -125,6 +191,25 @@ function splitPostParameters( params ) {
 		}
 	}
 	return [ urlParams, bodyParams ];
+}
+
+/**
+ * @private
+ * @param {Session} session
+ * @param {Object} params
+ * @param {Options} options
+ * @param {number} retryAfterSeconds
+ * @return {Promise<Object>|null}
+ */
+function retryIfBefore( session, params, options, retryAfterSeconds ) {
+	const retryAfterMillis = 1000 * retryAfterSeconds;
+	if ( performance.now() + retryAfterMillis <= options.retryUntil ) {
+		return new Promise( ( resolve ) => {
+			setTimeout( resolve, retryAfterMillis );
+		} ).then( () => session.request( params, options ) );
+	} else {
+		return null;
+	}
 }
 
 /**
@@ -384,8 +469,6 @@ class Session {
 			tokenType,
 			tokenName,
 			maxRetriesSeconds,
-			retryAfterMaxlagSeconds,
-			retryAfterReadonlySeconds,
 			warn,
 			dropTruncatedResultWarning,
 			retryUntil = performance.now() + maxRetriesSeconds * 1000,
@@ -417,57 +500,40 @@ class Session {
 		} else {
 			throw new Error( `Unknown request method: ${method}` );
 		}
+		const internalResponse = await result;
 		const {
 			status,
 			headers: responseHeaders,
 			body,
-		} = await result;
+		} = internalResponse;
 
 		if ( status !== 200 ) {
 			throw new Error( `API request returned non-200 HTTP status code: ${status}` );
 		}
 
-		const retryIfBefore = ( retryAfterSeconds ) => {
-			const retryAfterMillis = 1000 * retryAfterSeconds;
-			if ( performance.now() + retryAfterMillis <= retryUntil ) {
-				return new Promise( ( resolve ) => {
-					setTimeout( resolve, retryAfterMillis );
-				} ).then( () => this.request( params, retryOptions ) );
-			} else {
-				return null;
-			}
-		};
-		let retryPromise = null;
-
-		const hasRetryAfterHeader = 'retry-after' in responseHeaders;
-		if ( hasRetryAfterHeader ) {
-			retryPromise = retryIfBefore( parseInt( responseHeaders[ 'retry-after' ] ) );
-			if ( retryPromise !== null ) {
-				return retryPromise;
+		if ( 'retry-after' in responseHeaders ) {
+			const retryAfterSeconds = parseInt( responseHeaders[ 'retry-after' ] );
+			const retryResult = await retryIfBefore(
+				this, params, retryOptions, retryAfterSeconds );
+			if ( retryResult !== null ) {
+				return retryResult;
 			}
 		}
 
 		const errors = responseErrors( body );
 
-		if ( !hasRetryAfterHeader && errors.some( ( { code } ) => code === 'maxlag' ) ) {
-			retryPromise = retryIfBefore( retryAfterMaxlagSeconds );
-			if ( retryPromise !== null ) {
-				return retryPromise;
-			}
-		}
-
-		if ( !hasRetryAfterHeader && errors.some( ( { code } ) => code === 'readonly' ) ) {
-			retryPromise = retryIfBefore( retryAfterReadonlySeconds );
-			if ( retryPromise !== null ) {
-				return retryPromise;
-			}
-		}
-
-		if ( tokenParams !== null && errors.some( ( { code } ) => code === 'badtoken' ) ) {
-			this.tokens.clear();
-			retryPromise = retryIfBefore( 0 /* no delay */ );
-			if ( retryPromise !== null ) {
-				return retryPromise;
+		for ( const error of errors ) {
+			const { [ error.code ]: handler } = {
+				...DEFAULT_OPTIONS.errorHandlers,
+				...this.defaultOptions.errorHandlers,
+				...options.errorHandlers,
+			};
+			if ( handler ) {
+				const handlerResult = await handler(
+					this, params, retryOptions, internalResponse, error );
+				if ( handlerResult !== null ) {
+					return handlerResult;
+				}
 			}
 		}
 

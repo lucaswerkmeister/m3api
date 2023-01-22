@@ -714,7 +714,7 @@ describe( 'Session', () => {
 				} ) ).to.be.rejectedWith( ApiErrors );
 			} );
 
-			it( 'default maxlag retry', async () => {
+			it( 'default maxlag retry delay', async () => {
 				const session = sequentialRequestSession( [
 					{ response: { error: { code: 'maxlag' } } },
 					{ response: { response: true } },
@@ -725,7 +725,7 @@ describe( 'Session', () => {
 				expect( response ).to.eql( { response: true } );
 			} );
 
-			it( 'default readonly retry', async () => {
+			it( 'default readonly retry delay', async () => {
 				const session = sequentialRequestSession( [
 					{ response: { error: { code: 'readonly' } } },
 					{ response: { response: true } },
@@ -736,7 +736,7 @@ describe( 'Session', () => {
 				expect( response ).to.eql( { response: true } );
 			} );
 
-			it( 'custom maxlag retry', async () => {
+			it( 'custom maxlag retry delay', async () => {
 				const session = sequentialRequestSession( [
 					{ response: { error: { code: 'maxlag' } } },
 					{ response: { response: true } },
@@ -747,7 +747,7 @@ describe( 'Session', () => {
 				expect( response ).to.eql( { response: true } );
 			} );
 
-			it( 'custom readonly retry', async () => {
+			it( 'custom readonly retry delay', async () => {
 				const session = sequentialRequestSession( [
 					{ response: { error: { code: 'readonly' } } },
 					{ response: { response: true } },
@@ -756,6 +756,156 @@ describe( 'Session', () => {
 				clock.tickAsync( 10000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
+			} );
+
+		} );
+
+		describe( 'custom error handlers', () => {
+
+			it( 'handler returns object', async () => {
+				const session = singleRequestSession( {}, {
+					error: { code: 'custom' },
+				} );
+				let called = false;
+				const response = await session.request( {}, {
+					errorHandlers: {
+						custom: ( session_, params, options, internalResponse, error ) => {
+							expect( session_ ).to.equal( session );
+							expect( params ).to.eql( {} );
+							expect( options ).to.have.property( 'errorHandlers' );
+							expect( options ).to.have.property( 'retryUntil' );
+							expect( internalResponse ).to.have.property( 'body' )
+								.to.eql( { error: { code: 'custom' } } );
+							expect( error ).to.eql( { code: 'custom' } );
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return { response: true };
+						},
+					},
+				} );
+				expect( response ).to.eql( { response: true } );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'handler returns promise resolving to object', async () => {
+				const session = singleRequestSession( {}, {
+					error: { code: 'custom' },
+				} );
+				let called = false;
+				const response = await session.request( {}, {
+					errorHandlers: {
+						custom: async () => {
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return { response: true };
+						},
+					},
+				} );
+				expect( response ).to.eql( { response: true } );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'handler returns null', async () => {
+				const session = singleRequestSession( {}, {
+					error: { code: 'custom' },
+				} );
+				let called = false;
+				const promise = session.request( {}, {
+					errorHandlers: {
+						custom: () => {
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return null;
+						},
+					},
+				} );
+				await expect( promise ).to.be.rejectedWith( ApiErrors );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'handler returns promise resolving to null', async () => {
+				const session = singleRequestSession( {}, {
+					error: { code: 'custom' },
+				} );
+				let called = false;
+				const promise = session.request( {}, {
+					errorHandlers: {
+						custom: async () => {
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return null;
+						},
+					},
+				} );
+				await expect( promise ).to.be.rejectedWith( ApiErrors );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'handler throws exception', async () => {
+				const exception = new Error( 'exception from error handler' );
+				const session = singleRequestSession( {}, {
+					error: { code: 'custom' },
+				} );
+				let called = false;
+				const promise = session.request( {}, {
+					errorHandlers: {
+						custom: () => {
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							throw exception;
+						},
+					},
+				} );
+				await expect( promise ).to.be.rejectedWith( exception );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'handler returns promise rejecting with exception', async () => {
+				const exception = new Error( 'exception from error handler' );
+				const session = singleRequestSession( {}, {
+					error: { code: 'custom' },
+				} );
+				let called = false;
+				const promise = session.request( {}, {
+					errorHandlers: {
+						custom: async () => {
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							throw exception;
+						},
+					},
+				} );
+				await expect( promise ).to.be.rejectedWith( exception );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'falls through handlers for different error codes', async () => {
+				const session = singleRequestSession( {}, {
+					errors: [
+						{ code: 'custom1' },
+						{ code: 'custom2' },
+						{ code: 'custom3' },
+					],
+				} );
+				let called2 = false, called3 = false;
+				const response = await session.request( {}, {
+					errorHandlers: {
+						// no handler for custom1
+						custom2: () => {
+							expect( called2, 'not called yet' ).to.be.false;
+							called2 = true;
+							return null;
+						},
+						custom3: () => {
+							expect( called3, 'not called yet' ).to.be.false;
+							called3 = true;
+							return { response: true };
+						},
+					},
+				} );
+				expect( response ).to.eql( { response: true } );
+				expect( called2 ).to.be.true;
+				expect( called3 ).to.be.true;
 			} );
 
 		} );
