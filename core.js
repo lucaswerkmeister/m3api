@@ -54,7 +54,7 @@
  * This option can be used to authenticate requests using OAuth 2.0.
  * For an owner-only client / consumer, where you have an access token,
  * you can set this option to `Bearer ${accessToken}` directly.
- * Otherwise, use the m3api-oauth extension package.
+ * Otherwise, use the m3api-oauth2 extension package.
  * @property {number} [retryUntil] Internal option.
  * Retry until the given timestamp (in terms of the performance.now() clock).
  * Takes precedence over the maxRetriesSeconds option.
