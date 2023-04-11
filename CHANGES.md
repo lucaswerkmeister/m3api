@@ -32,7 +32,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   This will be used by m3api-oauth2.
 - A new protected method, `getUserAgent()`, can be used to get the user agent for a request.
   This will be used by m3api-oauth2.
-- The `dropTruncatedResultWarning` didn’t work properly
+- The `dropTruncatedResultWarning` option didn’t work properly
   when using the default `errorformat` on current MediaWiki versions;
   this has been fixed.
   (It’s still a good idea to set a non-`bc` error format in general.)
