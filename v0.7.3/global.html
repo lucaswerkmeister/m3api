@@ -15,7 +15,7 @@
 
 <div id="main">
 
-    <p class="version-warning"><strong>Warning:</strong> This is an old version. The latest stable version is <a href="../v0.7.3/global.html">v0.7.3</a>.</p>
+    <!-- VERSION-WARNING -->
 
     <h1 class="page-title">Global</h1>
 
@@ -163,7 +163,7 @@ and may result in unpredictable behavior.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line73">line 73</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line126">line 126</a>
     </li></ul></dd>
     
 
@@ -294,7 +294,7 @@ instead of using this function directly.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line242">line 242</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line349">line 349</a>
     </li></ul></dd>
     
 
@@ -470,7 +470,7 @@ when you don’t know the formatversion of the response.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line754">line 754</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line824">line 824</a>
     </li></ul></dd>
     
 
@@ -642,7 +642,7 @@ set( 'a', 'b' )
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core.js.html">core.js</a>, <a href="core.js.html#line771">line 771</a>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line841">line 841</a>
     </li></ul></dd>
     
 
@@ -698,13 +698,457 @@ set( 'a', 'b' )
 
         
                 
+
+    
+
+    
+    <h4 class="name" id="ErrorHandler"><span class="type-signature"></span>ErrorHandler<span class="signature">(session, params, options, internalResponse, error)</span><span class="type-signature"> &rarr; {Object|null|Promise.&lt;(Object|null)>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>An error handler callback, which can be registered in the errorHandlers option.</p>
+<p>The callback is called if an API request results in an error
+and the callback has been registered for that error code.
+It may retry the request or perform any other action.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>session</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Session.html">Session</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The session to which the request belongs.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The request parameters.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#Options">Options</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The request options.
+The retryUntil option is always set here,
+and the error handler should not retry the request if this timestamp has already passed.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>internalResponse</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#InternalResponse">InternalResponse</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The full response sent by the server.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The specific error returned to the API that matched this handler.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line67">line 67</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A synchronous or asynchronous result.
+If the handler returns an object (or a promise resolving to an object),
+that object is used as the result of the API request;
+this can be used to retry the request
+(the handler makes another request to the session with the same params and options,
+and returns its result).
+If the handler returns null (or a promise resolving to null),
+the error could not be handled;
+m3api will call error handlers for the remaining errors (if any)
+and eventually throw ApiErrors if none of them returned an object either.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">Promise.&lt;(Object|null)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+            
+                
+<h4 class="name" id="InternalResponse">InternalResponse</h4>
+
+
+
+
+<div class="description">
+    <p>The internal representation of a full server response,
+returned by <a href="Session.html#internalGet">Session#internalGet</a> and <a href="Session.html#internalPost">Session#internalPost</a>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>status</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The HTTP status code (e.g. 200 OK).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>headers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The response headers.
+Header names must be all-lowercase.
+(Set-Cookie is not expected to be included.)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>body</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>JSON-decoded response body.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line94">line 94</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
 <h4 class="name" id="Options">Options</h4>
 
 
 
 
 <div class="description">
-    <p>Request options for request and related methods.
+    <p>Request options for <a href="Session.html#request">Session#request</a> and related methods.
 The actual effective options are merged from
 the builtin <a href="global.html#DEFAULT_OPTIONS">DEFAULT_OPTIONS</a>,
 the default options passed into the <a href="Session.html">Session</a> constructor,
@@ -1059,8 +1503,110 @@ as well as continuation parameters that will result in the remaining information
 being included in the next request, if continuation is followed.
 If you follow continuation and are prepared to merge truncated responses back together,
 you don’t need to see this warning and can use this option to suppress it.
-This option defaults to false in request (i.e. treat the warning like any other),
-but to true in requestAndContinueReducingBatch.</p></td>
+This option defaults to false in <a href="Session.html#request">Session#request</a> (i.e. treat the warning like any other),
+but to true in <a href="Session.html#requestAndContinueReducingBatch">Session#requestAndContinueReducingBatch</a>.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>authorization</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Value for the Authorization request header.
+This option can be used to authenticate requests using OAuth 2.0.
+For an owner-only client / consumer, where you have an access token,
+you can set this option to <code>Bearer ${accessToken}</code> directly.
+Otherwise, use the m3api-oauth2 extension package.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>errorHandlers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;string, <a href="global.html#ErrorHandler">ErrorHandler</a>></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Internal option.
+Define handlers for API errors, which can retry the request if appropriate.
+This option is only part of the internal interface, not of the stable, public interface.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>retryUntil</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Internal option.
+Retry until the given timestamp (in terms of the performance.now() clock).
+Takes precedence over the maxRetriesSeconds option.
+This option is only part of the internal interface, not of the stable, public interface.</p></td>
         </tr>
 
     
@@ -1135,7 +1681,7 @@ but to true in requestAndContinueReducingBatch.</p></td>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a>
 </footer>
 
 <script>document.addEventListener('DOMContentLoaded', function () { prettyPrint(); });</script>
