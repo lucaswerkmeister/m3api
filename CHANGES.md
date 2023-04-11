@@ -13,6 +13,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   the handlers can e.g. perform necessary cleanup actions and/or retry the request.
   The existing support for retrying after `maxlag`, `readonly` or `badtoken` errors
   is now also internally implemented in terms of this new option.
+- Updated dependencies.
 
 ## v0.7.2 (2022-12-04)
 
