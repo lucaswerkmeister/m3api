@@ -18,7 +18,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 - Internal Breaking Change:
   The signature of the `internalGet()` and `internalPost()` methods has changed;
-  an `apiUrl` string has been addded as the first parameter,
+  an `apiUrl` string has been added as the first parameter,
   and the last parameter is now a `headers` object instead of a `userAgent` string.
   The `apiUrl` should always be used instead of `this.apiUrl`.
   In `headers`, the header names are always in all-lowercase,
