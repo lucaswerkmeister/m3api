@@ -25,6 +25,7 @@ class FetchSession extends Session {
 		const url = new URL( apiUrl );
 		url.search = new URLSearchParams( params );
 		const { 'user-agent': userAgent, ...otherHeaders } = headers;
+		// eslint-disable-next-line compat/compat
 		const response = await fetch( url, {
 			headers: {
 				...otherHeaders,
@@ -38,6 +39,7 @@ class FetchSession extends Session {
 		const url = new URL( apiUrl );
 		url.search = new URLSearchParams( urlParams );
 		const { 'user-agent': userAgent, ...otherHeaders } = headers;
+		// eslint-disable-next-line compat/compat
 		const response = await fetch( url, {
 			method: 'POST',
 			body: new URLSearchParams( bodyParams ),
