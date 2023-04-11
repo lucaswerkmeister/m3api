@@ -171,7 +171,7 @@ const DEFAULT_OPTIONS = {
 	},
 };
 
-const DEFAULT_USER_AGENT = 'm3api/0.7.2 (https://www.npmjs.com/package/m3api)';
+const DEFAULT_USER_AGENT = 'm3api/0.7.3 (https://www.npmjs.com/package/m3api)';
 
 const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes\.?$/;
 
