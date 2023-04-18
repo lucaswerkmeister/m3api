@@ -7,7 +7,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- Improved `README.md` formatting for npmjs.com.
 
 ## v0.7.3 (2023-04-11)
 

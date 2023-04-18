@@ -115,6 +115,7 @@ outer: for await ( const urlResponse of session.requestAndContinue( {
 This code works in Node.js, but also in the browser with only two changes:
 
 - import `browser.js` instead of `node.js`
+
 - add `origin: '*'` to the default parameters (anonymous cross-site request)
 
 Other features not demonstrated above:
@@ -206,6 +207,7 @@ how it automatically combines concurrent, compatible API requests.
   Technically, as soon as m3api receives a request,
   it queues a microtask (using `Promise.resolve()`) to dispatch it,
   and only other requests which arrive before that microtask runs have a chance to be combined with it.
+
 - API requests are **compatible** if their parameters and options are compatible.
   The parameters as a whole are compatible if every parameter common to both requests is compatible,
   i.e. the parameter values are either identical
@@ -239,6 +241,7 @@ Let’s go through those parameters in turn:
 
 - `action: 'query'`: There can only be one action at a time,
   so this parameter has a single value.
+
 - `list: set( 'exturlusage' )`: The query API supports multiple lists at once,
   and it doesn’t matter to us if there are other lists in the response
   (they’ll be tucked away under a different key in the result),
@@ -247,8 +250,11 @@ Let’s go through those parameters in turn:
   then the remaining parameters of that request will probably start with `ap*`
   (the `list=allpages` API parameter prefix),
   so they won’t conflict with our `eu*` parameters.
+
 - `euprotocol: 'https'`: Must be a single value.
+
 - `euquery: 'web.archive.org'`: Must be a single value.
+
 - `eunamespace: [ 6 ]`: Here we specify an array, not a set.
   The parameter can take multiple values in the API,
   but we want results limited to just the file namespace,
@@ -258,7 +264,9 @@ Let’s go through those parameters in turn:
   but then to check the namespace of each result we get,
   so that we skip results from other namespaces,
   and only process the ones we really wanted.
+
 - `eulimit: 'max'`: Must be a single value.
+
 - `euprop: set( 'title' )`: Here we use a set again,
   because we don’t mind if other requests add extra properties to each result,
   as long as the title itself is included.
@@ -282,12 +290,14 @@ To avoid just relying on default parameter values, you have several options:
 
 1. Explicitly specify a value for the parameter,
    either the default or (as with `title` vs. `ids|title|url` above) a part of it.
+
 2. Explicitly specify the parameter as `null` or `undefined`.
    This means that the parameter won’t be sent with the request
    (i.e. the server-side default will be used),
    but makes the request incompatible with any other request that has a different value for the parameter.
    (This is similar to using an array instead of a set, as we saw for `eunamespace` above:
    both strategies inhibit merging with some other requests.)
+
 3. Process the response in a way that works regardless of parameter value.
    This is not always possible, but as an example, with a bit of extra code,
    you may be able to process both `formatversion=1` and `formatversion=2` responses
@@ -301,7 +311,9 @@ which make it easier to use certain APIs correctly.
 Available extension packages include:
 
 - [m3api-query][], for the `action=query` API
+
 - [m3api-botpassword][], to log in using a [bot password][]
+
 - [m3api-oauth2][], to authenticate using OAuth 2.0
 
 If you create an additional extension package,
@@ -371,10 +383,12 @@ Here are some guidelines or recommendations for creating m3api extension package
   	session.request( ..., options );
   }
   ```
+
 - Functions that make requests or process responses
   should be able to deal with either formatversion,
   rather than forcing your users to use `formatversion=2` (or even `formatversion=1`).
   The `responseBoolean` helper from `core.js` can be helpful.
+
 - If you need to import anything from m3api,
   import it from `m3api/`, not `../m3api/` or anything like that.
   (npm might move m3api further up the dependency tree.)
@@ -393,6 +407,7 @@ The relevant requirements of m3api are:
   in several older Node versions).
   Supported in Firefox since version 60.
   (Other browsers supported async generators before ES6 modules.)
+
 - Support for async generators (`async function *`, `for await … of`).
   Supported since Chrome 63, Edge 79, Opera 50 (46 on Android), Safari 12, Samsung Internet 8.0.
   (Firefox and Node supported ES6 modules before async generators.)
@@ -421,13 +436,17 @@ and list all m3api versions they’re compatible with (e.g. `~1.0||~1.1`).
 The stable, public interface comprises the following items:
 
 - The paths / existence of the `core.js`, `node.js` and `browser.js` files.
+
 - All exports of those files that have not been marked `@protected` or `@private`.
+
 - All members of those exports (class methods and properties) that have not been marked `@protected` or `@private`.
 
 The internal interface additionally comprises the following items:
 
 - The paths / existence of the `axios.js`, `fetch.js`, `combine.js` and `add-performance-global.js` files.
+
 - All exports of those files, or of files in the public interface, that have not been marked `@private`.
+
 - All members of those exports that have not been marked `@private`.
 
 That is, public code only changes incompatibly between major versions,
