@@ -7,7 +7,13 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
+- BREAKING CHANGE:
+  m3api now requires at least Node.js version 16,
+  up from Node 12.22.0 or Node 14.17.0 previously.
+  As part of this, `add-performance-global.js` has been removed,
+  as it is no longer needed.
 - Improved `README.md` formatting for npmjs.com.
+- Updated dependencies.
 
 ## v0.7.3 (2023-04-11)
 

@@ -1,5 +1,4 @@
 import { Session } from '../../core.js';
-import '../../add-performance-global.js';
 import { expect } from 'chai';
 
 /**

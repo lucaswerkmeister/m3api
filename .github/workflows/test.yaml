@@ -21,16 +21,16 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 16
       - run: npm ci
       - run: npm run test:unit
       - run: npm run test:node
         env:
           MEDIAWIKI_USERNAME: ${{ secrets.MEDIAWIKI_USERNAME }}
           MEDIAWIKI_PASSWORD: ${{ secrets.MEDIAWIKI_PASSWORD }}
-      # don’t run test:lint in Node 12 – no point running it twice
-      # don’t run test:browser in Node 12 – needs Node fetch() (see #23)
-      # don’t run test:readme in Node 12 – needs --harmony-top-level-await
+      - run: npm run test:readme
+      # don’t run test:lint in Node 16 – no point running it twice
+      # don’t run test:browser in Node 16 – needs Node fetch() (see #23)
   test-package-lock:
     runs-on: ubuntu-latest
     steps:

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { HttpCookieAgent, HttpsCookieAgent } from 'http-cookie-agent';
+import { HttpCookieAgent, HttpsCookieAgent } from 'http-cookie-agent/http';
 import { CookieJar } from 'tough-cookie';
 import { Session } from './core.js';
 
@@ -19,7 +19,7 @@ class AxiosSession extends Session {
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
 		super( apiUrl, defaultParams, defaultOptions );
 		const agentOptions = {
-			jar: new CookieJar(),
+			cookies: { jar: new CookieJar() },
 			keepAlive: true,
 		};
 		this.session = axios.create( {
