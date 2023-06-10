@@ -395,22 +395,23 @@ Here are some guidelines or recommendations for creating m3api extension package
 
 ## Compatibility
 
-In Node.js, m3api is compatible with Node 14.17.0 or later,
-or in the Node 12 line with Node 12.22.0 or later.
+In Node.js, m3api is compatible with Node 16 or later.
 Among major browsers, m3api is compatible with
 Chrome 63, Firefox 60, Edge 79, Opera 50 (46 on Android), Safari 12, and Samsung Internet 8.0.
-The relevant requirements of m3api are:
+The relevant browser requirements of m3api are:
 
 - Support for ES6 modules (`import`/`export`).
-  Stable in Node since 12.22.0 or 14.17.0
-  (available but considered experimental, with or without a feature flag,
-  in several older Node versions).
   Supported in Firefox since version 60.
   (Other browsers supported async generators before ES6 modules.)
 
 - Support for async generators (`async function *`, `for await … of`).
   Supported since Chrome 63, Edge 79, Opera 50 (46 on Android), Safari 12, Samsung Internet 8.0.
-  (Firefox and Node supported ES6 modules before async generators.)
+  (Firefox supported ES6 modules before async generators.)
+
+The Node.js version requirement is based on the `performance` global being defined
+(prior to Node 16, it had to be imported from `node:perf_hooks`).
+If you need support for earlier Node.js versions,
+try using m3api v0.7.3.
 
 Other modern features used by m3api –
 destructuring assignment, spread syntax, default arguments, classes, etc. –
