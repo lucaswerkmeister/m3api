@@ -444,7 +444,7 @@ The stable, public interface comprises the following items:
 
 The internal interface additionally comprises the following items:
 
-- The paths / existence of the `axios.js`, `fetch.js`, `combine.js` and `add-performance-global.js` files.
+- The paths / existence of the `axios.js`, `fetch.js` and `combine.js` files.
 
 - All exports of those files, or of files in the public interface, that have not been marked `@private`.
 
