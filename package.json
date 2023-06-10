@@ -11,7 +11,7 @@
 		"test:unit": "mocha test/unit/",
 		"test:node": "mocha test/integration/node.test.js",
 		"test:browser": "mocha test/integration/browser.test.js # #23",
-		"test:readme": "sed -n '/```/,/```/ { /```$/q; /```/n; p; }' README.md | { node --input-type=module --harmony-top-level-await || node --input-type=module; }",
+		"test:readme": "sed -n '/```/,/```/ { /```$/q; /```/n; p; }' README.md | node --input-type=module",
 		"doc": "jsdoc -c jsdoc/conf.json"
 	},
 	"homepage": "https://github.com/lucaswerkmeister/m3api#readme",
