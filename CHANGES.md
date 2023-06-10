@@ -13,6 +13,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   As part of this, `add-performance-global.js` has been removed,
   as it is no longer needed.
 - Improved `README.md` formatting for npmjs.com.
+- Updated dependencies.
 
 ## v0.7.3 (2023-04-11)
 
