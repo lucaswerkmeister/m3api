@@ -2,7 +2,7 @@
 
 import NodeSession, { set } from '../../node.js';
 import { expect } from 'chai';
-import fs from 'fs';
+import fs from 'fs/promises';
 import process from 'process';
 
 const userAgent = 'm3api-integration-tests (https://github.com/lucaswerkmeister/m3api/)';
@@ -21,7 +21,7 @@ describe( 'NodeSession', function () {
 		if ( !mediawikiUsername || !mediawikiPassword ) {
 			let envFile;
 			try {
-				envFile = await fs.promises.readFile( '.env', { encoding: 'utf8' } );
+				envFile = await fs.readFile( '.env', { encoding: 'utf8' } );
 			} catch ( e ) {
 				if ( e.code === 'ENOENT' ) {
 					return;
