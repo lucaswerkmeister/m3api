@@ -8,10 +8,25 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 ## next (not yet released)
 
 - BREAKING CHANGE:
-  m3api now requires at least Node.js version 16,
+  m3api now requires at least Node.js version 18.2.0,
   up from Node 12.22.0 or Node 14.17.0 previously.
-  As part of this, `add-performance-global.js` has been removed,
+  The internal breaking changes below are also related to this.
+- Internal Breaking Change:
+  The file `add-performance-global.js` has been removed,
   as it is no longer needed.
+- Internal Breaking Change:
+  The file `axios.js` has been removed,
+  as axios is no longer used.
+  Its role has been taken over by `fetch-node.js`.
+- Internal Breaking Change:
+  The file `fetch.js` is no longer suitable for use in Chrome-like browsers.
+  The functionality of renaming the `user-agent` request header to `api-user-agent`
+  has been moved to `fetch-browser.js`.
+- m3api now uses `fetch()` on all supported platforms.
+  The public interface, `browser.js` and `node.js`, can be used as before.
+  The internal interface has been rearranged,
+  with `fetch.js` now used for both backends,
+  augmented by `fetch-browser.js` and `fetch-node.js`.
 - Improved `README.md` formatting for npmjs.com.
 - Updated dependencies.
 

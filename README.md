@@ -21,7 +21,7 @@ a library for interacting with the [MediaWiki Action API][] from JavaScript.
   uses ES6 modules, and so on.
   (See [§ compatibility](#Compatibility) below for details.)
 
-It supports both Node.js (using axios) and browsers (using `fetch`).
+It supports both Node.js and browsers.
 The browser version has no external dependencies.
 
 ## Usage
@@ -395,7 +395,7 @@ Here are some guidelines or recommendations for creating m3api extension package
 
 ## Compatibility
 
-In Node.js, m3api is compatible with Node 16 or later.
+In Node.js, m3api is compatible with Node 18.2.0 or later.
 Among major browsers, m3api is compatible with
 Chrome 63, Firefox 60, Edge 79, Opera 50 (46 on Android), Safari 12, and Samsung Internet 8.0.
 The relevant browser requirements of m3api are:
@@ -408,8 +408,8 @@ The relevant browser requirements of m3api are:
   Supported since Chrome 63, Edge 79, Opera 50 (46 on Android), Safari 12, Samsung Internet 8.0.
   (Firefox supported ES6 modules before async generators.)
 
-The Node.js version requirement is based on the `performance` global being defined
-(prior to Node 16, it had to be imported from `node:perf_hooks`).
+The Node.js version requirement is based on `fetch()` being available
+and supported by the `http-cookie-agent` package.
 If you need support for earlier Node.js versions,
 try using m3api v0.7.3.
 
@@ -444,7 +444,7 @@ The stable, public interface comprises the following items:
 
 The internal interface additionally comprises the following items:
 
-- The paths / existence of the `axios.js`, `fetch.js` and `combine.js` files.
+- The paths / existence of the `fetch.js`, `fetch-browser.js`, `fetch-node.js` and `combine.js` files.
 
 - All exports of those files, or of files in the public interface, that have not been marked `@private`.
 

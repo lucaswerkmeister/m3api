@@ -1,7 +1,7 @@
-import { FetchSession } from './fetch.js';
+import { FetchBrowserSession } from './fetch-browser.js';
 import { mixCombiningSessionInto } from './combine.js';
 
-export default class BrowserSession extends FetchSession {
+export default class BrowserSession extends FetchBrowserSession {
 }
 
 mixCombiningSessionInto( BrowserSession );

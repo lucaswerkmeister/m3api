@@ -1,7 +1,7 @@
-import { AxiosSession } from './axios.js';
+import { FetchNodeSession } from './fetch-node.js';
 import { mixCombiningSessionInto } from './combine.js';
 
-export default class NodeSession extends AxiosSession {
+export default class NodeSession extends FetchNodeSession {
 }
 
 mixCombiningSessionInto( NodeSession );

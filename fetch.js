@@ -19,18 +19,25 @@ class FetchSession extends Session {
 
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
 		super( apiUrl, defaultParams, defaultOptions );
+		this.fetchOptions = {};
+	}
+
+	/**
+	 * Get the fetch() options for this request.
+	 *
+	 * @protected
+	 * @param {Object} headers
+	 * @return {Object}
+	 */
+	getFetchOptions( headers ) {
+		return { headers };
 	}
 
 	async internalGet( apiUrl, params, headers ) {
 		const url = new URL( apiUrl );
 		url.search = new URLSearchParams( params );
-		const { 'user-agent': userAgent, ...otherHeaders } = headers;
-		// eslint-disable-next-line compat/compat
 		const response = await fetch( url, {
-			headers: {
-				...otherHeaders,
-				'api-user-agent': userAgent,
-			},
+			...this.getFetchOptions( headers ),
 		} );
 		return transformResponse( response );
 	}
@@ -38,15 +45,10 @@ class FetchSession extends Session {
 	async internalPost( apiUrl, urlParams, bodyParams, headers ) {
 		const url = new URL( apiUrl );
 		url.search = new URLSearchParams( urlParams );
-		const { 'user-agent': userAgent, ...otherHeaders } = headers;
-		// eslint-disable-next-line compat/compat
 		const response = await fetch( url, {
+			...this.getFetchOptions( headers ),
 			method: 'POST',
 			body: new URLSearchParams( bodyParams ),
-			headers: {
-				...otherHeaders,
-				'api-user-agent': userAgent,
-			},
 		} );
 		return transformResponse( response );
 	}
