@@ -77,7 +77,7 @@ describe( 'NodeSession', function () {
 		expect( response.query.statistics.pages ).to.be.above( 0 );
 	} );
 
-	it( 'validatepassword', async function () {
+	it( 'validatepassword', async () => {
 		const session = new NodeSession( 'en.wikipedia.org', {
 			formatversion: 2,
 		}, {

@@ -46,7 +46,7 @@ describe( 'BrowserSession', function () {
 		expect( response.query.statistics.pages ).to.be.above( 0 );
 	} );
 
-	it( 'validatepassword', async function () {
+	it( 'validatepassword', async () => {
 		const session = new BrowserSession( 'en.wikipedia.org', {
 			formatversion: 2,
 			origin: '*',
