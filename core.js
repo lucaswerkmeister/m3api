@@ -2,6 +2,58 @@
 // Session has abstract methods with parameters only used in subclasses
 
 /**
+ * A request parameter value that can potentially be put in a list:
+ * a title, user name, namespace number, etc.
+ *
+ * @typedef ListableParam
+ * @type {string|number}
+ */
+
+/**
+ * A request parameter value that cannot be put in a list:
+ * a boolean toggle, or null or undefined as a defaul fallback
+ * for not sending a parameter at all.
+ *
+ * @typedef UnlistableParam
+ * @type {boolean|null|undefined}
+ */
+
+/**
+ * A single request parameter value.
+ *
+ * @typedef SingleParam
+ * @type {ListableParam|UnlistableParam}
+ */
+
+/**
+ * A request parameter value that is a list of values
+ * (several titles, namespace numbers, etc.),
+ * which may potentially be combined with other lists in a single request
+ * (if specified as a set) or not (if specified as an array).
+ *
+ * @typedef ListParam
+ * @type {Array<ListableParam>|Set<ListableParam>}
+ */
+
+/**
+ * A request parameter value of any kind.
+ *
+ * @typedef Param
+ * @type {ListParam|SingleParam}
+ */
+
+/**
+ * Request parameters for {@link Session#request} and related methods.
+ * Each parameter may be a string, number, boolean, null, or undefined,
+ * or an array or set of strings or numbers.
+ * Parameters with values false, null, or undefined are completely removed
+ * when the request is sent out.
+ *
+ * @typedef Params
+ * @type {Object<string, Param>}
+ */
+
+/**
  * Request options for {@link Session#request} and related methods.
  * The actual effective options are merged from
  * the builtin {@link DEFAULT_OPTIONS},
@@ -73,7 +125,7 @@
  *
  * @callback ErrorHandler
  * @param {Session} session The session to which the request belongs.
- * @param {Object} params The request parameters.
+ * @param {Params} params The request parameters.
  * @param {Options} options The request options.
  * The retryUntil option is always set here,
  * and the error handler should not retry the request if this timestamp has already passed.
@@ -196,7 +248,7 @@ function splitPostParameters( params ) {
 /**
  * @private
  * @param {Session} session
- * @param {Object} params
+ * @param {Params} params
  * @param {Options} options
  * @param {number} retryAfterSeconds
  * @return {Promise<Object>|null}
@@ -398,8 +450,7 @@ class Session {
 	 * @param {string} apiUrl The URL to the api.php endpoint,
 	 * such as {@link https://en.wikipedia.org/w/api.php}.
 	 * Can also be just the domain, such as en.wikipedia.org.
-	 * @param {Object} [defaultParams] Parameters to include in every API request.
-	 * See {@link Session#request} for supported value types.
+	 * @param {Params} [defaultParams] Parameters to include in every API request.
 	 * You are strongly encouraged to specify formatversion: 2 here;
 	 * other useful global parameters include uselang, errorformat, maxlag.
 	 * @param {Options} [defaultOptions] Options to set for each request.
@@ -452,9 +503,7 @@ class Session {
 	/**
 	 * Make an API request.
 	 *
-	 * @param {Object} params The parameters.
-	 * Values may be strings, numbers, arrays or sets thereof, booleans, null, or undefined.
-	 * Parameters with values false, null, or undefined are completely removed.
+	 * @param {Params} params The parameters.
 	 * Default parameters from the constructor are added to these,
 	 * with per-request parameters overriding default parameters in case of collision.
 	 * @param {Options} [options] Other options for the request.
@@ -555,7 +604,7 @@ class Session {
 	/**
 	 * Make a series of API requests, following API continuation.
 	 *
-	 * @param {Object} params Same as for {@link Session#request}.
+	 * @param {Params} params Same as for {@link Session#request}.
 	 * Continuation parameters will be added automatically.
 	 * @param {Options} [options] Same as for {@link Session#request}.
 	 * @yield {Object}
@@ -593,7 +642,7 @@ class Session {
 	 * The initial callback defaults to producing empty objects,
 	 * but other values are also possible: sets or maps may be useful.
 	 *
-	 * @param {Object} params Same as for {@link Session#request}.
+	 * @param {Params} params Same as for {@link Session#request}.
 	 * @param {Options} options Same as for {@link Session#request}. (But not optional here!)
 	 * The dropTruncatedResultWarning option defaults to true here,
 	 * since continuation will produce the rest of the truncated result automatically.
@@ -713,7 +762,7 @@ class Session {
 
 	/**
 	 * @private
-	 * @param {Object} params
+	 * @param {Params} params
 	 * @return {Object}
 	 */
 	transformParams( params ) {
@@ -729,7 +778,7 @@ class Session {
 
 	/**
 	 * @private
-	 * @param {*} value
+	 * @param {Param} value
 	 * @return {string|undefined}
 	 */
 	transformParamValue( value ) {
@@ -739,13 +788,13 @@ class Session {
 		if ( Array.isArray( value ) ) {
 			return this.transformParamArray( value );
 		} else {
-			return this.transformParamScalar( value );
+			return this.transformParamSingle( value );
 		}
 	}
 
 	/**
 	 * @private
-	 * @param {Array<string|number>} value
+	 * @param {Array<ListableParam>} value
 	 * @return {string}
 	 */
 	transformParamArray( value ) {
@@ -762,7 +811,7 @@ class Session {
 	 * @return {*} string|undefined for string|number|boolean|null|undefined value,
 	 * the value unmodified otherwise
 	 */
-	transformParamScalar( value ) {
+	transformParamSingle( value ) {
 		if ( typeof value === 'number' ) {
 			return String( value );
 		}

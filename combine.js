@@ -1,4 +1,4 @@
-/* eslint jsdoc/no-undefined-types: [ "error", { "definedTypes": [ "Options" ] } ] */
+/* eslint jsdoc/no-undefined-types: [ "error", { "definedTypes": [ "Params", "Options" ] } ] */
 import {
 	DEFAULT_OPTIONS,
 	Session,
@@ -72,14 +72,14 @@ class CombiningSession extends Session {
 	 * Try to combine the two sets of parameters.
 	 *
 	 * @private
-	 * @param {Object} paramsA The first set of params. (Not modified.)
-	 * @param {Object} paramsB The other set of params. (Not modified.)
-	 * @return {Object|null} A new set of combined params, if possible, else null.
+	 * @param {Params} paramsA The first set of params. (Not modified.)
+	 * @param {Params} paramsB The other set of params. (Not modified.)
+	 * @return {Params|null} A new set of combined params, if possible, else null.
 	 */
 	combineParams( paramsA, paramsB ) {
 		// never combine generator/continue with titles/pageids/revids
 		const hasParam = ( params, key ) =>
-			this.transformParamScalar( params[ key ] ) !== undefined;
+			this.transformParamSingle( params[ key ] ) !== undefined;
 		const hasParams = ( params, ...keys ) =>
 			keys.some( ( key ) => hasParam( params, key ) );
 		if ( hasParams( paramsA, 'generator', 'continue' ) &&
@@ -97,8 +97,8 @@ class CombiningSession extends Session {
 				continue;
 			}
 			let valueA = paramsA[ key ];
-			valueA = this.transformParamScalar( valueA );
-			valueB = this.transformParamScalar( valueB );
+			valueA = this.transformParamSingle( valueA );
+			valueB = this.transformParamSingle( valueB );
 			if ( valueA === valueB ) {
 				params[ key ] = valueA;
 				continue;
@@ -107,7 +107,7 @@ class CombiningSession extends Session {
 				const valueAB = new Set();
 				for ( const value of [ valueA, valueB ] ) {
 					for ( const element of value ) {
-						valueAB.add( this.transformParamScalar( element ) );
+						valueAB.add( this.transformParamSingle( element ) );
 					}
 				}
 				params[ key ] = valueAB;
