@@ -11,11 +11,11 @@
 
 /**
  * A request parameter value that cannot be put in a list:
- * a boolean toggle, or null or undefined as a default fallback
- * for not sending a parameter at all.
+ * a boolean toggle, a Blob or File (POST requests only),
+ * or null or undefined as a default fallback for not sending a parameter at all.
  *
  * @typedef UnlistableParam
- * @type {boolean|null|undefined}
+ * @type {boolean|Blob|File|null|undefined}
  */
 
 /**
@@ -48,6 +48,7 @@
  * or an array or set of strings or numbers.
  * Parameters with values false, null, or undefined are completely removed
  * when the request is sent out.
+ * In POST requests, a parameter may also be a Blob or File.
  *
  * @typedef Params
  * @type {Object<string, Param>}

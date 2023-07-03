@@ -10,6 +10,7 @@ import {
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 chai.use( chaiAsPromised );
+import { File } from 'buffer'; // only available globally since Node 20
 
 describe( 'CombiningSession', () => {
 
@@ -705,6 +706,42 @@ describe( 'CombiningSession', () => {
 			const session = sequentialRequestSession( [
 				{ expectedParams: { siprop: 'statistics' }, response: response1 },
 				{ expectedParams: {}, response: response2 },
+			] );
+			const promise1 = session.request( params1 );
+			const promise2 = session.request( params2 );
+			const responses = await Promise.all( [ promise1, promise2 ] );
+			expect( responses[ 0 ] ).to.equal( response1 );
+			expect( responses[ 1 ] ).to.equal( response2 );
+		} );
+
+		it( 'different blobs', async () => {
+			const blob1 = new Blob( [ '1' ], { type: 'text/plain' } );
+			const params1 = { file: blob1 };
+			const response1 = { upload: { filename: '1' } };
+			const blob2 = new Blob( [ '2' ], { type: 'text/plain' } );
+			const params2 = { file: blob2 };
+			const response2 = { upload: { filename: '2' } };
+			const session = sequentialRequestSession( [
+				{ expectedParams: { file: blob1 }, response: response1 },
+				{ expectedParams: { file: blob2 }, response: response2 },
+			] );
+			const promise1 = session.request( params1 );
+			const promise2 = session.request( params2 );
+			const responses = await Promise.all( [ promise1, promise2 ] );
+			expect( responses[ 0 ] ).to.equal( response1 );
+			expect( responses[ 1 ] ).to.equal( response2 );
+		} );
+
+		it( 'different files', async () => {
+			const file1 = new File( [ '1' ], '1', { type: 'text/plain' } );
+			const params1 = { file: file1 };
+			const response1 = { upload: { filename: '1' } };
+			const file2 = new File( [ '2' ], '2', { type: 'text/plain' } );
+			const params2 = { file: file2 };
+			const response2 = { upload: { filename: '2' } };
+			const session = sequentialRequestSession( [
+				{ expectedParams: { file: file1 }, response: response1 },
+				{ expectedParams: { file: file2 }, response: response2 },
 			] );
 			const promise1 = session.request( params1 );
 			const promise2 = session.request( params2 );

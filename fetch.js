@@ -45,10 +45,14 @@ class FetchSession extends Session {
 	async internalPost( apiUrl, urlParams, bodyParams, headers ) {
 		const url = new URL( apiUrl );
 		url.search = new URLSearchParams( urlParams );
+		const body = new FormData();
+		for ( const [ paramName, paramValue ] of Object.entries( bodyParams ) ) {
+			body.append( paramName, paramValue );
+		}
 		const response = await fetch( url, {
 			...this.getFetchOptions( headers ),
 			method: 'POST',
-			body: new URLSearchParams( bodyParams ),
+			body,
 		} );
 		return transformResponse( response );
 	}

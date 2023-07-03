@@ -27,6 +27,8 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   The internal interface has been rearranged,
   with `fetch.js` now used for both backends,
   augmented by `fetch-browser.js` and `fetch-node.js`.
+- m3api now supports `Blob` and `File` parameters in POST requests.
+  This can be used to upload files.
 - Improved `README.md` formatting for npmjs.com.
 - Updated dependencies.
 

@@ -164,6 +164,10 @@ Other features not demonstrated above:
   pass an object with a `method` value as the second parameter:
   e.g. `request( { ... }, { method: 'POST' } )`.
   (`requestAndContinue` also supports this.)
+  In POST requests, `Blob` or `File` parameters are also supported.
+  (Note that, in Node 18, these will trigger a warning from Node.
+  If you are affected by this and cannot upgrade to Node 20 or later,
+  you can suppress the warning by launching Node with `--no-warnings=ExperimentalWarning`.)
 
 - API requests will automatically be retried if necessary
   (if the response contains a Retry-After header,

@@ -2,6 +2,7 @@
 
 import NodeSession, { set } from '../../node.js';
 import { expect } from 'chai';
+import { File } from 'buffer'; // only available globally since Node 20
 import fs from 'fs/promises';
 import process from 'process';
 
@@ -124,5 +125,77 @@ describe( 'NodeSession', function () {
 		const { revisions: [ { slots: { main: { content } } } ] } = page;
 		expect( content ).to.equal( text );
 	} );
+
+	for ( const { name, getData } of [
+		{
+			name: 'Blob',
+			getData( content ) {
+				return new Blob( [ content ], { type: 'image/svg+xml' } );
+			},
+		},
+		{
+			name: 'File',
+			getData( content ) {
+				return new File( [ content ], 'blank.svg', { type: 'image/svg.xml' } );
+			},
+		},
+	] ) {
+		const contentA = "<svg xmlns='http://www.w3.org/2000/svg'/>\n";
+		const contentB = "<svg xmlns='http://www.w3.org/2000/svg' />\n";
+		// eslint-disable-next-line no-loop-func
+		it( `upload (${name})`, async function () {
+			if ( !mediawikiUsername || !mediawikiPassword ) {
+				return this.skip();
+			}
+			const session = new NodeSession( 'test.wikipedia.org', {
+				formatversion: 2,
+			}, {
+				userAgent,
+			} );
+			await session.request( {
+				action: 'login',
+				lgname: mediawikiUsername,
+				lgpassword: mediawikiPassword,
+			}, { method: 'POST', tokenType: 'login', tokenName: 'lgtoken' } );
+			session.tokens.clear();
+			const filename = `m3api test file ${new Date().getUTCFullYear()}.svg`;
+			const text = 'Minimal file for m3api integration tests. CC0.';
+
+			// find out if we’re using contentA or contentB
+			let content = contentA;
+			try {
+				const currentContent = await fetch(
+					`https://test.wikipedia.org/wiki/Special:FilePath/${filename}`,
+				).then( ( r ) => r.text() );
+				if ( currentContent === contentA ) {
+					content = contentB;
+				}
+			} catch {
+				// ignore, file doesn’t exist yet
+			}
+
+			const uploadParams = {
+				action: 'upload',
+				filename,
+				comment: 'm3api integration test',
+				text,
+				watchlist: 'nochange',
+			};
+			let { upload } = await session.request( {
+				...uploadParams,
+				file: getData( content ),
+			}, { method: 'POST', tokenType: 'csrf' } );
+			const warnings = upload.result === 'Warning' && Object.keys( upload.warnings ).sort().join( '|' );
+			if ( warnings === 'exists' || warnings === 'duplicateversions|exists' ) {
+				// repeat upload (by file key) ignoring these specific warnings
+				upload = ( await session.request( {
+					...uploadParams,
+					filekey: upload.filekey,
+					ignorewarnings: true,
+				}, { method: 'POST', tokenType: 'csrf' } ) ).upload;
+			}
+			expect( upload.result ).to.equal( 'Success' );
+		} );
+	}
 
 } );
