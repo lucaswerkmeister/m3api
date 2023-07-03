@@ -11,7 +11,7 @@
 
 /**
  * A request parameter value that cannot be put in a list:
- * a boolean toggle, or null or undefined as a defaul fallback
+ * a boolean toggle, or null or undefined as a default fallback
  * for not sending a parameter at all.
  *
  * @typedef UnlistableParam
