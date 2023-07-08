@@ -94,7 +94,7 @@ describe( 'NodeSession', function () {
 		if ( !mediawikiUsername || !mediawikiPassword ) {
 			return this.skip();
 		}
-		const session = new NodeSession( 'en.wikipedia.beta.wmflabs.org', {
+		const session = new NodeSession( 'test.wikipedia.org', {
 			formatversion: 2,
 		}, {
 			userAgent,
