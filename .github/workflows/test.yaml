@@ -5,6 +5,7 @@ on:
 jobs:
   test-full:
     runs-on: ubuntu-latest
+    concurrency: testwiki
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
