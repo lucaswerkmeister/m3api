@@ -5,7 +5,7 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## next (not yet released)
+## v0.8.0 (2023-07-10)
 
 - BREAKING CHANGE:
   m3api now requires at least Node.js version 18.2.0,
