@@ -147,6 +147,7 @@ describe( 'NodeSession', function () {
 			if ( !mediawikiUsername || !mediawikiPassword ) {
 				return this.skip();
 			}
+
 			const session = new NodeSession( 'test.wikipedia.org', {
 				formatversion: 2,
 			}, {
@@ -158,42 +159,56 @@ describe( 'NodeSession', function () {
 				lgpassword: mediawikiPassword,
 			}, { method: 'POST', tokenType: 'login', tokenName: 'lgtoken' } );
 			session.tokens.clear();
-			const filename = `m3api test file ${new Date().getUTCFullYear()}.svg`;
-			const text = 'Minimal file for m3api integration tests. CC0.';
 
-			// find out if we’re using contentA or contentB
 			let content = contentA;
-			try {
-				const currentContent = await fetch(
-					`https://test.wikipedia.org/wiki/Special:FilePath/${filename}`,
-				).then( ( r ) => r.text() );
-				if ( currentContent === contentA ) {
-					content = contentB;
-				}
-			} catch {
-				// ignore, file doesn’t exist yet
-			}
-
 			const uploadParams = {
 				action: 'upload',
-				filename,
+				filename: `m3api test file ${new Date().getUTCFullYear()}.svg`,
 				comment: 'm3api integration test',
-				text,
+				text: 'Minimal file for m3api integration tests. CC0.',
 				watchlist: 'nochange',
 			};
+			const uploadOptions = {
+				method: 'POST',
+				tokenType: 'csrf',
+			};
+
 			let { upload } = await session.request( {
 				...uploadParams,
 				file: getData( content ),
-			}, { method: 'POST', tokenType: 'csrf' } );
-			const warnings = upload.result === 'Warning' && Object.keys( upload.warnings ).sort().join( '|' );
-			if ( warnings === 'exists' || warnings === 'duplicateversions|exists' ) {
-				// repeat upload (by file key) ignoring these specific warnings
-				upload = ( await session.request( {
-					...uploadParams,
-					filekey: upload.filekey,
-					ignorewarnings: true,
-				}, { method: 'POST', tokenType: 'csrf' } ) ).upload;
+			}, uploadOptions );
+
+			// check and repeat upload if necessary a few times
+			for ( let attempt = 1; attempt < 10; attempt++ ) {
+				if ( upload.result === 'Success' ) {
+					break;
+				}
+				const warnings = upload.warnings;
+
+				if ( 'nochange' in warnings ) {
+					// switch to the other content
+					content = content === contentA ? contentB : contentA;
+					upload = ( await session.request( {
+						...uploadParams,
+						file: getData( content ),
+					}, uploadOptions ) ).upload;
+					continue;
+				}
+
+				delete warnings.exists;
+				delete warnings.duplicateversions;
+				if ( Object.keys( warnings ).length === 0 ) {
+					// ignore these specific warnings, repeat by file key
+					expect( upload ).to.have.property( 'filekey' );
+					upload = ( await session.request( {
+						...uploadParams,
+						filekey: upload.filekey,
+						ignorewarnings: true,
+					}, uploadOptions ) ).upload;
+					continue;
+				}
 			}
+
 			expect( upload.result, JSON.stringify( upload ) ).to.equal( 'Success' );
 		} );
 	}
