@@ -194,7 +194,7 @@ describe( 'NodeSession', function () {
 					ignorewarnings: true,
 				}, { method: 'POST', tokenType: 'csrf' } ) ).upload;
 			}
-			expect( upload.result ).to.equal( 'Success' );
+			expect( upload.result, JSON.stringify( upload ) ).to.equal( 'Success' );
 		} );
 	}
 
