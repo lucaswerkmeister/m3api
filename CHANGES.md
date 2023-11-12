@@ -7,7 +7,13 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- Updated undici, avoiding [CVE-2023-45143][].
+  The potential impact of this security vulnerability should have been very low:
+  when using the fetch-node backend and a cookie-based session type,
+  an attacker with the ability to create an open redirect on the target API
+  could potentially have obtained session cookies for the API.
+  (I see no reason to expect an open redirect vulnerability to exist in the action API:
+  I’m not aware of any API action that issues HTTP-level redirects at all.)
 
 ## v0.8.0 (2023-07-10)
 
@@ -302,3 +308,4 @@ but I see no reason to recreate the tag now.
 [m3api-doc-latest]: https://lucaswerkmeister.github.io/m3api/
 [m3api-doc-v0.7.1]: https://lucaswerkmeister.github.io/m3api/v0.7.1/
 [m3api-oauth2]: https://www.npmjs.com/package/m3api-oauth2
+[CVE-2023-45143]: https://github.com/advisories/GHSA-wqq4-5wpv-mx2g
