@@ -34,7 +34,7 @@
 		"undici": "^5.27.2"
 	},
 	"devDependencies": {
-		"@sinonjs/fake-timers": "^10.3.0",
+		"@sinonjs/fake-timers": "^11.2.2",
 		"chai": "^4.3.10",
 		"chai-as-promised": "^7.1.1",
 		"eslint": "^8.53.0",
