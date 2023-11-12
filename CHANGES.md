@@ -5,7 +5,7 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## next (not yet released)
+## v0.8.1 (2023-11-12)
 
 - Updated undici, avoiding [CVE-2023-45143][].
   The potential impact of this security vulnerability should have been very low:
