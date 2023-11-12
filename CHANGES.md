@@ -14,6 +14,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   could potentially have obtained session cookies for the API.
   (I see no reason to expect an open redirect vulnerability to exist in the action API:
   I’m not aware of any API action that issues HTTP-level redirects at all.)
+- Updated dependencies.
 
 ## v0.8.0 (2023-07-10)
 
