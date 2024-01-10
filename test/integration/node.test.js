@@ -195,8 +195,16 @@ describe( 'NodeSession', function () {
 					continue;
 				}
 
-				delete warnings.exists;
-				delete warnings.duplicateversions;
+				// handle warnings about the same content already existing
+				delete warnings.exists; // file already exists
+				delete warnings.duplicateversions; // same content in old version of same file
+				if ( 'duplicate' in warnings ) {
+					// same content in file from earlier years?
+					if ( warnings.duplicate.every( ( name ) => name.startsWith( 'M3api_test_file_' ) ) ) {
+						delete warnings.duplicate;
+					}
+				}
+
 				if ( Object.keys( warnings ).length === 0 ) {
 					// ignore these specific warnings, repeat by file key
 					expect( upload ).to.have.property( 'filekey' );
