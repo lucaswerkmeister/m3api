@@ -51,7 +51,7 @@ No changes yet.
 
 - The new `errorHandlers` option can be used to customize error handling.
   It is only part of the internal interface, not of the stable, public interface.
-  Using this options, extension packages or end users can register handlers for certain API error codes;
+  Using this option, extension packages or end users can register handlers for certain API error codes;
   the handlers can e.g. perform necessary cleanup actions and/or retry the request.
   The existing support for retrying after `maxlag`, `readonly` or `badtoken` errors
   is now also internally implemented in terms of this new option.
