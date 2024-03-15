@@ -39,7 +39,7 @@ describe( 'NodeSession', function () {
 
 				const match = line.match( /^([^=]*)='([^']*)'$/ );
 				if ( !match ) {
-					console.warn( `.env: ignoring bad format: ${line}` );
+					console.warn( `.env: ignoring bad format: ${ line }` );
 					continue;
 				}
 				switch ( match[ 1 ] ) {
@@ -54,7 +54,7 @@ describe( 'NodeSession', function () {
 						}
 						break;
 					default:
-						console.warn( `.env: ignoring unknown assignment: ${line}` );
+						console.warn( `.env: ignoring unknown assignment: ${ line }` );
 						break;
 				}
 			}
@@ -106,8 +106,8 @@ describe( 'NodeSession', function () {
 			lgpassword: mediawikiPassword,
 		}, { method: 'POST', tokenType: 'login', tokenName: 'lgtoken' } );
 		session.tokens.clear();
-		const title = `User:${username}/m3api test`;
-		const text = `Test content (${new Date().toISOString()}).`;
+		const title = `User:${ username }/m3api test`;
+		const text = `Test content (${ new Date().toISOString() }).`;
 		await session.request( {
 			action: 'edit',
 			title,
@@ -143,7 +143,7 @@ describe( 'NodeSession', function () {
 		const contentA = "<svg xmlns='http://www.w3.org/2000/svg'/>\n";
 		const contentB = "<svg xmlns='http://www.w3.org/2000/svg' />\n";
 		// eslint-disable-next-line no-loop-func
-		it( `upload (${name})`, async function () {
+		it( `upload (${ name })`, async function () {
 			if ( !mediawikiUsername || !mediawikiPassword ) {
 				return this.skip();
 			}
@@ -163,7 +163,7 @@ describe( 'NodeSession', function () {
 			let content = contentA;
 			const uploadParams = {
 				action: 'upload',
-				filename: `m3api test file ${new Date().getUTCFullYear()}.svg`,
+				filename: `m3api test file ${ new Date().getUTCFullYear() }.svg`,
 				comment: 'm3api integration test',
 				text: 'Minimal file for m3api integration tests. CC0.',
 				watchlist: 'nochange',

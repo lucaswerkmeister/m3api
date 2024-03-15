@@ -302,7 +302,7 @@ describe( 'Session', () => {
 							expect( response ).to.eql( thirdResponse );
 							break;
 						default:
-							throw new Error( `Unexpected iteration #${iteration}` );
+							throw new Error( `Unexpected iteration #${ iteration }` );
 					}
 				}
 
@@ -599,7 +599,7 @@ describe( 'Session', () => {
 				[ 'defaultOptions', { authorization: 'the-authorization-header' }, {} ],
 				[ 'options', {}, { authorization: 'the-authorization-header' } ],
 			] ) {
-				it( `in ${name}`, async () => {
+				it( `in ${ name }`, async () => {
 					let called = false;
 					class TestSession extends BaseTestSession {
 						async internalGet( apiUrl, params, { authorization } ) {
@@ -1307,7 +1307,7 @@ describe( 'Session', () => {
 						expect( response ).to.eql( secondResponse );
 						break;
 					default:
-						throw new Error( `Unexpected iteration #${iteration}` );
+						throw new Error( `Unexpected iteration #${ iteration }` );
 				}
 			}
 
@@ -1383,7 +1383,7 @@ describe( 'Session', () => {
 						expect( response ).to.eql( secondResponse );
 						break;
 					default:
-						throw new Error( `Unexpected iteration #${iteration}` );
+						throw new Error( `Unexpected iteration #${ iteration }` );
 				}
 			}
 
@@ -1468,7 +1468,7 @@ describe( 'Session', () => {
 						// allow an extra initial() call that won’t be used
 						return thirdInitial;
 					default:
-						throw new Error( `Unexpected initial() call #${initialCall}` );
+						throw new Error( `Unexpected initial() call #${ initialCall }` );
 				}
 			}
 
@@ -1489,7 +1489,7 @@ describe( 'Session', () => {
 						expect( response ).to.equal( thirdResponse );
 						return thirdAccumulator;
 					default:
-						throw new Error( `Unexpected reduce() call #${reduceCall}` );
+						throw new Error( `Unexpected reduce() call #${ reduceCall }` );
 				}
 			}
 
@@ -1509,7 +1509,7 @@ describe( 'Session', () => {
 						expect( result ).to.equal( thirdAccumulator );
 						break;
 					default:
-						throw new Error( `Unexpected iteration #${iteration}` );
+						throw new Error( `Unexpected iteration #${ iteration }` );
 				}
 			}
 

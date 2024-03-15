@@ -752,7 +752,7 @@ describe( 'CombiningSession', () => {
 
 		for ( const first of [ 'generator', 'continue' ] ) {
 			for ( const second of [ 'titles', 'pageids', 'revids' ] ) {
-				it( `${first} + ${second}`, async () => {
+				it( `${ first } + ${ second }`, async () => {
 					const params1 = { [ first ]: '' };
 					const response1 = { kind: 'first' };
 					const params2 = { [ second ]: '' };
@@ -772,7 +772,7 @@ describe( 'CombiningSession', () => {
 
 		for ( const first of [ 'titles', 'pageids', 'revids' ] ) {
 			for ( const second of [ 'generator', 'continue' ] ) {
-				it( `${first} + ${second}`, async () => {
+				it( `${ first } + ${ second }`, async () => {
 					const params1 = { [ first ]: '' };
 					const response1 = { kind: 'first' };
 					const params2 = { [ second ]: '' };
@@ -832,7 +832,7 @@ describe( 'CombiningSession', () => {
 					function y() {},
 				],
 			] ) {
-				it( `different ${optionName}`, async () => {
+				it( `different ${ optionName }`, async () => {
 					const params = { action: 'foo' };
 					const response = { foo: 'foo' };
 					const session = sequentialRequestSession( [

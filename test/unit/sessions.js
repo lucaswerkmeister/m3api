@@ -98,14 +98,15 @@ export function singleRequestSession( expectedParams = {}, response = {}, method
 	let called = false;
 	class TestSession extends BaseTestSession {
 		async internalGet( apiUrl, params ) {
-			expect( 'GET', `${method} request expected` ).to.equal( method );
+			expect( 'GET', `${ method } request expected` ).to.equal( method );
 			expect( called, 'internalGet already called' ).to.be.false;
 			called = true;
 			expect( params ).to.eql( expectedParams );
 			return makeResponse( response );
 		}
+
 		async internalPost( apiUrl, urlParams, bodyParams ) {
-			expect( 'POST', `${method} request expected` ).to.equal( method );
+			expect( 'POST', `${ method } request expected` ).to.equal( method );
 			expect( called, 'internalPost already called' ).to.be.false;
 			called = true;
 			expect( { ...urlParams, ...bodyParams } ).to.eql( expectedParams );
@@ -135,11 +136,12 @@ export function sequentialRequestSession( expectedCalls ) {
 				response = {},
 				method = 'GET',
 			} ] = expectedCalls.splice( -1 );
-			expect( 'GET', `${method} request expected` ).to.equal( method );
+			expect( 'GET', `${ method } request expected` ).to.equal( method );
 			expectedParams.format = 'json';
 			expect( params ).to.eql( expectedParams );
 			return makeResponse( response );
 		}
+
 		async internalPost( apiUrl, urlParams, bodyParams ) {
 			expect( expectedCalls ).to.not.be.empty;
 			const [ {
@@ -147,7 +149,7 @@ export function sequentialRequestSession( expectedCalls ) {
 				response = {},
 				method = 'GET',
 			} ] = expectedCalls.splice( -1 );
-			expect( 'POST', `${method} request expected` ).to.equal( method );
+			expect( 'POST', `${ method } request expected` ).to.equal( method );
 			expectedParams.format = 'json';
 			expect( { ...urlParams, ...bodyParams } ).to.eql( expectedParams );
 			checkPostParams( urlParams, bodyParams );

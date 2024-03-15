@@ -106,7 +106,7 @@
  * @property {string} [authorization] Value for the Authorization request header.
  * This option can be used to authenticate requests using OAuth 2.0.
  * For an owner-only client / consumer, where you have an access token,
- * you can set this option to `Bearer ${accessToken}` directly.
+ * you can set this option to `Bearer ${ accessToken }` directly.
  * Otherwise, use the m3api-oauth2 extension package.
  * @property {Object.<string, ErrorHandler>} [errorHandlers] Internal option.
  * Define handlers for API errors, which can retry the request if appropriate.
@@ -460,7 +460,7 @@ class Session {
 	 */
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
 		if ( !apiUrl.includes( '/' ) ) {
-			apiUrl = `https://${apiUrl}/w/api.php`;
+			apiUrl = `https://${ apiUrl }/w/api.php`;
 		}
 
 		/**
@@ -548,7 +548,7 @@ class Session {
 			const [ urlParams, bodyParams ] = splitPostParameters( allParams );
 			result = this.internalPost( this.apiUrl, urlParams, bodyParams, requestHeaders );
 		} else {
-			throw new Error( `Unknown request method: ${method}` );
+			throw new Error( `Unknown request method: ${ method }` );
 		}
 		const internalResponse = await result;
 		const {
@@ -558,7 +558,7 @@ class Session {
 		} = internalResponse;
 
 		if ( status !== 200 ) {
-			throw new Error( `API request returned non-200 HTTP status code: ${status}` );
+			throw new Error( `API request returned non-200 HTTP status code: ${ status }` );
 		}
 
 		if ( 'retry-after' in responseHeaders ) {
@@ -750,7 +750,7 @@ class Session {
 		};
 
 		if ( userAgent ) {
-			return `${userAgent} ${DEFAULT_USER_AGENT}`;
+			return `${ userAgent } ${ DEFAULT_USER_AGENT }`;
 		} else {
 			if ( !this.warnedDefaultUserAgent ) {
 				warn( new DefaultUserAgentWarning() );
