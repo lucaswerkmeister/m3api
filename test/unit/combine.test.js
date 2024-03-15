@@ -7,9 +7,9 @@ import {
 	singleRequestSession as singleRequestCoreSession,
 	sequentialRequestSession as sequentialRequestCoreSession,
 } from './sessions.js';
-import chai, { expect } from 'chai';
+import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-chai.use( chaiAsPromised );
+use( chaiAsPromised );
 import { File } from 'buffer'; // only available globally since Node 20
 
 describe( 'CombiningSession', () => {

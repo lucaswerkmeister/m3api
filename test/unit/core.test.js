@@ -12,10 +12,10 @@ import {
 	singleRequestSession,
 	sequentialRequestSession,
 } from './sessions.js';
-import chai, { expect } from 'chai';
+import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import FakeTimers from '@sinonjs/fake-timers';
-chai.use( chaiAsPromised );
+use( chaiAsPromised );
 
 describe( 'ApiErrors', () => {
 
