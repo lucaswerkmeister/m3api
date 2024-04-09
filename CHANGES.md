@@ -5,7 +5,7 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## next (not yet released)
+## v0.8.2 (2024-04-09)
 
 - Error responses with non-200 HTTP status codes are now supported,
   as long as the `MediaWiki-API-Error` response header is present
