@@ -557,7 +557,7 @@ class Session {
 			body,
 		} = internalResponse;
 
-		if ( status !== 200 ) {
+		if ( status !== 200 && !( 'mediawiki-api-error' in responseHeaders ) ) {
 			throw new Error( `API request returned non-200 HTTP status code: ${ status }` );
 		}
 

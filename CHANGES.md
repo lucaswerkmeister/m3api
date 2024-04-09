@@ -7,6 +7,11 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
+- Error responses with non-200 HTTP status codes are now supported,
+  as long as the `MediaWiki-API-Error` response header is present
+  to indicate that the response represents a regular error and not an internal error.
+  (The status code is ignored;
+  the response body is expected to contain a response with one or more regular errors.)
 - Updated dependencies.
 
 ## v0.8.1 (2023-11-12)

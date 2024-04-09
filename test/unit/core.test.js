@@ -86,7 +86,17 @@ describe( 'Session', () => {
 			await session.request( params );
 		} );
 
-		it( 'throws on non-200 status', async () => {
+		it( 'supports non-200 status with mediawiki-api-error response header', async () => {
+			const session = singleRequestSession( { action: 'query' }, {
+				status: 404,
+				headers: { 'mediawiki-api-error': 'some-not-found-error' },
+				body: { error: { code: 'some-not-found-error' } },
+			} );
+			await expect( session.request( { action: 'query' } ) )
+				.to.be.rejectedWith( ApiErrors );
+		} );
+
+		it( 'throws on non-200 status without mediawiki-api-error response header', async () => {
 			const session = singleRequestSession( { action: 'query' }, {
 				status: 502,
 				body: 'irrelevant',
