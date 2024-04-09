@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>m3api: Global</title>
+
+    <script defer src="scripts/prettify/prettify.js"></script>
+    <script defer src="scripts/prettify/lang-css.js"></script>
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="version-warning.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <!-- VERSION-WARNING -->
+
+    <h1 class="page-title">Global</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2></h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="DEFAULT_OPTIONS"><span class="type-signature">(constant) </span>DEFAULT_OPTIONS<span class="type-signature"> :<a href="global.html#Options">Options</a></span></h4>
+
+
+
+
+<div class="description">
+    <p>Default options for requests across all sessions.</p>
+<p>Packages extending m3api’s capabilities (“extension packages”)
+may add their own options here,
+conventionally prefixed with the package name and a slash.
+For example, a package named 'abc' may add options 'abc/x' and 'abc/y',
+while a package named '@abc/def' may add '@abc/def/x' and '@abc/def/y'.
+Extension packages are encouraged to use a single options object
+for their own options as well as ones that are passed through to m3api,
+rather than e.g. separate options or individual parameters;
+both kinds of options can then have per-session and global defaults.</p>
+<p>Changing or removing any default options here is strongly discouraged,
+and may result in unpredictable behavior.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="global.html#Options">Options</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line179">line 179</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="makeWarnDroppingTruncatedResultWarning"><span class="type-signature"></span>makeWarnDroppingTruncatedResultWarning<span class="signature">(warn)</span><span class="type-signature"> &rarr; {function}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Decorate the given warn handler so that warnings about truncated results are dropped.</p>
+<p>Most of the time, you should use the dropTruncatedResultWarning request option
+instead of using this function directly.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>warn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The original warn function.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line402">line 402</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A new function that, when called,
+will call the original warn functions,
+but with all truncated result warnings dropped;
+when there are no other warnings, the original function is not called.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="responseBoolean"><span class="type-signature"></span>responseBoolean<span class="signature">(value)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Convenience function to get a boolean from an API response value.</p>
+<p>Works for formatversion=1 booleans
+(absent means false, empty string means true)
+as well as formatversion=2 booleans
+(absent or false means false, true means true).
+Mostly useful in library code,
+when you don’t know the formatversion of the response.
+(If you control the request parameters, just use formatversion=2.)</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+|
+
+<span class="param-type">''</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A value from an API response
+(e.g. response.query.general.rtl).</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line874">line 874</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="set"><span class="type-signature"></span>set<span class="signature">(&hellip;elements)</span><span class="type-signature"> &rarr; {Set}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Convenience function to create a Set.</p>
+<p>The two invocations</p>
+<pre><code>new Set( [ 'a', 'b' ] )
+set( 'a', 'b' )
+</code></pre>
+<p>are equivalent, but the second one is shorter and easier to type.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>elements</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line891">line 891</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Set</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+
+    
+
+    
+    <h4 class="name" id="ErrorHandler"><span class="type-signature"></span>ErrorHandler<span class="signature">(session, params, options, internalResponse, error)</span><span class="type-signature"> &rarr; {Object|null|Promise.&lt;(Object|null)>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>An error handler callback, which can be registered in the errorHandlers option.</p>
+<p>The callback is called if an API request results in an error
+and the callback has been registered for that error code.
+It may retry the request or perform any other action.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>session</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Session.html">Session</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The session to which the request belongs.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#Params">Params</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The request parameters.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#Options">Options</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The request options.
+The retryUntil option is always set here,
+and the error handler should not retry the request if this timestamp has already passed.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>internalResponse</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#InternalResponse">InternalResponse</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The full response sent by the server.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The specific error returned to the API that matched this handler.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line120">line 120</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A synchronous or asynchronous result.
+If the handler returns an object (or a promise resolving to an object),
+that object is used as the result of the API request;
+this can be used to retry the request
+(the handler makes another request to the session with the same params and options,
+and returns its result).
+If the handler returns null (or a promise resolving to null),
+the error could not be handled;
+m3api will call error handlers for the remaining errors (if any)
+and eventually throw ApiErrors if none of them returned an object either.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">Promise.&lt;(Object|null)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+            
+                
+<h4 class="name" id="InternalResponse">InternalResponse</h4>
+
+
+
+
+<div class="description">
+    <p>The internal representation of a full server response,
+returned by <a href="Session.html#internalGet">Session#internalGet</a> and <a href="Session.html#internalPost">Session#internalPost</a>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>status</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The HTTP status code (e.g. 200 OK).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>headers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The response headers.
+Header names must be all-lowercase.
+(Set-Cookie is not expected to be included.)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>body</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>JSON-decoded response body.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line147">line 147</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="ListParam">ListParam</h4>
+
+
+
+
+<div class="description">
+    <p>A request parameter value that is a list of values
+(several titles, namespace numbers, etc.),
+which may potentially be combined with other lists in a single request
+(if specified as a set) or not (if specified as an array).</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Array.&lt;<a href="global.html#ListableParam">ListableParam</a>></span>
+|
+
+<span class="param-type">Set.&lt;<a href="global.html#ListableParam">ListableParam</a>></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line28">line 28</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="ListableParam">ListableParam</h4>
+
+
+
+
+<div class="description">
+    <p>A request parameter value that can potentially be put in a list:
+a title, user name, namespace number, etc.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+|
+
+<span class="param-type">number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line4">line 4</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="Options">Options</h4>
+
+
+
+
+<div class="description">
+    <p>Request options for <a href="Session.html#request">Session#request</a> and related methods.
+The actual effective options are merged from
+the builtin <a href="global.html#DEFAULT_OPTIONS">DEFAULT_OPTIONS</a>,
+the default options passed into the <a href="Session.html">Session</a> constructor,
+and the options given with a particular request call.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>method</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The method, either GET (default) or POST.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tokenType</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">null</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Include a token parameter of this type,
+automatically getting it from the API if necessary.
+The most common token type is 'csrf' (some actions use a different type);
+you will also want to set the method option to POST.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tokenName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The name of the token parameter.
+Only used if the tokenType option is not null.
+Defaults to 'token', but some modules need a different name
+(e.g. action=login needs 'lgtoken').</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userAgent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The User-Agent header to send.
+(Usually specified as a default option in the constructor.)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxRetriesSeconds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The maximum duration for automatic retries,
+i.e. a time interval (in seconds) during which the request will be automatically repeated
+according to the Retry-After response header if it is present.
+Defaults to 65 seconds; set to 0 to disable automatic retries.
+(Can also be a fractional number for sub-second precision.)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>retryAfterMaxlagSeconds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Default Retry-After header value
+in case of a maxlag error. Only used when the response is missing the header.
+Since MediaWiki usually sends this header for maxlag errors, this option is rarely used.
+Defaults to five seconds, which is the recommended maxlag value for bots.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>retryAfterReadonlySeconds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Default Retry-After header value
+in case of a readonly error. Only used when the response is missing the header.
+MediaWiki does not usually send this header for readonly errors,
+so this option is more important than the retryAfterMaxlagSeconds option.
+The default of 30 seconds is thought to be appropriate for Wikimedia wikis;
+for third-party wikis, higher values may be useful
+(remember to also increase the maxRetriesSeconds option accordingly).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>warn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>A handler for warnings from this API request.
+Called with a single instance of a subclass of Error, such as <a href="ApiWarnings.html">ApiWarnings</a>.
+The default is console.warn (interactive CLI applications may wish to change this).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dropTruncatedResultWarning</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Whether to drop warnings about truncated results instead of passing them to the warn handler.
+Occasionally, an API result may not fit into a single network response;
+in such cases, the API will add a warning about the result being truncated,
+as well as continuation parameters that will result in the remaining information
+being included in the next request, if continuation is followed.
+If you follow continuation and are prepared to merge truncated responses back together,
+you don’t need to see this warning and can use this option to suppress it.
+This option defaults to false in <a href="Session.html#request">Session#request</a> (i.e. treat the warning like any other),
+but to true in <a href="Session.html#requestAndContinueReducingBatch">Session#requestAndContinueReducingBatch</a>.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>authorization</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Value for the Authorization request header.
+This option can be used to authenticate requests using OAuth 2.0.
+For an owner-only client / consumer, where you have an access token,
+you can set this option to <code>Bearer ${ accessToken }</code> directly.
+Otherwise, use the m3api-oauth2 extension package.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>errorHandlers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;string, <a href="global.html#ErrorHandler">ErrorHandler</a>></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Internal option.
+Define handlers for API errors, which can retry the request if appropriate.
+This option is only part of the internal interface, not of the stable, public interface.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>retryUntil</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Internal option.
+Retry until the given timestamp (in terms of the performance.now() clock).
+Takes precedence over the maxRetriesSeconds option.
+This option is only part of the internal interface, not of the stable, public interface.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line57">line 57</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="Param">Param</h4>
+
+
+
+
+<div class="description">
+    <p>A request parameter value of any kind.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="global.html#ListParam">ListParam</a></span>
+|
+
+<span class="param-type"><a href="global.html#SingleParam">SingleParam</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line38">line 38</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="Params">Params</h4>
+
+
+
+
+<div class="description">
+    <p>Request parameters for <a href="Session.html#request">Session#request</a> and related methods.
+Each parameter may be a string, number, boolean, null, or undefined,
+or an array or set of strings or numbers.
+Parameters with values false, null, or undefined are completely removed
+when the request is sent out.
+In POST requests, a parameter may also be a Blob or File.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object.&lt;string, <a href="global.html#Param">Param</a>></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line45">line 45</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="SingleParam">SingleParam</h4>
+
+
+
+
+<div class="description">
+    <p>A single request parameter value.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="global.html#ListableParam">ListableParam</a></span>
+|
+
+<span class="param-type"><a href="global.html#UnlistableParam">UnlistableParam</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line21">line 21</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="UnlistableParam">UnlistableParam</h4>
+
+
+
+
+<div class="description">
+    <p>A request parameter value that cannot be put in a list:
+a boolean toggle, a Blob or File (POST requests only),
+or null or undefined as a default fallback for not sending a parameter at all.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+|
+
+<span class="param-type">Blob</span>
+|
+
+<span class="param-type">File</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core.js.html">core.js</a>, <a href="core.js.html#line12">line 12</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ApiErrors.html">ApiErrors</a></li><li><a href="ApiWarnings.html">ApiWarnings</a></li><li><a href="DefaultUserAgentWarning.html">DefaultUserAgentWarning</a></li><li><a href="Session.html">Session</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DEFAULT_OPTIONS">DEFAULT_OPTIONS</a></li><li><a href="global.html#makeWarnDroppingTruncatedResultWarning">makeWarnDroppingTruncatedResultWarning</a></li><li><a href="global.html#responseBoolean">responseBoolean</a></li><li><a href="global.html#set">set</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a>
+</footer>
+
+<script>document.addEventListener('DOMContentLoaded', function () { prettyPrint(); });</script>
+<script async src="scripts/linenumber.js"></script>
+</body>
+</html>
