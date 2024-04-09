@@ -542,7 +542,7 @@ describe( 'CombiningSession', () => {
 	 * @param {Object[]} expectedCalls The expected calls.
 	 * Each call is an object with expectedParams, response, and/or method;
 	 * response defaults to an empty object,
-	 * not the outer `response` as in {@link singleRequestSession}.
+	 * not the outer `response` as in {@link #singleRequestSession}.
 	 * @return {Session}
 	 */
 	function sequentialRequestSession( expectedCalls ) {
