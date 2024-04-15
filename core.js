@@ -429,7 +429,7 @@ class DefaultUserAgentWarning extends Error {
 				'You should set the userAgent request option, ' +
 				'either as a default option for the session (third constructor argument) ' +
 				'or as a custom option for each request (second request argument). ' +
-				'See w.wiki/4PLr for the User-Agent policy.',
+				'See w.wiki/9mMA for the User-Agent policy.',
 			...params,
 		);
 
@@ -456,7 +456,7 @@ class Session {
 	 * other useful global parameters include uselang, errorformat, maxlag.
 	 * @param {Options} [defaultOptions] Options to set for each request.
 	 * You are strongly encouraged to specify a userAgent according to the
-	 * {@link https://meta.wikimedia.org/wiki/User-Agent_policy User-Agent policy}.
+	 * {@link https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:User-Agent_policy User-Agent policy}.
 	 */
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
 		if ( !apiUrl.includes( '/' ) ) {

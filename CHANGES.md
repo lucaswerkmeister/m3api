@@ -7,7 +7,8 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- Updated the link to the [User-Agent policy][]
+  after it was moved from metawiki to foundationwiki.
 
 ## v0.8.2 (2024-04-09)
 
@@ -316,7 +317,7 @@ The Git commit for this version was probably 00e278a13b50cc903b6fb3d530033098d3a
 but I see no reason to recreate the tag now.
 
 [CVE-2021-3749]: https://github.com/advisories/GHSA-cph5-m8f7-6c5x
-[User-Agent policy]: https://meta.wikimedia.org/wiki/Special:MyLanguage/User-Agent_policy
+[User-Agent policy]: https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:User-Agent_policy
 [m3api-query]: https://www.npmjs.com/package/m3api-query
 [m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
 [m3api-doc-latest]: https://lucaswerkmeister.github.io/m3api/
