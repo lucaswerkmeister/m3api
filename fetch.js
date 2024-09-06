@@ -19,7 +19,6 @@ class FetchSession extends Session {
 
 	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
 		super( apiUrl, defaultParams, defaultOptions );
-		this.fetchOptions = {};
 	}
 
 	/**
