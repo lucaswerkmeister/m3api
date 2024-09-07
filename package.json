@@ -36,7 +36,7 @@
 	"devDependencies": {
 		"@sinonjs/fake-timers": "^11.2.2",
 		"chai": "^5.1.0",
-		"chai-as-promised": "^7.1.1",
+		"chai-as-promised": "^8.0.0",
 		"eslint": "^8.57.0",
 		"eslint-config-wikimedia": "^0.27.0",
 		"eslint-plugin-chai-friendly": "^0.7.4",
