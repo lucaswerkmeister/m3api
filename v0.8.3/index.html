@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>m3api: Home</title>
+
+    <script defer src="scripts/prettify/prettify.js"></script>
+    <script defer src="scripts/prettify/lang-css.js"></script>
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="version-warning.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <!-- VERSION-WARNING -->
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>m3api</h1>
+<p><a href="https://www.npmjs.com/package/m3api"><img src="https://img.shields.io/npm/v/m3api.svg" alt="npm"></a>
+<a href="https://lucaswerkmeister.github.io/m3api/"><img src="https://img.shields.io/badge/documentation-informational" alt="documentation"></a></p>
+<p>m3api is a <strong>minimal, modern MediaWiki API client</strong>,
+a library for interacting with the <a href="https://www.mediawiki.org/wiki/Special:MyLanguage/API:Main_page">MediaWiki Action API</a> from JavaScript.</p>
+<ul>
+<li>
+<p>It is <strong>minimal</strong>: It wraps the MediaWiki API, without much more.
+This library does not have many abstractions above the API,
+as you might find in other libraries (“get page”, “make edit”);
+instead, these are left to <a href="#Extension-packages">§ extension packages</a>, see below.
+m3api itself is for people who are comfortable working with the API directly –
+you pass in the same parameters that you’d find in e.g. the <a href="https://en.wikipedia.org/wiki/Special:ApiSandbox">API sandbox</a>,
+and get back the original MediaWiki response, JSON-decoded.
+(And if you use the API sandbox, check out <a href="https://meta.wikimedia.org/wiki/User:Lucas_Werkmeister/m3api-ApiSandbox-helper">this user script</a>!)
+As a general rule, this library only implements features
+that apply to more than one API module.
+(In this respect, m3api is similar to <a href="https://github.com/brettz9/mediawiki-js">mediawiki-js</a>.)</p>
+</li>
+<li>
+<p>It is <strong>modern</strong>: It’s based on Promises, provides iterators,
+uses ES6 modules, and so on.
+(See <a href="#Compatibility">§ compatibility</a> below for details.)</p>
+</li>
+</ul>
+<p>It supports both Node.js and browsers.
+The browser version has no external dependencies.</p>
+<h2>Usage</h2>
+<p>Here’s an example demonstrating some ways to use m3api:</p>
+<pre class="prettyprint source lang-js"><code>// you may need to change the import path,
+// e.g. ./node_modules/m3api/node.js if installed via npm
+import Session, { set } from './node.js';
+
+// note: this example uses top-level await for simplicity,
+// you may need an async wrapper function
+
+// create a session from a wiki domain (or full api.php URL)
+const session = new Session( 'en.wikipedia.org', {
+	// these default parameters will be added to all requests
+	formatversion: 2,
+	errorformat: 'plaintext',
+}, {
+	// these default options will apply to all requests
+	userAgent: 'm3api-README-example',
+} );
+
+// a sample request to the siteinfo API
+const siteinfoResponse = await session.request( {
+	action: 'query',
+	meta: 'siteinfo',
+	// array parameters are automatically converted
+	siprop: [ 'general', 'statistics' ],
+} );
+// one way to handle the response: destructure it
+const { query: {
+	general: { sitename },
+	statistics: { edits },
+} } = siteinfoResponse;
+console.log( `Welcome to ${sitename}, home to ${edits} edits!` );
+
+// another way to get the same result
+async function getSiteName( session ) {
+	const response = await session.request( {
+		action: 'query',
+		// set parameters may be combined with other requests
+		meta: set( 'siteinfo' ),
+		siprop: set( 'general' ),
+	} );
+	return response.query.general.sitename;
+}
+async function getSiteEdits( session ) {
+	const response = await session.request( {
+		action: 'query',
+		meta: set( 'siteinfo' ),
+		siprop: set( 'statistics' ),
+	} );
+	return response.query.statistics.edits;
+}
+// the following two concurrent API requests will be automatically combined,
+// sending a single request with siprop=general|statistics,
+// because they are compatible (set parameters get merged, others are equal)
+const [ sitename_, edits_ ] = await Promise.all( [
+	getSiteName( session ),
+	getSiteEdits( session ),
+] );
+console.log( `Welcome back to ${sitename_}, home to ${edits_} edits!` );
+
+// a slightly contrived example for continuation
+console.log( 'Here are ten local file pages linking to web.archive.org:' );
+// due to miser mode, each request may only return few results,
+// so we need continuation in order to get ten results in total
+let n = 0;
+outer: for await ( const urlResponse of session.requestAndContinue( {
+	// requestAndContinue returns an async iterable of responses
+	action: 'query',
+	list: set( 'exturlusage' ),
+	euprotocol: 'https',
+	euquery: 'web.archive.org',
+	eunamespace: [ 6 ], // File:
+	eulimit: 'max',
+	euprop: set( 'title' ),
+} ) ) {
+	for ( const page of urlResponse.query.exturlusage ) {
+		console.log( page.title );
+		if ( ++n >= 10 ) {
+			break outer;
+			// once we stop iterating, no more requests are made
+		}
+	}
+}
+</code></pre>
+<p>This code works in Node.js, but also in the browser with only two changes:</p>
+<ul>
+<li>
+<p>import <code>browser.js</code> instead of <code>node.js</code></p>
+</li>
+<li>
+<p>add <code>origin: '*'</code> to the default parameters (anonymous cross-site request)</p>
+</li>
+</ul>
+<p>Other features not demonstrated above:</p>
+<ul>
+<li>
+<p>m3api can automatically fetch and add tokens to requests,
+using the <code>tokenType</code> and <code>tokenName</code> request options.
+Example usage:</p>
+<pre class="prettyprint source lang-js"><code>await session.request( {
+	action: 'login',
+	lgname: 'username',
+	lgpassword: 'password',
+}, {
+	method: 'POST',
+	tokenType: 'login',
+	tokenName: 'lgtoken',
+} );
+session.tokens.clear(); // any cached tokens are invalid after login
+await session.request( {
+	action: 'edit',
+	title: 'Test page',
+	text: 'Test content',
+}, {
+	method: 'POST',
+	tokenType: 'csrf', // usual token type for most actions
+	// tokenName: 'token' is the default
+} );
+</code></pre>
+</li>
+<li>
+<p>m3api detects any error(s) returned by the API,
+and throws them as an <code>ApiErrors</code> instance
+(the class can be imported as a non-default export
+of the <code>browser.js</code> and <code>node.js</code> modules).
+The first error code is used as the message,
+and all the error objects can be accessed as <code>.errors</code>.
+(The shape of those objects will depend on the request <code>errorformat</code>.)</p>
+</li>
+<li>
+<p>Any warnings returned by the API are also detected.
+By default, warnings are logged to the console;
+you can specify a custom <code>warn</code> handler function in the request options
+(this may be advisable for interactive CLI applications on Node.js,
+though you should make sure the warnings are still seen by developers somehow).</p>
+</li>
+<li>
+<p>To make POST requests instead of GET requests,
+pass an object with a <code>method</code> value as the second parameter:
+e.g. <code>request( { ... }, { method: 'POST' } )</code>.
+(<code>requestAndContinue</code> also supports this.)
+In POST requests, <code>Blob</code> or <code>File</code> parameters are also supported.
+(Note that, in Node 18, these will trigger a warning from Node.
+If you are affected by this and cannot upgrade to Node 20 or later,
+you can suppress the warning by launching Node with <code>--no-warnings=ExperimentalWarning</code>.)</p>
+</li>
+<li>
+<p>API requests will automatically be retried if necessary
+(if the response contains a Retry-After header,
+or either a <code>maxlag</code> or <code>readonly</code> error).
+m3api will wait for an appropriate amount of time, then repeat the request,
+for up to 65 seconds by default.
+You can change this with the <code>maxRetriesSeconds</code> request option:
+e.g. <code>request( { ... }, { maxRetriesSeconds: 10 } )</code> to stop retrying sooner.
+Set <code>maxRetriesSeconds</code> to 0 to disable this feature entirely.</p>
+</li>
+<li>
+<p>Apart from strings, numbers, and arrays and sets thereof,
+parameter values can also be booleans, <code>null</code>, or <code>undefined</code>.
+<code>false</code>, <code>null</code> and <code>undefined</code> parameters are omitted from the request,
+according to their standard meaning in the MediaWiki API.
+<code>true</code>, the empty string, the empty array and the empty set are all <em>not</em> omitted,
+but instead use the empty string as the parameter value;
+for example, you can use <code>props: []</code> to override a nonempty default value.</p>
+</li>
+<li>
+<p>The <code>responseBoolean</code> helper can be used to get a boolean from a response object.
+For example, <code>responseBoolean( response.query.general.rtl )</code> returns <code>true</code>
+if <code>response.query.general</code> had <code>rtl: &quot;&quot;</code> (<code>formatversion=1</code>) or <code>rtl: true</code> (<code>formatversion=2</code>).
+This is mostly useful in library code, when you don’t know the <code>formatversion</code> of the response;
+you can import the helper from <code>core.js</code> (but not <code>browser.js</code> or <code>node.js</code>).</p>
+</li>
+<li>
+<p>The <code>authorization</code> request option can be used to set the <code>Authorization</code> request header.
+You can use this directly with an owner-only OAuth 2.0 client,
+by setting the option to the string <code>Bearer ACCESS_TOKEN</code>
+(where <em>ACCESS_TOKEN</em> is the access token MediaWiki generated for you);
+to use a regular OAuth 2.0 client and make requests authenticated as another user,
+use the <a href="https://www.npmjs.com/package/m3api-oauth2">m3api-oauth2</a> extension package.</p>
+</li>
+</ul>
+<p>For more details, see also the code-level documentation (JSdoc comments).</p>
+<h3>Automatically combining requests</h3>
+<p>One m3api feature deserves a more detailed discussion:
+how it automatically combines concurrent, compatible API requests.</p>
+<ul>
+<li>
+<p>API requests are <strong>concurrent</strong> if they are made within the same JS call stack,
+or (in other words) in the same “callback”.
+Technically, as soon as m3api receives a request,
+it queues a microtask (using <code>Promise.resolve()</code>) to dispatch it,
+and only other requests which arrive before that microtask runs have a chance to be combined with it.</p>
+</li>
+<li>
+<p>API requests are <strong>compatible</strong> if their parameters and options are compatible.
+The parameters as a whole are compatible if every parameter common to both requests is compatible,
+i.e. the parameter values are either identical
+(after simple transformations like <code>2</code> → <code>&quot;2&quot;</code>)
+or are both sets, in which case they’re merged for the combined request.
+(The <code>set( ... )</code> function, which can be imported from <code>node.js</code> and <code>browser.js</code>,
+is just a shortcut for <code>new Set( [ ... ] )</code>.)
+Options are mostly compatible if they’re identical for both requests,
+but some options have special handling so that requests can still be combined
+even if they specify different values for those options.</p>
+</li>
+</ul>
+<p>To take advantage of this feature,
+it’s recommended to use <code>set( ... )</code> instead of <code>[ ... ]</code> for most “list-like” API paremeters,
+even if you’re only specifying a single set element,
+as long as that parameter is safe to merge with other requests.
+For example, consider this request from the usage example above:</p>
+<pre class="prettyprint source lang-js"><code>session.requestAndContinue( {
+	action: 'query',
+	list: set( 'exturlusage' ),
+	euprotocol: 'https',
+	euquery: 'web.archive.org',
+	eunamespace: [ 6 ], // File:
+	eulimit: 'max',
+	euprop: set( 'title' ),
+} )
+</code></pre>
+<p>Let’s go through those parameters in turn:</p>
+<ul>
+<li>
+<p><code>action: 'query'</code>: There can only be one action at a time,
+so this parameter has a single value.</p>
+</li>
+<li>
+<p><code>list: set( 'exturlusage' )</code>: The query API supports multiple lists at once,
+and it doesn’t matter to us if there are other lists in the response
+(they’ll be tucked away under a different key in the result),
+so we specify this as a set.
+If another request has e.g. <code>list: set( 'allpages' )</code>,
+then the remaining parameters of that request will probably start with <code>ap*</code>
+(the <code>list=allpages</code> API parameter prefix),
+so they won’t conflict with our <code>eu*</code> parameters.</p>
+</li>
+<li>
+<p><code>euprotocol: 'https'</code>: Must be a single value.</p>
+</li>
+<li>
+<p><code>euquery: 'web.archive.org'</code>: Must be a single value.</p>
+</li>
+<li>
+<p><code>eunamespace: [ 6 ]</code>: Here we specify an array, not a set.
+The parameter can take multiple values in the API,
+but we want results limited to just the file namespace,
+and if this parameter was a set,
+we might get results from other namespaces due to merged requests.
+The alternative would be to specify this as <code>eunamespace: set( 6 )</code>,
+but then to check the namespace of each result we get,
+so that we skip results from other namespaces,
+and only process the ones we really wanted.</p>
+</li>
+<li>
+<p><code>eulimit: 'max'</code>: Must be a single value.</p>
+</li>
+<li>
+<p><code>euprop: set( 'title' )</code>: Here we use a set again,
+because we don’t mind if other requests add extra properties to each result,
+as long as the title itself is included.
+Note that the default value for this parameter is <code>ids|title|url</code>,
+so if we didn’t specify it at all,
+we would probably get the data we need as well;
+however, if our request was then combined with another request,
+and that request had <code>euprop: set( 'ids' )</code>,
+then we wouldn’t get the title in our request.</p>
+</li>
+</ul>
+<p>The last point is worth elaborating on:
+<strong>don’t just rely on default parameter values if your requests may be combined with others.</strong>
+This is most important when you’re writing library code
+(similar to the <code>getSiteName</code> and <code>getSiteEdits</code> functions in the usage example above),
+where you don’t know which other requests may be made at any time;
+if you’re directly making API requests from an application,
+you may know that no other concurrent requests will be made at a certain time,
+and could get away with relying on default parameters.</p>
+<p>To avoid just relying on default parameter values, you have several options:</p>
+<ol>
+<li>
+<p>Explicitly specify a value for the parameter,
+either the default or (as with <code>title</code> vs. <code>ids|title|url</code> above) a part of it.</p>
+</li>
+<li>
+<p>Explicitly specify the parameter as <code>null</code> or <code>undefined</code>.
+This means that the parameter won’t be sent with the request
+(i.e. the server-side default will be used),
+but makes the request incompatible with any other request that has a different value for the parameter.
+(This is similar to using an array instead of a set, as we saw for <code>eunamespace</code> above:
+both strategies inhibit merging with some other requests.)</p>
+</li>
+<li>
+<p>Process the response in a way that works regardless of parameter value.
+This is not always possible, but as an example, with a bit of extra code,
+you may be able to process both <code>formatversion=1</code> and <code>formatversion=2</code> responses
+(see also the <code>responseBoolean</code> helper function).</p>
+</li>
+</ol>
+<h2>Extension packages</h2>
+<p>While m3api itself aims to be a minimal library,
+its functionality can be extended by other packages,
+which make it easier to use certain APIs correctly.
+Available extension packages include:</p>
+<ul>
+<li>
+<p><a href="https://www.npmjs.com/package/m3api-query">m3api-query</a>, for the <code>action=query</code> API</p>
+</li>
+<li>
+<p><a href="https://www.npmjs.com/package/m3api-botpassword">m3api-botpassword</a>, to log in using a <a href="https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Bot_passwords">bot password</a></p>
+</li>
+<li>
+<p><a href="https://www.npmjs.com/package/m3api-oauth2">m3api-oauth2</a>, to authenticate using OAuth 2.0</p>
+</li>
+</ul>
+<p>If you create an additional extension package,
+feel free to submit a pull request to add it to this list.
+(Also, have a look at the guidelines <a href="#creating-extension-packages">below</a>.)</p>
+<h3>Using extension packages</h3>
+<p>For the most part, m3api extension packages can be used like other packages:
+you install them using npm, import functions from them, etc.</p>
+<p>However, they require some setup to be used in the browser.
+As they can’t import <code>m3api</code> using a relative path,
+and bare <code>m3api</code> imports only work out of the box in Node.js,
+something needs to resolve the imports for the browser.
+The most convenient way is to use a bundler or build system:
+for example, <a href="https://vitejs.dev/">Vite</a> has been tested and works out of the box.</p>
+<p>Alternatively, you can specify an import map, like in this example:</p>
+<pre class="prettyprint source lang-html"><code>&lt;script type=&quot;importmap&quot;>
+{
+	&quot;imports&quot;: {
+		&quot;m3api/&quot;: &quot;./node_modules/m3api/&quot;,
+		&quot;m3api-query/&quot;: &quot;./node_modules/m3api-query/&quot;
+	}
+}
+&lt;/script>
+&lt;script type=&quot;module&quot;>
+	import Session, { set } from 'm3api/browser.js';
+	import { queryFullPageByTitle } from 'm3api-query/index.js';
+	// ...
+&lt;/script>
+</code></pre>
+<p>Note that import maps are not as widely supported as ES6 modules in general.</p>
+<h3>Creating extension packages</h3>
+<p>Here are some guidelines or recommendations for creating m3api extension packages:</p>
+<ul>
+<li>
+<p>Combine your options with those from m3api.
+Functions that make requests should take a single (optional) <code>options</code> argument,
+including both options passed through to m3api and those for your package.
+The package’s options should be named beginning with the package name and a slash,
+e.g. <code>somePkg/someOption</code> or <code>@someScope/somePkg/someOption</code>.
+When reading the options, use the session’s <code>defaultOptions</code> and m3api’s <code>DEFAULT_OPTIONS</code>;
+you may add your options to the <code>DEFAULT_OPTIONS</code> at package load time.
+For example:</p>
+<pre class="prettyprint source lang-js"><code>import { DEFAULT_OPTIONS } from 'm3api';
+
+Object.assign( DEFAULT_OPTIONS, {
+	'somePkg/optionA': true,
+	'somePkg/optionB': false,
+} );
+
+function someFunction( session, options = {} ) {
+	const {
+		'somePkg/optionA': optionA,
+		'somePkg/optionB': optionB,
+	} = {
+		...DEFAULT_OPTIONS,
+		...session.defaultOptions,
+		...options,
+	};
+	// use optionA, optionB
+	session.request( ..., options );
+}
+</code></pre>
+</li>
+<li>
+<p>Functions that make requests or process responses
+should be able to deal with either formatversion,
+rather than forcing your users to use <code>formatversion=2</code> (or even <code>formatversion=1</code>).
+The <code>responseBoolean</code> helper from <code>core.js</code> can be helpful.</p>
+</li>
+<li>
+<p>If you need to import anything from m3api,
+import it from <code>m3api/</code>, not <code>../m3api/</code> or anything like that.
+(npm might move m3api further up the dependency tree.)</p>
+</li>
+</ul>
+<h2>Compatibility</h2>
+<p>In Node.js, m3api is compatible with Node 18.2.0 or later.
+Among major browsers, m3api is compatible with
+Chrome 63, Firefox 60, Edge 79, Opera 50 (46 on Android), Safari 12, and Samsung Internet 8.0.
+The relevant browser requirements of m3api are:</p>
+<ul>
+<li>
+<p>Support for ES6 modules (<code>import</code>/<code>export</code>).
+Supported in Firefox since version 60.
+(Other browsers supported async generators before ES6 modules.)</p>
+</li>
+<li>
+<p>Support for async generators (<code>async function *</code>, <code>for await … of</code>).
+Supported since Chrome 63, Edge 79, Opera 50 (46 on Android), Safari 12, Samsung Internet 8.0.
+(Firefox supported ES6 modules before async generators.)</p>
+</li>
+</ul>
+<p>The Node.js version requirement is based on <code>fetch()</code> being available
+and supported by the <code>http-cookie-agent</code> package.
+If you need support for earlier Node.js versions,
+try using m3api v0.7.3.</p>
+<p>Other modern features used by m3api –
+destructuring assignment, spread syntax, default arguments, classes, etc. –
+are less recent than ES6 modules and async generators,
+and therefore aren’t expected to affect compatibility.</p>
+<p>Using a combination of transpiling and polyfilling,
+it should be possible to use m3api on older platforms as well.
+If you try this, feel free to send a pull request
+updating this paragraph with your experience.</p>
+<h2>Stability</h2>
+<p>m3api follows a slightly modified version of semantic versioning.
+The public interface, which most users will use,
+is stable between minor versions (only changing incompatibly between major versions);
+however, the internal interface, which some extension packages may use,
+is only stable between patch versions, and may change incompatibly between minor versions.
+Most users are encouraged to use the “caret” operator in their m3api dependency (e.g. <code>^1</code>),
+but extension packages depending on the internal interface should use the “tilde” operator (e.g. <code>~1.0</code>),
+and list all m3api versions they’re compatible with (e.g. <code>~1.0||~1.1</code>).</p>
+<p>The stable, public interface comprises the following items:</p>
+<ul>
+<li>
+<p>The paths / existence of the <code>core.js</code>, <code>node.js</code> and <code>browser.js</code> files.</p>
+</li>
+<li>
+<p>All exports of those files that have not been marked <code>@protected</code> or <code>@private</code>.</p>
+</li>
+<li>
+<p>All members of those exports (class methods and properties) that have not been marked <code>@protected</code> or <code>@private</code>.</p>
+</li>
+</ul>
+<p>The internal interface additionally comprises the following items:</p>
+<ul>
+<li>
+<p>The paths / existence of the <code>fetch.js</code>, <code>fetch-browser.js</code>, <code>fetch-node.js</code> and <code>combine.js</code> files.</p>
+</li>
+<li>
+<p>All exports of those files, or of files in the public interface, that have not been marked <code>@private</code>.</p>
+</li>
+<li>
+<p>All members of those exports that have not been marked <code>@private</code>.</p>
+</li>
+</ul>
+<p>That is, public code only changes incompatibly between major versions,
+<code>@protected</code> code only changes incompatibly between minor versions,
+and <code>@private</code> code may change incompatibly at any time.</p>
+<p>For methods, the stable interface only includes calling them;
+overriding them is part of the internal interface.
+(That is, changes that are compatible for callers but will require overriders to adjust may take place between minor versions.)</p>
+<p>Incompatible changes to the stable interface will be mentioned in the <a href="CHANGES.md">changelog</a>,
+always at the beginning of the entry for an release (before compatible changes in the same release),
+using the words “BREAKING CHANGE” (in all caps).
+Incompatible changes to the internal interface will be mentioned using the words “Internal Breaking Change”,
+not necessarily at the beginning of the entry.</p>
+<p>The usual semver interpretation of pre-1.0 versions applies,
+i.e. in <code>0.x.y</code>, <em>x</em> is the “major” version and <em>y</em> the “minor” one.</p>
+<h2>License</h2>
+<p>Published under the <a href="https://spdx.org/licenses/ISC.html">ISC License</a>.
+By contributing to this software,
+you agree to publish your contribution under the same license.</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ApiErrors.html">ApiErrors</a></li><li><a href="ApiWarnings.html">ApiWarnings</a></li><li><a href="DefaultUserAgentWarning.html">DefaultUserAgentWarning</a></li><li><a href="Session.html">Session</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DEFAULT_OPTIONS">DEFAULT_OPTIONS</a></li><li><a href="global.html#makeWarnDroppingTruncatedResultWarning">makeWarnDroppingTruncatedResultWarning</a></li><li><a href="global.html#responseBoolean">responseBoolean</a></li><li><a href="global.html#set">set</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a>
+</footer>
+
+<script>document.addEventListener('DOMContentLoaded', function () { prettyPrint(); });</script>
+<script async src="scripts/linenumber.js"></script>
+</body>
+</html>
