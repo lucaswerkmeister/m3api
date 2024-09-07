@@ -11,6 +11,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   after it was moved from metawiki to foundationwiki.
 - Optimized the internal encoding of POST requests;
   this also fixes [m3api-oauth2][] when targeting wikis running MediaWiki 1.43 or later.
+- Updated dependencies.
 
 ## v0.8.2 (2024-04-09)
 
