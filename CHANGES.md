@@ -5,7 +5,7 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## next (not yet released)
+## v0.8.4 (2024-09-22)
 
 - Added experimental support for the upcoming `crossorigin` API parameter
   (added in [Gerrit change I41200852ee][I41200852ee] for [T322944][]).
