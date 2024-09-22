@@ -10,6 +10,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 - Added experimental support for the upcoming `crossorigin` API parameter
   (added in [Gerrit change I41200852ee][I41200852ee] for [T322944][]).
   This may be reverted in a future release if the MediaWiki change is not merged after all.
+- Updated dependencies.
 
 ## v0.8.3 (2024-09-07)
 
