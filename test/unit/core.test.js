@@ -378,7 +378,7 @@ describe( 'Session', () => {
 
 			it( 'uses retry options for token request', async () => {
 				const clock = FakeTimers.install();
-				clock.tickAsync( 1000 ); // just so it doesn’t start at 0
+				await clock.tickAsync( 1000 ); // just so it doesn’t start at 0
 
 				try {
 					const expectedParams = {
@@ -406,7 +406,7 @@ describe( 'Session', () => {
 						retryAfterReadonlySeconds: 3,
 						tokenType: 'csrf',
 					} );
-					clock.tickAsync( 5000 );
+					await clock.tickAsync( 5000 );
 					await expect( promise )
 						.to.be.rejectedWith( ApiErrors );
 				} finally {
@@ -638,6 +638,16 @@ describe( 'Session', () => {
 				clock = FakeTimers.install();
 			} );
 			afterEach( () => {
+				/*
+				 * For some reason, since @sinonjs/fake-timers v13,
+				 * the first test in this block which runs (no matter which specific test it is)
+				 * creates a Node-internal afterWriteTick microtask / job
+				 * in between the test returning and the afterEach hook running,
+				 * which fails the countTimers expectation below unless we run it first.
+				 * It’s weird, but at least this keeps the tests working 🤷
+				 */
+				clock.runMicrotasks();
+
 				clock.uninstall();
 				expect( clock.countTimers() ).to.equal( 0 );
 			} );
@@ -651,7 +661,7 @@ describe( 'Session', () => {
 					{ response: { response: true } },
 				] );
 				const promise = session.request( {} );
-				clock.tickAsync( 60000 );
+				await clock.tickAsync( 60000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
 			} );
@@ -682,7 +692,7 @@ describe( 'Session', () => {
 					{ response: { response: true } },
 				] );
 				const promise = session.request( {} );
-				clock.tickAsync( 65000 );
+				await clock.tickAsync( 65000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
 			} );
@@ -699,7 +709,7 @@ describe( 'Session', () => {
 					} },
 				] );
 				const promise = session.request( {}, { maxRetriesSeconds: 5 } );
-				clock.tickAsync( 5000 );
+				await clock.tickAsync( 5000 );
 				await expect( promise )
 					.to.be.rejectedWith( ApiErrors );
 			} );
@@ -730,7 +740,7 @@ describe( 'Session', () => {
 					{ response: { response: true } },
 				] );
 				const promise = session.request( {} );
-				clock.tickAsync( 5000 );
+				await clock.tickAsync( 5000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
 			} );
@@ -741,7 +751,7 @@ describe( 'Session', () => {
 					{ response: { response: true } },
 				] );
 				const promise = session.request( {} );
-				clock.tickAsync( 30000 );
+				await clock.tickAsync( 30000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
 			} );
@@ -752,7 +762,7 @@ describe( 'Session', () => {
 					{ response: { response: true } },
 				] );
 				const promise = session.request( {}, { retryAfterMaxlagSeconds: 2 } );
-				clock.tickAsync( 2000 );
+				await clock.tickAsync( 2000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
 			} );
@@ -763,7 +773,7 @@ describe( 'Session', () => {
 					{ response: { response: true } },
 				] );
 				const promise = session.request( {}, { retryAfterReadonlySeconds: 10 } );
-				clock.tickAsync( 10000 );
+				await clock.tickAsync( 10000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
 			} );
