@@ -74,14 +74,27 @@ export function makeResponse( bodyOrResponse ) {
 	}
 }
 
+/**
+ * Check that the URL and body parameters are disjoint,
+ * that the URL parameters only include action/origin/crossorigin
+ * and that the body paramaters don’t include those parameters.
+ *
+ * @param {Object} urlParams
+ * @param {Object} bodyParams
+ */
 function checkPostParams( urlParams, bodyParams ) {
 	const urlParamNames = Object.keys( urlParams );
 	const commonParamNames = urlParamNames.filter(
 		( name ) => name in bodyParams );
 	expect( commonParamNames ).to.be.empty;
+
 	const unexpectedUrlParamNames = urlParamNames.filter(
-		( name ) => name !== 'action' && name !== 'origin' );
+		( name ) => name !== 'action' && name !== 'origin' && name !== 'crossorigin' );
 	expect( unexpectedUrlParamNames ).to.be.empty;
+
+	expect( bodyParams ).not.to.have.keys( 'action' );
+	expect( bodyParams ).not.to.have.keys( 'origin' );
+	expect( bodyParams ).not.to.have.keys( 'crossorigin' );
 }
 
 /**

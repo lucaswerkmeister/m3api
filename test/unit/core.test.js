@@ -1243,6 +1243,24 @@ describe( 'Session', () => {
 
 		} );
 
+		it( 'splits URL and body params', async () => {
+			const session = singleRequestSession( {
+				action: 'query',
+				list: 'search',
+				srsearch: 'test',
+				origin: '*',
+				crossorigin: '',
+			}, {}, 'POST' );
+			await session.request( {
+				action: 'query',
+				list: 'search',
+				srsearch: 'test',
+				origin: '*',
+				crossorigin: true,
+			}, { method: 'POST' } );
+			// actual assertions are in checkPostParams()
+		} );
+
 	} );
 
 	describe( 'requestAndContinue', () => {
