@@ -78,10 +78,12 @@ class CombiningSession extends Session {
 	 */
 	combineParams( paramsA, paramsB ) {
 		// never combine generator/continue with titles/pageids/revids
+		/* eslint-disable implicit-arrow-linebreak */
 		const hasParam = ( params, key ) =>
 			this.transformParamSingle( params[ key ] ) !== undefined;
 		const hasParams = ( params, ...keys ) =>
 			keys.some( ( key ) => hasParam( params, key ) );
+		/* eslint-enable */
 		if ( hasParams( paramsA, 'generator', 'continue' ) &&
 			hasParams( paramsB, 'titles', 'pageids', 'revids' ) ||
 			hasParams( paramsB, 'generator', 'continue' ) &&

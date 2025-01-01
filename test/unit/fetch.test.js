@@ -9,6 +9,7 @@ describe( 'FetchSession', () => {
 
 	let realFetch, mockFetchArguments;
 
+	/* eslint-disable prefer-arrow-callback -- it is useful to give these callbacks a name */
 	before( function storeFetch() {
 		realFetch = global.fetch;
 	} );
@@ -24,6 +25,7 @@ describe( 'FetchSession', () => {
 		global.fetch = realFetch;
 		mockFetchArguments = undefined;
 	} );
+	/* eslint-enable */
 
 	const session = new FetchSession(
 		'en.wikipedia.org',
