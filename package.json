@@ -39,7 +39,7 @@
 		"chai-as-promised": "^8.0.0",
 		"eslint": "^8.57.0",
 		"eslint-config-wikimedia": "^0.28.2",
-		"eslint-plugin-chai-friendly": "^0.7.4",
+		"eslint-plugin-chai-friendly": "^1.0.1",
 		"eslint-plugin-compat": "^4.2.0",
 		"jsdoc": "^4.0.2",
 		"mocha": "^11.0.1",
