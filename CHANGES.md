@@ -7,6 +7,8 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
+- [README.md § stability](README.md#Stability) has been extended to state
+  that changes to the compatible Node versions are not considered breaking changes.
 - Updated dependencies.
 
 ## v0.8.4 (2024-09-22)

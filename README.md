@@ -427,6 +427,8 @@ it should be possible to use m3api on older platforms as well.
 If you try this, feel free to send a pull request
 updating this paragraph with your experience.
 
+See also the note on changes to these versions below.
+
 ## Stability
 
 m3api follows a slightly modified version of semantic versioning.
@@ -471,6 +473,18 @@ not necessarily at the beginning of the entry.
 The usual semver interpretation of pre-1.0 versions applies,
 i.e. in `0.x.y`, *x* is the “major” version and *y* the “minor” one.
 
+Changes to the compatible Node versions are *not* considered breaking changes.
+If you need support for a certain version (or version range) of Node,
+then specify it in the `engines` section of your own `package.json`
+and make sure to use the [engine-strict][] mode of npm
+(by putting `engine-strict=true` in your `.npmrc` file or using `npm --engine-strict`),
+which will make npm report an error if an m3api version is incompatible with your requirements.
+
+Whether changes to the compatible browsers are considered breaking changes or not is currently undefined.
+For now, all I can say is that the browser version of m3api has no external dependencies,
+and there aren’t any features from newer browsers that I’m eager to start using,
+so there’s currently no known reason why m3api might bump browser requirements soon.
+
 ## License
 
 Published under the [ISC License][].
@@ -486,4 +500,5 @@ you agree to publish your contribution under the same license.
 [m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
 [bot password]: https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Bot_passwords
 [Vite]: https://vitejs.dev/
+[engine-strict]: https://docs.npmjs.com/cli/v11/using-npm/config#engine-strict
 [ISC License]: https://spdx.org/licenses/ISC.html
