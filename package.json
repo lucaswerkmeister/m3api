@@ -3,6 +3,7 @@
 	"version": "0.8.4",
 	"description": "Minimal modern MediaWiki API wrapper.",
 	"main": "node.js",
+	"types": "types/node.d.ts",
 	"type": "module",
 	"scripts": {
 		"test": "npm-run-all test:*",
@@ -11,6 +12,7 @@
 		"test:unit": "mocha test/unit/",
 		"test:node": "mocha test/integration/node.test.js",
 		"test:browser": "mocha test/integration/browser.test.js # #23",
+		"test:types": "tsc && git diff --exit-code types/",
 		"test:readme": "sed -n '/```/,/```/ { /```$/q; /```/n; p; }' README.md | node --input-type=module",
 		"doc": "jsdoc -c jsdoc/conf.json"
 	},
@@ -43,7 +45,8 @@
 		"eslint-plugin-compat": "^4.2.0",
 		"jsdoc": "^4.0.2",
 		"mocha": "^11.0.1",
-		"npm-run-all": "^4.1.5"
+		"npm-run-all": "^4.1.5",
+		"typescript": "^5.7.3"
 	},
 	"overrides": {
 		"chai": "^5.1.0"

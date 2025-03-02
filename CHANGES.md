@@ -7,6 +7,8 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
+- m3api now includes TypeScript `.d.ts` declaration files in the `types/` directory.
+  Hopefully these will be useful to some users of the library.
 - Clarified `DEFAULT_OPTIONS` conventions a bit (adding `errorHandlers` is fine).
 - Updated dependencies.
 
