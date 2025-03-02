@@ -171,7 +171,8 @@
  * rather than e.g. separate options or individual parameters;
  * both kinds of options can then have per-session and global defaults.
  *
- * Changing or removing any default options here is strongly discouraged,
+ * Changing or removing any default options here is strongly discouraged
+ * (with the exception of changing 'errorHandlers' to add handlers for additional errors),
  * and may result in unpredictable behavior.
  *
  * @type {Options}

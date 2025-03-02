@@ -7,6 +7,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
+- Clarified `DEFAULT_OPTIONS` conventions a bit (adding `errorHandlers` is fine).
 - Updated dependencies.
 
 ## v0.8.4 (2024-09-22)
