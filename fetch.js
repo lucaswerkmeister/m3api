@@ -17,10 +17,6 @@ async function transformResponse( response ) {
 
 class FetchSession extends Session {
 
-	constructor( apiUrl, defaultParams = {}, defaultOptions = {} ) {
-		super( apiUrl, defaultParams, defaultOptions );
-	}
-
 	/**
 	 * Get the fetch() options for this request.
 	 *
