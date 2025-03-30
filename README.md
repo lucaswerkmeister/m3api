@@ -29,9 +29,7 @@ The browser version has no external dependencies.
 Here’s an example demonstrating some ways to use m3api:
 
 ```js
-// you may need to change the import path,
-// e.g. ./node_modules/m3api/node.js if installed via npm
-import Session, { set } from './node.js';
+import Session, { set } from 'm3api'; // equivalent to 'm3api/node.js'
 
 // note: this example uses top-level await for simplicity,
 // you may need an async wrapper function
@@ -114,7 +112,9 @@ outer: for await ( const urlResponse of session.requestAndContinue( {
 
 This code works in Node.js, but also in the browser with only two changes:
 
-- import `browser.js` instead of `node.js`
+- import `m3api/browser.js` instead of `m3api`, and make sure it can be imported
+  (by using a build system, adding import maps as mentioned below,
+  or changing the path to something like `./node_modules/m3api/browsers.js`)
 
 - add `origin: '*'` to the default parameters (anonymous cross-site request)
 
