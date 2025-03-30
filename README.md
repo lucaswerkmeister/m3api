@@ -1,6 +1,6 @@
 # m3api
 [![npm](https://img.shields.io/npm/v/m3api.svg)](https://www.npmjs.com/package/m3api)
-[![documentation](https://img.shields.io/badge/documentation-informational)](https://lucaswerkmeister.github.io/m3api/)
+[![documentation](https://img.shields.io/badge/documentation-informational)][documentation]
 
 m3api is a **minimal, modern MediaWiki API client**,
 a library for interacting with the [MediaWiki Action API][] from JavaScript.
@@ -201,7 +201,7 @@ Other features not demonstrated above:
   to use a regular OAuth 2.0 client and make requests authenticated as another user,
   use the [m3api-oauth2][] extension package.
 
-For more details, see also the code-level documentation (JSdoc comments).
+For more details, see also the [documentation][].
 
 ### Automatically combining requests
 
@@ -479,6 +479,7 @@ Published under the [ISC License][].
 By contributing to this software,
 you agree to publish your contribution under the same license.
 
+[documentation]: https://lucaswerkmeister.github.io/m3api/
 [MediaWiki Action API]: https://www.mediawiki.org/wiki/Special:MyLanguage/API:Main_page
 [API sandbox]: https://en.wikipedia.org/wiki/Special:ApiSandbox
 [m3api-ApiSandbox-helper]: https://meta.wikimedia.org/wiki/User:Lucas_Werkmeister/m3api-ApiSandbox-helper
