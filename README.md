@@ -118,6 +118,8 @@ This code works in Node.js, but also in the browser with only two changes:
 
 - add `origin: '*'` to the default parameters (anonymous cross-site request)
 
+For more usage examples, see also the [m3api-examples][] repository.
+
 Other features not demonstrated above:
 
 - m3api can automatically fetch and add tokens to requests,
@@ -481,6 +483,7 @@ you agree to publish your contribution under the same license.
 [API sandbox]: https://en.wikipedia.org/wiki/Special:ApiSandbox
 [m3api-ApiSandbox-helper]: https://meta.wikimedia.org/wiki/User:Lucas_Werkmeister/m3api-ApiSandbox-helper
 [mediawiki-js]: https://github.com/brettz9/mediawiki-js
+[m3api-examples]: https://github.com/lucaswerkmeister/m3api-examples
 [m3api-oauth2]: https://www.npmjs.com/package/m3api-oauth2
 [m3api-query]: https://www.npmjs.com/package/m3api-query
 [m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
