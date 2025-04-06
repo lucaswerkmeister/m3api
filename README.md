@@ -226,7 +226,7 @@ how it automatically combines concurrent, compatible API requests.
   even if they specify different values for those options.
 
 To take advantage of this feature,
-it’s recommended to use `set( ... )` instead of `[ ... ]` for most “list-like” API paremeters,
+it’s recommended to use `set( ... )` instead of `[ ... ]` for most “list-like” API parameters,
 even if you’re only specifying a single set element,
 as long as that parameter is safe to merge with other requests.
 For example, consider this request from the usage example above:
