@@ -309,6 +309,116 @@ To avoid just relying on default parameter values, you have several options:
    you may be able to process both `formatversion=1` and `formatversion=2` responses
    (see also the `responseBoolean` helper function).
 
+### Usage recommendations
+
+While m3api can be used in different ways,
+the following defaults are generally recommended:
+
+```js
+const session = new Session( 'en.wikipedia.org', { // or other domain
+	formatversion: 2,
+	// (optional) errorformat: TODO,
+}, {
+	userAgent: TODO,
+} );
+```
+
+- Include `formatversion: 2` in the default parameters for all requests.
+  There is no reason to use `formatversion: 1` (the default),
+  it only exists for compatibility with existing code.
+
+- Set a good user agent in the `userAgent` request option,
+  in accordance with the [User-Agent Policy][].
+  For example:
+  `userAgent: 'ExampleTool (https://example.toolforge.org/; https://gitlab.wikimedia.org/toolforge-repos/example/)'`
+
+- Optionally, include a suitable `errorformat` in the default parameters for all requests.
+  The best value will depend on the context where you use m3api;
+  `errorformat: 'plaintext'` is probably a safe choice in most cases.
+
+- Use extension packages (see below) if they are available for the API modules you are using.
+
+#### Recommendations for interactive tools
+
+Interactive tools may additionally consider:
+
+```js
+const session = new Session( 'en.wikipedia.org', { // or other domain
+	formatversion: 2,
+	errorformat: 'html', // assuming the tool is web-based
+}, {
+	userAgent: TODO,
+	maxRetriesSeconds: 5, // or other low value
+} );
+```
+
+- Consider choosing a lower `maxRetriesSeconds` value than the default (65 seconds),
+  as it may be preferable to show an error to the user sooner.
+  (Keep in mind that you can override options for individual requests too;
+  you may want to choose a higher value for operations where the user expects to wait a bit,
+  e.g. when showing the user a “saving edit…” banner and making an edit request.)
+
+- For web-based tools, `errorformat: 'html'` is a good choice,
+  assuming you trust the HTML returned by the MediaWiki API.
+
+- If you want to make edits on behalf of users,
+  use the [m3api-oauth2][] extension package (see below).
+
+#### Recommendations for bots
+
+Non-interactive bots may additionally consider:
+
+```js
+const accessToken = process.env.OAUTH_ACCESS_TOKEN; // or other secret source
+const session = new Session( 'en.wikipedia.org', { // or other domain
+	formatversion: 2,
+	errorformat: 'plaintext',
+	maxlag: 5,
+	assert: 'user',
+}, {
+	userAgent: TODO,
+	maxRetriesSeconds: 3600, // or other high value
+	authorization: `Bearer ${accessToken}`,
+} );
+
+// ...
+
+await session.request( {
+	action: 'edit',
+	bot: true,
+	// ...
+}, {
+	method: 'POST',
+	tokentype: 'csrf',
+} );
+```
+
+- Specify the [maxlag parameter][];
+  5 seconds is a common choice.
+  This will abort requests if the site is overloaded (to avoid making the problem worse);
+  m3api will automatically sleep and retry the request later.
+
+- Consider choosing a higher `maxRetriesSeconds` value than the default (65 seconds),
+  as your bot can probably just wait if e.g. maxlag is currently too high.
+
+- For bots whose output goes to a log file or console,
+  `errorformat: 'plaintext'` is probably a reasonable choice.
+  (Alternatively, `'raw'` may also be useful.)
+
+- When making edits, specify the `'bot'` parameter.
+  (However, because this parameter is specific to individual API modules,
+  you probably don’t want to add it to the default parameters of the whole session.)
+
+- To authenticate the bot, create an owner-only OAuth 2 client,
+  save the access token in a suitable secret store,
+  specify <code>Bearer <var>accessToken</var></code> as the `authorization` option,
+  and include `assert: 'user'` (and, if you like, <code>assertuser: '<var>user name</var>'</code>) in the default parameters.
+  If the wiki you’re targeting doesn’t support OAuth 2,
+  you may instead want to use the [m3api-botpassword][] extension package (see below).
+  (If OAuth is supported, you should use it.
+  Bot passwords are strictly inferior, and an <em>owner-only</em> client is easy to use –
+  you do not need [m3api-oauth2][] in that case.)
+
 ## Extension packages
 
 While m3api itself aims to be a minimal library,
@@ -484,8 +594,10 @@ you agree to publish your contribution under the same license.
 [API sandbox]: https://en.wikipedia.org/wiki/Special:ApiSandbox
 [m3api-ApiSandbox-helper]: https://meta.wikimedia.org/wiki/User:Lucas_Werkmeister/m3api-ApiSandbox-helper
 [mediawiki-js]: https://github.com/brettz9/mediawiki-js
+[User-Agent Policy]: https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Wikimedia_Foundation_User-Agent_Policy
 [m3api-examples]: https://github.com/lucaswerkmeister/m3api-examples
 [m3api-oauth2]: https://www.npmjs.com/package/m3api-oauth2
+[maxlag parameter]: https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Maxlag_parameter
 [m3api-query]: https://www.npmjs.com/package/m3api-query
 [m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
 [bot password]: https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Bot_passwords
