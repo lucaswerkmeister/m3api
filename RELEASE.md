@@ -42,3 +42,6 @@ For the release notes (for users), see [CHANGES.md](./CHANGES.md).
    > ## next (not yet released)
    >
    > No changes yet.
+
+1. If the release was a minor or even major version,
+   release new versions of extension packages bumping their peer dependencies as needed.
