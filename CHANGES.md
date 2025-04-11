@@ -5,7 +5,7 @@ This file records the changes in each m3api release.
 The annotated tag (and GitHub release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
-## next (not yet released)
+## v0.9.0 (2025-04-11)
 
 - The new `accessToken` option can be used to set the `Authorization` header more easily.
   The previous `authorization` option is kept for compatibility,
