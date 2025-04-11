@@ -194,10 +194,10 @@ Other features not demonstrated above:
   This is mostly useful in library code, when you don’t know the `formatversion` of the response;
   you can import the helper from `core.js` (but not `browser.js` or `node.js`).
 
-- The `authorization` request option can be used to set the `Authorization` request header.
+- The `accessToken` request option can be used to
+  send an OAuth 2.0 access token in the `Authorization` request header.
   You can use this directly with an owner-only OAuth 2.0 client,
-  by setting the option to the string `Bearer ACCESS_TOKEN`
-  (where *ACCESS_TOKEN* is the access token MediaWiki generated for you);
+  where MediaWiki will show you the access token right after registering the client;
   to use a regular OAuth 2.0 client and make requests authenticated as another user,
   use the [m3api-oauth2][] extension package.
 
@@ -378,7 +378,7 @@ const session = new Session( 'en.wikipedia.org', { // or other domain
 }, {
 	userAgent: TODO,
 	maxRetriesSeconds: 3600, // or other high value
-	authorization: `Bearer ${accessToken}`,
+	accessToken: accessToken,
 } );
 
 // ...
@@ -411,7 +411,7 @@ await session.request( {
 
 - To authenticate the bot, create an owner-only OAuth 2 client,
   save the access token in a suitable secret store,
-  specify <code>Bearer <var>accessToken</var></code> as the `authorization` option,
+  set the `accessToken` option to the access token,
   and include `assert: 'user'` (and, if you like, <code>assertuser: '<var>user name</var>'</code>) in the default parameters.
   If the wiki you’re targeting doesn’t support OAuth 2,
   you may instead want to use the [m3api-botpassword][] extension package (see below).

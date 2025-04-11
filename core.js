@@ -103,11 +103,17 @@
  * you don’t need to see this warning and can use this option to suppress it.
  * This option defaults to false in {@link Session#request} (i.e. treat the warning like any other),
  * but to true in {@link Session#requestAndContinueReducingBatch}.
+ * @property {string} [accessToken] An OAuth 2.0 access token.
+ * If this option is set, the Authorization request header will be set to `Bearer ${ accessToken }`.
+ * You can get a token directly from an owner-only OAuth 2.0 client,
+ * or you can use the m3api-oauth2 extension package to authorize a user via OAuth.
+ * (In the latter case, you do not have to set this option: m3api-oauth2 will do it.)
  * @property {string} [authorization] Value for the Authorization request header.
- * This option can be used to authenticate requests using OAuth 2.0.
- * For an owner-only client / consumer, where you have an access token,
- * you can set this option to `Bearer ${ accessToken }` directly.
- * Otherwise, use the m3api-oauth2 extension package.
+ * This option is deprecated in favor of accessToken above,
+ * and only kept for backwards compatibility.
+ * It is part of the internal interface, rather than the public interface,
+ * and will be removed in a future minor version of m3api
+ * (unless someone presents a use case for it that is not covered by the accessToken option).
  * @property {Object.<string, ErrorHandler>} [errorHandlers] Internal option.
  * Define handlers for API errors, which can retry the request if appropriate.
  * This option is only part of the internal interface, not of the stable, public interface.
@@ -186,6 +192,7 @@ const DEFAULT_OPTIONS = {
 	retryAfterReadonlySeconds: 30,
 	warn: console.warn,
 	dropTruncatedResultWarning: false,
+	accessToken: null,
 	authorization: null,
 	errorHandlers: {
 		maxlag: ( session, params, options, internalResponse, error ) => {
@@ -722,11 +729,7 @@ class Session {
 		const requestHeaders = {
 			'user-agent': this.getUserAgent( options ),
 		};
-		const { authorization } = {
-			...DEFAULT_OPTIONS,
-			...this.defaultOptions,
-			...options,
-		};
+		const authorization = this.getAuthorizationHeader( options );
 		if ( authorization ) {
 			requestHeaders.authorization = authorization;
 		}
@@ -759,6 +762,43 @@ class Session {
 				this.warnedDefaultUserAgent = true;
 			}
 			return DEFAULT_USER_AGENT;
+		}
+	}
+
+	/**
+	 * Get the Authorization: header for these options.
+	 *
+	 * @protected
+	 * @param {Options} options
+	 * @return {string|null}
+	 */
+	getAuthorizationHeader( options ) {
+		const {
+			accessToken,
+			authorization,
+		} = {
+			...DEFAULT_OPTIONS,
+			...this.defaultOptions,
+			...options,
+		};
+
+		if ( accessToken ) {
+			const expectedAuthorization = `Bearer ${ accessToken }`;
+			if ( authorization ) {
+				if ( authorization === expectedAuthorization ) {
+					return authorization;
+				} else {
+					throw new Error(
+						`Inconsistent authorization and accessToken options: ${ authorization } != ${ expectedAuthorization }`,
+					);
+				}
+			} else {
+				return expectedAuthorization;
+			}
+		} else if ( authorization ) {
+			return authorization;
+		} else {
+			return null;
 		}
 	}
 

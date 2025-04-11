@@ -606,14 +606,14 @@ describe( 'Session', () => {
 			} );
 
 			for ( const [ name, defaultOptions, options ] of [
-				[ 'defaultOptions', { authorization: 'the-authorization-header' }, {} ],
-				[ 'options', {}, { authorization: 'the-authorization-header' } ],
+				[ 'accessToken in defaultOptions', { accessToken: 'the-access-token' }, {} ],
+				[ 'accessToken in options', {}, { accessToken: 'the-access-token' } ],
 			] ) {
-				it( `in ${ name }`, async () => {
+				it( name, async () => {
 					let called = false;
 					class TestSession extends BaseTestSession {
 						async internalGet( apiUrl, params, { authorization } ) {
-							expect( authorization ).to.equal( 'the-authorization-header' );
+							expect( authorization ).to.equal( 'Bearer the-access-token' );
 							expect( called, 'not called yet' ).to.be.false;
 							called = true;
 							return {
@@ -629,6 +629,72 @@ describe( 'Session', () => {
 					expect( called ).to.be.true;
 				} );
 			}
+
+			for ( const [ name, defaultOptions, options ] of [
+				[ 'authorization in defaultOptions', { authorization: 'the-authorization' }, {} ],
+				[ 'authorization in options', {}, { authorization: 'the-authorization' } ],
+			] ) {
+				it( name, async () => {
+					let called = false;
+					class TestSession extends BaseTestSession {
+						async internalGet( apiUrl, params, { authorization } ) {
+							expect( authorization ).to.equal( 'the-authorization' );
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return {
+								status: 200,
+								headers: {},
+								body: { response: true },
+							};
+						}
+					}
+
+					const session = new TestSession( 'en.wikipedia.org', {}, defaultOptions );
+					await session.request( {}, options );
+					expect( called ).to.be.true;
+				} );
+			}
+
+			it( 'accessToken consistent with authorization', async () => {
+				let called = false;
+				class TestSession extends BaseTestSession {
+					async internalGet( apiUrl, params, { authorization } ) {
+						expect( authorization ).to.equal( 'Bearer the-access-token' );
+						expect( called, 'not called yet' ).to.be.false;
+						called = true;
+						return {
+							status: 200,
+							headers: {},
+							body: { response: true },
+						};
+					}
+				}
+
+				const session = new TestSession( 'en.wikipedia.org' );
+				await session.request( {}, {
+					authorization: 'Bearer the-access-token',
+					accessToken: 'the-access-token',
+				} );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'accessToken inconsistent with authorization', async () => {
+				let called = false;
+				class TestSession extends BaseTestSession {
+					async internalGet() {
+						called = true;
+						throw new Error( 'Should not be called in this test' );
+					}
+				}
+
+				const session = new TestSession( 'en.wikipedia.org', {}, {
+					authorization: 'the-authorization',
+					accessToken: 'the-access-token',
+				} );
+				await expect( session.request( {} ) )
+					.to.be.rejected;
+				expect( called ).to.be.false;
+			} );
 		} );
 
 		describe( 'automatic retry', () => {

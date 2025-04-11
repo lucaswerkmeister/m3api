@@ -7,6 +7,9 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
+- The new `accessToken` option can be used to set the `Authorization` header more easily.
+  The previous `authorization` option is kept for compatibility,
+  but deprecated, demoted to the internal interface, and will be removed in a future minor version.
 - m3api now includes TypeScript `.d.ts` declaration files in the `types/` directory.
   Hopefully these will be useful to some users of the library.
 - Clarified `DEFAULT_OPTIONS` conventions a bit (adding `errorHandlers` is fine).
