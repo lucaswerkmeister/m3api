@@ -7,7 +7,12 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- First stable release 🎉
+- No changes from v0.9.0,
+  but now that v1 has been reached,
+  the caveat for pre-1.0 versions in the stability policy no longer applies:
+  v1.x versions may contain internal breaking changes,
+  while breaking changes to the public interface will not happen before v2.
 
 ## v0.9.0 (2025-04-11)
 

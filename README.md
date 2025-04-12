@@ -580,9 +580,6 @@ using the words “BREAKING CHANGE” (in all caps).
 Incompatible changes to the internal interface will be mentioned using the words “Internal Breaking Change”,
 not necessarily at the beginning of the entry.
 
-The usual semver interpretation of pre-1.0 versions applies,
-i.e. in `0.x.y`, *x* is the “major” version and *y* the “minor” one.
-
 ## License
 
 Published under the [ISC License][].
