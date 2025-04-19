@@ -17,7 +17,6 @@
 		"no-use-before-define": [ "error", "nofunc" ],
 		"no-shadow": "off",
 		"prefer-const": [ "error", { "destructuring": "all" } ],
-		"es/no-promise-any": "off",
 		"n/no-unsupported-features/node-builtins": "off"
 	},
 	"overrides": [
