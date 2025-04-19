@@ -14,7 +14,6 @@
 	},
 	"rules": {
 		"comma-dangle": [ "error", "always-multiline" ],
-		"no-use-before-define": [ "error", "nofunc" ],
 		"no-shadow": "off",
 		"prefer-const": [ "error", { "destructuring": "all" } ],
 		"n/no-unsupported-features/node-builtins": "off"
