@@ -7,7 +7,7 @@ For the release notes (for users), see [CHANGES.md](./CHANGES.md).
    checking `npm outdated`, etc.
    Add any resulting changes to `CHANGES.md`.
 
-1. If [#23](https://github.com/lucaswerkmeister/m3api/issues/23) isn’t resolved yet,
+1. If [T404511](https://phabricator.wikimedia.org/T404511) isn’t resolved yet,
    manually check that the browser tests work in a browser
    by running `python -m http.server` and opening <http://localhost:8000/browser-test.html>.
    (Don’t use the `file:` protocol, it doesn’t work.)
@@ -31,10 +31,8 @@ For the release notes (for users), see [CHANGES.md](./CHANGES.md).
 
 1. Push the tag.
 
-1. On GitHub, turn the tag into a proper release.
-   Use the tag message for the release notes,
-   but with line breaks removed.
-   Once the release is published, CI will automatically publish it to npm.
+1. On GitLab, wait for CI to publish the release,
+   then optionally tweak the release message (formatting) if required.
 
 1. Add a new section for the next release to `CHANGES.md`,
    and commit it with the message “Add CHANGES.md section for next release”:

@@ -433,7 +433,7 @@ Available extension packages include:
 - [m3api-oauth2][], to authenticate using OAuth 2.0
 
 If you create an additional extension package,
-feel free to submit a pull request to add it to this list.
+feel free to submit a merge request to add it to this list.
 (Also, have a look at the guidelines [below](#creating-extension-packages).)
 
 ### Using extension packages
@@ -536,7 +536,7 @@ and therefore aren’t expected to affect compatibility.
 
 Using a combination of transpiling and polyfilling,
 it should be possible to use m3api on older platforms as well.
-If you try this, feel free to send a pull request
+If you try this, feel free to send a merge request
 updating this paragraph with your experience.
 
 ## Stability

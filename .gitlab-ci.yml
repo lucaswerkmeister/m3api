@@ -1,0 +1,35 @@
+include:
+  - project: repos/m3api/ci-templates
+    file: /test+release.yml
+
+stages:
+  - test
+  - release
+
+variables:
+  MEDIAWIKI_USERNAME: $MEDIAWIKI_PROD_BOT_USERNAME
+  MEDIAWIKI_PASSWORD: $MEDIAWIKI_PROD_BOT_PASSWORD
+
+test-job:
+  extends: .test-job
+  resource_group: testwiki
+
+test-package-lock-job:
+  extends: .test-package-lock-job
+
+test-types-job:
+  stage: test
+  script:
+    - npm ci
+    - npx tsc
+    - git add types/
+    - git diff --cached --exit-code
+
+release-job:
+  extends: .release-job
+
+publish-job:
+  extends: .publish-job
+
+doc-job:
+  extends: .doc-job

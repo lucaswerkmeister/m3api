@@ -6,7 +6,7 @@ import { File } from 'buffer'; // only available globally since Node 20
 import fs from 'fs/promises';
 import process from 'process';
 
-const userAgent = 'm3api-integration-tests (https://github.com/lucaswerkmeister/m3api/)';
+const userAgent = 'm3api-integration-tests (https://phabricator.wikimedia.org/tag/m3api/)';
 
 describe( 'NodeSession', function () {
 

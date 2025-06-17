@@ -16,11 +16,11 @@
 		"test:readme": "sed -n '/```/,/```/ { /```$/q; /```/n; /^import\\b/{ s|m3api|./node.js|; }; p; }' README.md | node --input-type=module",
 		"doc": "jsdoc -c jsdoc/conf.json"
 	},
-	"homepage": "https://github.com/lucaswerkmeister/m3api#readme",
-	"bugs": "https://github.com/lucaswerkmeister/m3api/issues",
+	"homepage": "https://gitlab.wikimedia.org/repos/m3api/m3api/#m3api",
+	"bugs": "https://phabricator.wikimedia.org/tag/m3api/",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/lucaswerkmeister/m3api.git"
+		"url": "git+https://gitlab.wikimedia.org/repos/m3api/m3api.git"
 	},
 	"keywords": [
 		"mediawiki"

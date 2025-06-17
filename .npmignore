@@ -6,7 +6,7 @@
 /.browserslistrc
 /.env.example
 /.eslintrc.json
-/.github/
+/.gitlab-ci.yml
 /RELEASE.md
 /browser-test.html
 /jsdoc/
