@@ -27,6 +27,7 @@
 		}
 	],
 	"ignorePatterns": [
-		"/doc/"
+		"/doc/",
+		"/types/"
 	]
 }
