@@ -580,6 +580,21 @@ using the words “BREAKING CHANGE” (in all caps).
 Incompatible changes to the internal interface will be mentioned using the words “Internal Breaking Change”,
 not necessarily at the beginning of the entry.
 
+## Issues
+
+m3api issues are tracked on Wikimedia Phabricator,
+using the [m3api](https://phabricator.wikimedia.org/tag/m3api/) tag.
+You can create a new issue using one of these forms:
+
+- [new generic task](https://phabricator.wikimedia.org/maniphest/task/edit/form/1/?tags=m3api)
+- [new bug report](https://phabricator.wikimedia.org/maniphest/task/edit/form/43/?tags=m3api)
+- [new feature request](https://phabricator.wikimedia.org/maniphest/task/edit/form/102/?tags=m3api)
+- [new security issue](https://phabricator.wikimedia.org/maniphest/task/edit/form/75/?tags=m3api) –
+  in this case, make sure to also add [@LucasWerkmeister](https://phabricator.wikimedia.org/p/LucasWerkmeister/) to the subscribers after creating the task,
+  otherwise I can’t see it!
+
+You can [create a Phabricator account](https://www.mediawiki.org/wiki/Phabricator/Help#Creating_your_account) using your Wikimedia account.
+
 ## License
 
 Published under the [ISC License][].
