@@ -592,7 +592,7 @@ you agree to publish your contribution under the same license.
 [m3api-ApiSandbox-helper]: https://meta.wikimedia.org/wiki/User:Lucas_Werkmeister/m3api-ApiSandbox-helper
 [mediawiki-js]: https://github.com/brettz9/mediawiki-js
 [User-Agent Policy]: https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Wikimedia_Foundation_User-Agent_Policy
-[m3api-examples]: https://github.com/lucaswerkmeister/m3api-examples
+[m3api-examples]: https://gitlab.wikimedia.org/repos/m3api/m3api-examples
 [m3api-oauth2]: https://www.npmjs.com/package/m3api-oauth2
 [maxlag parameter]: https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Maxlag_parameter
 [m3api-query]: https://www.npmjs.com/package/m3api-query
