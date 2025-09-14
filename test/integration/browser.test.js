@@ -10,7 +10,7 @@
  */
 
 import BrowserSession, { set } from '../../browser.js';
-import { expect } from '../../node_modules/chai/chai.js';
+import { expect } from '../../node_modules/chai/index.js';
 
 const userAgent = 'm3api-integration-tests (https://phabricator.wikimedia.org/tag/m3api/)';
 
