@@ -5,6 +5,10 @@ This file records the changes in each m3api release.
 The annotated tag (and GitLab release) for each version also lists the changes,
 but this file may sometimes contain later improvements (e.g. typo fixes).
 
+## next (not yet released)
+
+No changes yet.
+
 ## v1.0.1 (2025-09-15)
 
 - m3api hosting migrated from GitHub to Wikimedia GitLab.
