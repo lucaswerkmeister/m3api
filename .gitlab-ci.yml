@@ -5,6 +5,7 @@ include:
 stages:
   - test
   - release
+  - publish-docs
 
 variables:
   MEDIAWIKI_USERNAME: $MEDIAWIKI_PROD_BOT_USERNAME
@@ -33,3 +34,6 @@ publish-job:
 
 doc-job:
   extends: .doc-job
+
+publish-doc-job:
+  extends: .publish-doc-job

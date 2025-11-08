@@ -7,7 +7,10 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- m3api-query documentation is now published at
+  <https://doc.wikimedia.org/m3api/m3api/>.
+  (The previous location, GitHub Pages, is kept for now,
+  but will probably be changed to a redirect sooner or later.)
 
 ## v1.0.1 (2025-09-15)
 

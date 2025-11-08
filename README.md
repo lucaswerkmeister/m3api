@@ -601,7 +601,7 @@ Published under the [ISC License][].
 By contributing to this software,
 you agree to publish your contribution under the same license.
 
-[documentation]: https://lucaswerkmeister.github.io/m3api/
+[documentation]: https://doc.wikimedia.org/m3api/m3api/
 [MediaWiki Action API]: https://www.mediawiki.org/wiki/Special:MyLanguage/API:Main_page
 [API sandbox]: https://en.wikipedia.org/wiki/Special:ApiSandbox
 [m3api-ApiSandbox-helper]: https://meta.wikimedia.org/wiki/User:Lucas_Werkmeister/m3api-ApiSandbox-helper
