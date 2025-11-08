@@ -11,7 +11,7 @@ No changes yet.
 
 ## v1.0.2 (2025-11-08)
 
-- m3api-query documentation is now published at
+- m3api documentation is now published at
   <https://doc.wikimedia.org/m3api/m3api/>.
   (The previous location, GitHub Pages, is kept for now,
   but will probably be changed to a redirect sooner or later.)
