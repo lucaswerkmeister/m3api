@@ -1,6 +1,6 @@
 {
 	"name": "m3api",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Minimal modern MediaWiki API wrapper.",
 	"main": "node.js",
 	"types": "types/node.d.ts",
