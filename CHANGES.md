@@ -7,7 +7,13 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- Added [m3api-rest][] to the list of extension packages in the README.
+  If you’re currently using m3api’s internal network interface
+  (`session.internalGet()` or `session.internalPost()`) to access the MediaWiki REST API,
+  you are strongly encouraged to switch to m3api-rest instead;
+  the next minor release of m3api (v1.1.0) will completely rework the internal network interface,
+  while the m3api-rest interface is expected to remain stable
+  (while internally adapting to use m3api’s new internal network interface).
 
 ## v1.0.2 (2025-11-08)
 
@@ -376,3 +382,4 @@ but I see no reason to recreate the tag now.
 [CVE-2023-45143]: https://github.com/advisories/GHSA-wqq4-5wpv-mx2g
 [I41200852ee]: https://gerrit.wikimedia.org/r/c/mediawiki/core/+/926663
 [T322944]: https://phabricator.wikimedia.org/T322944
+[m3api-rest]: https://www.npmjs.com/package/m3api-rest

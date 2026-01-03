@@ -432,6 +432,8 @@ Available extension packages include:
 
 - [m3api-oauth2][], to authenticate using OAuth 2.0
 
+- [m3api-rest][], to use the MediaWiki REST API
+
 If you create an additional extension package,
 feel free to submit a merge request to add it to this list.
 (Also, have a look at the guidelines [below](#creating-extension-packages).)
@@ -612,6 +614,7 @@ you agree to publish your contribution under the same license.
 [maxlag parameter]: https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Maxlag_parameter
 [m3api-query]: https://www.npmjs.com/package/m3api-query
 [m3api-botpassword]: https://www.npmjs.com/package/m3api-botpassword
+[m3api-rest]: https://www.npmjs.com/package/m3api-rest
 [bot password]: https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Bot_passwords
 [Vite]: https://vitejs.dev/
 [ISC License]: https://spdx.org/licenses/ISC.html
