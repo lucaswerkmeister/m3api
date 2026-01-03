@@ -14,6 +14,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   the next minor release of m3api (v1.1.0) will completely rework the internal network interface,
   while the m3api-rest interface is expected to remain stable
   (while internally adapting to use m3api’s new internal network interface).
+- Updated dependencies.
 
 ## v1.0.2 (2025-11-08)
 
