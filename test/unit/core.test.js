@@ -789,6 +789,21 @@ describe( 'Session', () => {
 				expect( response ).to.eql( { response: true } );
 			} );
 
+			it( 'non-MediaWiki retry-after edge response', async () => {
+				const session = sequentialRequestSession( [
+					{ response: {
+						status: 429,
+						headers: { 'retry-after': '60' },
+						body: {},
+					} },
+					{ response: { response: true } },
+				] );
+				const promise = session.request( {} );
+				await clock.tickAsync( 60000 );
+				const response = await promise;
+				expect( response ).to.eql( { response: true } );
+			} );
+
 			it( 'retryUntil overrides maxRetriesSeconds', async () => {
 				const session = singleRequestSession( {}, {
 					headers: { 'retry-after': '5' },

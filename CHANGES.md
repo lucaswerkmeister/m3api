@@ -7,7 +7,8 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- Improved handling of `retry-after` responses
+  (especially ones with HTTP status 429 Too Many Requests).
 
 ## v1.0.3 (2026-01-17)
 

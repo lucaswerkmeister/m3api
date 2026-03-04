@@ -565,10 +565,6 @@ class Session {
 			body,
 		} = internalResponse;
 
-		if ( status !== 200 && !( 'mediawiki-api-error' in responseHeaders ) ) {
-			throw new Error( `API request returned non-200 HTTP status code: ${ status }` );
-		}
-
 		if ( 'retry-after' in responseHeaders ) {
 			const retryAfterSeconds = parseInt( responseHeaders[ 'retry-after' ] );
 			const retryResult = await retryIfBefore(
@@ -576,6 +572,10 @@ class Session {
 			if ( retryResult !== null ) {
 				return retryResult;
 			}
+		}
+
+		if ( status !== 200 && !( 'mediawiki-api-error' in responseHeaders ) ) {
+			throw new Error( `API request returned non-200 HTTP status code: ${ status }` );
 		}
 
 		const errors = responseErrors( body );
