@@ -9,9 +9,11 @@ import {
 } from '../../core.js';
 import {
 	BaseTestSession,
+	successfulResponse,
 	singleRequestSession,
 	sequentialRequestSession,
 } from './sessions.js';
+import { File } from 'buffer'; // only available globally since Node 20
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import FakeTimers from '@sinonjs/fake-timers';
@@ -50,6 +52,26 @@ describe( 'Session', () => {
 
 	describe( 'request', () => {
 
+		it( 'targets API URL', async () => {
+			let called = false;
+			class TestSession extends BaseTestSession {
+				async fetch( resource ) {
+					expect( resource ).to.eql( new URL(
+						'https://starwars.fandom.com/api.php?action=query&format=json',
+					) );
+					expect( called, 'not called yet' ).to.be.false;
+					called = true;
+					return successfulResponse( { response: true } );
+				}
+			}
+
+			const session = new TestSession( 'https://starwars.fandom.com/api.php', {}, {
+				userAgent: 'm3api-unit-test',
+			} );
+			await session.request( { action: 'query' } );
+			expect( called ).to.be.true;
+		} );
+
 		it( 'transforms params', async () => {
 			const params = {
 				string: 'a string',
@@ -87,20 +109,24 @@ describe( 'Session', () => {
 		} );
 
 		it( 'supports non-200 status with mediawiki-api-error response header', async () => {
-			const session = singleRequestSession( { action: 'query' }, {
-				status: 404,
-				headers: { 'mediawiki-api-error': 'some-not-found-error' },
-				body: { error: { code: 'some-not-found-error' } },
-			} );
+			const session = singleRequestSession( { action: 'query' }, Response.json(
+				{ error: { code: 'some-not-found-error' } },
+				{
+					status: 404,
+					headers: { 'mediawiki-api-error': 'some-not-found-error' },
+				},
+			) );
 			await expect( session.request( { action: 'query' } ) )
 				.to.be.rejectedWith( ApiErrors );
 		} );
 
 		it( 'throws on non-200 status without mediawiki-api-error response header', async () => {
-			const session = singleRequestSession( { action: 'query' }, {
-				status: 502,
-				body: 'irrelevant',
-			} );
+			const session = singleRequestSession( { action: 'query' }, new Response(
+				'irrelevant body',
+				{
+					status: 502,
+				},
+			) );
 			await expect( session.request( { action: 'query' } ) )
 				.to.be.rejectedWith( '502' );
 		} );
@@ -322,15 +348,12 @@ describe( 'Session', () => {
 			it( 'uses userAgent option for token request', async () => {
 				let called = false;
 				class TestSession extends BaseTestSession {
-					async internalGet( apiUrl, params, { 'user-agent': userAgent } ) {
+					async fetch( resource, fetchOptions ) {
+						const userAgent = new Headers( fetchOptions.headers ).get( 'User-Agent' );
 						expect( userAgent ).to.match( /^user-agent / );
 						expect( called, 'not called yet' ).to.be.false;
 						called = true;
-						return {
-							status: 200,
-							headers: {},
-							body: { error: { code: 'unknown' } },
-						};
+						return successfulResponse( { error: { code: 'unknown' } } );
 					}
 				}
 
@@ -513,18 +536,15 @@ describe( 'Session', () => {
 				} ) ).to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
 			} );
 
-			it( 'is used for internalGet()', async () => {
+			it( 'is used for fetch()', async () => {
 				let called = false;
 				class TestSession extends BaseTestSession {
-					async internalGet( apiUrl, params, { 'user-agent': userAgent } ) {
+					async fetch( resource, fetchOptions ) {
+						const userAgent = new Headers( fetchOptions.headers ).get( 'User-Agent' );
 						expect( userAgent ).to.match( /^user-agent m3api\/[0-9.]* \(https:\/\/www\.npmjs\.com\/package\/m3api\)/ );
 						expect( called, 'not called yet' ).to.be.false;
 						called = true;
-						return {
-							status: 200,
-							headers: {},
-							body: { response: true },
-						};
+						return successfulResponse( { response: true } );
 					}
 				}
 
@@ -588,15 +608,12 @@ describe( 'Session', () => {
 			it( 'not by default', async () => {
 				let called = false;
 				class TestSession extends BaseTestSession {
-					async internalGet( apiUrl, params, headers ) {
-						expect( headers ).not.to.have.property( 'authorization' );
+					async fetch( resource, fetchOptions ) {
+						const headers = new Headers( fetchOptions.headers );
+						expect( headers.has( 'Authorization' ) ).to.be.false;
 						expect( called, 'not called yet' ).to.be.false;
 						called = true;
-						return {
-							status: 200,
-							headers: {},
-							body: { response: true },
-						};
+						return successfulResponse( { response: true } );
 					}
 				}
 
@@ -612,15 +629,12 @@ describe( 'Session', () => {
 				it( name, async () => {
 					let called = false;
 					class TestSession extends BaseTestSession {
-						async internalGet( apiUrl, params, { authorization } ) {
+						async fetch( resource, fetchOptions ) {
+							const authorization = new Headers( fetchOptions.headers ).get( 'Authorization' );
 							expect( authorization ).to.equal( 'Bearer the-access-token' );
 							expect( called, 'not called yet' ).to.be.false;
 							called = true;
-							return {
-								status: 200,
-								headers: {},
-								body: { response: true },
-							};
+							return successfulResponse( { response: true } );
 						}
 					}
 
@@ -637,15 +651,12 @@ describe( 'Session', () => {
 				it( name, async () => {
 					let called = false;
 					class TestSession extends BaseTestSession {
-						async internalGet( apiUrl, params, { authorization } ) {
+						async fetch( resource, fetchOptions ) {
+							const authorization = new Headers( fetchOptions.headers ).get( 'Authorization' );
 							expect( authorization ).to.equal( 'the-authorization' );
 							expect( called, 'not called yet' ).to.be.false;
 							called = true;
-							return {
-								status: 200,
-								headers: {},
-								body: { response: true },
-							};
+							return successfulResponse( { response: true } );
 						}
 					}
 
@@ -658,15 +669,12 @@ describe( 'Session', () => {
 			it( 'accessToken consistent with authorization', async () => {
 				let called = false;
 				class TestSession extends BaseTestSession {
-					async internalGet( apiUrl, params, { authorization } ) {
+					async fetch( resource, fetchOptions ) {
+						const authorization = new Headers( fetchOptions.headers ).get( 'Authorization' );
 						expect( authorization ).to.equal( 'Bearer the-access-token' );
 						expect( called, 'not called yet' ).to.be.false;
 						called = true;
-						return {
-							status: 200,
-							headers: {},
-							body: { response: true },
-						};
+						return successfulResponse( { response: true } );
 					}
 				}
 
@@ -681,7 +689,7 @@ describe( 'Session', () => {
 			it( 'accessToken inconsistent with authorization', async () => {
 				let called = false;
 				class TestSession extends BaseTestSession {
-					async internalGet() {
+					async fetch() {
 						called = true;
 						throw new Error( 'Should not be called in this test' );
 					}
@@ -709,10 +717,12 @@ describe( 'Session', () => {
 
 			it( 'default, retry once after 60 seconds', async () => {
 				const session = sequentialRequestSession( [
-					{ response: {
-						headers: { 'retry-after': '60' },
-						body: { error: { code: 'maxlag' } },
-					} },
+					{ response: Response.json(
+						{ error: { code: 'maxlag' } },
+						{
+							headers: { 'retry-after': '60' },
+						},
+					) },
 					{ response: { response: true } },
 				] );
 				const promise = session.request( {}, { clock } );
@@ -722,28 +732,36 @@ describe( 'Session', () => {
 			} );
 
 			it( 'default, no retry after 66 seconds', async () => {
-				const session = singleRequestSession( {}, {
-					headers: { 'retry-after': '66' },
-					body: { error: { code: 'maxlag' } },
-				} );
+				const session = singleRequestSession( {}, Response.json(
+					{ error: { code: 'maxlag' } },
+					{
+						headers: { 'retry-after': '66' },
+					},
+				) );
 				await expect( session.request( {}, { clock } ) )
 					.to.be.rejectedWith( ApiErrors );
 			} );
 
 			it( 'default, retry repeatedly up to 65 seconds', async () => {
 				const session = sequentialRequestSession( [
-					{ response: {
-						headers: { 'retry-after': '30' },
-						body: { error: { code: 'readonly' } },
-					} },
-					{ response: {
-						headers: { 'retry-after': '30' },
-						body: { error: { code: 'readonly' } },
-					} },
-					{ response: {
-						headers: { 'retry-after': '5' },
-						body: { error: { code: 'maxlag' } },
-					} },
+					{ response: Response.json(
+						{ error: { code: 'readonly' } },
+						{
+							headers: { 'retry-after': '30' },
+						},
+					) },
+					{ response: Response.json(
+						{ error: { code: 'readonly' } },
+						{
+							headers: { 'retry-after': '30' },
+						},
+					) },
+					{ response: Response.json(
+						{ error: { code: 'maxlag' } },
+						{
+							headers: { 'retry-after': '5' },
+						},
+					) },
 					{ response: { response: true } },
 				] );
 				const promise = session.request( {}, { clock } );
@@ -754,14 +772,18 @@ describe( 'Session', () => {
 
 			it( 'only retry up to 5 seconds', async () => {
 				const session = sequentialRequestSession( [
-					{ response: {
-						headers: { 'retry-after': '5' },
-						body: { error: { code: 'maxlag' } },
-					} },
-					{ response: {
-						headers: { 'retry-after': '5' },
-						body: { error: { code: 'maxlag' } },
-					} },
+					{ response: Response.json(
+						{ error: { code: 'maxlag' } },
+						{
+							headers: { 'retry-after': '5' },
+						},
+					) },
+					{ response: Response.json(
+						{ error: { code: 'maxlag' } },
+						{
+							headers: { 'retry-after': '5' },
+						},
+					) },
 				] );
 				const promise = session.request( {}, { maxRetriesSeconds: 5, clock } );
 				await clock.tickAsync( 5000 );
@@ -770,21 +792,22 @@ describe( 'Session', () => {
 			} );
 
 			it( 'disabled', async () => {
-				const session = singleRequestSession( {}, {
-					headers: { 'retry-after': '5' },
-					body: { response: true },
-				} );
+				const session = singleRequestSession( {}, Response.json(
+					{ response: true },
+					{
+						headers: { 'retry-after': '5' },
+					},
+				) );
 				const response = await session.request( {}, { maxRetriesSeconds: 0, clock } );
 				expect( response ).to.eql( { response: true } );
 			} );
 
 			it( 'non-MediaWiki retry-after edge response', async () => {
 				const session = sequentialRequestSession( [
-					{ response: {
+					{ response: Response.json( {}, {
 						status: 429,
 						headers: { 'retry-after': '60' },
-						body: {},
-					} },
+					} ) },
 					{ response: { response: true } },
 				] );
 				const promise = session.request( {}, { clock } );
@@ -794,10 +817,12 @@ describe( 'Session', () => {
 			} );
 
 			it( 'retryUntil overrides maxRetriesSeconds', async () => {
-				const session = singleRequestSession( {}, {
-					headers: { 'retry-after': '5' },
-					body: { error: { code: 'maxlag' } },
-				} );
+				const session = singleRequestSession( {}, Response.json(
+					{ error: { code: 'maxlag' } },
+					{
+						headers: { 'retry-after': '5' },
+					},
+				) );
 				await expect( session.request( {}, {
 					retryUntil: performance.now() + 4000, // not enough for retry-after: 5
 					maxRetriesSeconds: 6, // enough for retry-after: 5 but overridden by retryUntil
@@ -860,13 +885,11 @@ describe( 'Session', () => {
 				let called = false;
 				const response = await session.request( {}, {
 					errorHandlers: {
-						custom: ( session_, params, options, internalResponse, error ) => {
+						custom: ( session_, params, options, response, error ) => {
 							expect( session_ ).to.equal( session );
 							expect( params ).to.eql( {} );
 							expect( options ).to.have.property( 'errorHandlers' );
 							expect( options ).to.have.property( 'retryUntil' );
-							expect( internalResponse ).to.have.property( 'body' )
-								.to.eql( { error: { code: 'custom' } } );
 							expect( error ).to.eql( { code: 'custom' } );
 							expect( called, 'not called yet' ).to.be.false;
 							called = true;
@@ -885,7 +908,10 @@ describe( 'Session', () => {
 				let called = false;
 				const response = await session.request( {}, {
 					errorHandlers: {
-						custom: async () => {
+						custom: async ( session_, params, options, response ) => {
+							expect( response ).to.have.property( 'json' );
+							await expect( response.json() )
+								.to.eventually.eql( { error: { code: 'custom' } } );
 							expect( called, 'not called yet' ).to.be.false;
 							called = true;
 							return { response: true };
@@ -1339,7 +1365,61 @@ describe( 'Session', () => {
 				origin: '*',
 				crossorigin: true,
 			}, { method: 'POST' } );
-			// actual assertions are in checkPostParams()
+			// actual assertions are in extractParams()
+		} );
+
+		it( 'uses URLSearchParams if possible', async () => {
+			let called = false;
+			class TestSession extends BaseTestSession {
+				async fetch( resource, fetchOptions ) {
+					expect( fetchOptions.body ).to.eql( new URLSearchParams( {
+						meta: 'userinfo|siteinfo',
+						siprop: 'general|namespaces',
+						curtimestamp: '',
+						formatversion: '2',
+						format: 'json',
+					} ) );
+					expect( called, 'not called yet' ).to.be.false;
+					called = true;
+					return successfulResponse( { response: true } );
+				}
+			}
+
+			const session = new TestSession( 'en.wikipedia.org', {}, {
+				userAgent: 'm3api-unit-test',
+			} );
+			await session.request( {
+				action: 'query',
+				meta: set( 'userinfo', 'siteinfo' ),
+				siprop: [ 'general', 'namespaces' ], // array instead of set just for coverage
+				curtimestamp: true,
+				formatversion: 2,
+			}, { method: 'POST' } );
+			expect( called ).to.be.true;
+		} );
+
+		it( 'uses FormData if necessary', async () => {
+			const file = new File( [ '1' ], { type: 'text/plain' } );
+			let called = false;
+			class TestSession extends BaseTestSession {
+				async fetch( resource, fetchOptions ) {
+					expect( fetchOptions.body ).to.be.an.instanceof( FormData );
+					expect( [ ...fetchOptions.body.keys() ] ).to.eql( [ 'file', 'format' ] );
+					expect( fetchOptions.body.getAll( 'format' ) ).to.eql( [ 'json' ] );
+					expect( fetchOptions.body.getAll( 'file' ) ).to.eql( [ file ] );
+					expect( called, 'not called yet' ).to.be.false;
+					called = true;
+					return successfulResponse( { response: true } );
+				}
+			}
+
+			const session = new TestSession( 'en.wikipedia.org', {}, {
+				userAgent: 'm3api-unit-test',
+			} );
+			await session.request( {
+				file,
+			}, { method: 'POST' } );
+			expect( called ).to.be.true;
 		} );
 
 	} );

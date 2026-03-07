@@ -2,14 +2,17 @@ import { FetchSession } from './fetch.js';
 
 class FetchBrowserSession extends FetchSession {
 
-	getFetchOptions( headers ) {
-		const { 'user-agent': userAgent, ...otherHeaders } = headers;
+	getFetchOptions( fetchOptions ) {
+		const headers = new Headers( fetchOptions.headers );
+		const userAgent = headers.get( 'user-agent' );
+		if ( userAgent === null ) {
+			throw new Error( 'Missing User-Agent request header!' );
+		}
+		headers.set( 'api-user-agent', userAgent );
+		headers.delete( 'user-agent' );
 		return {
-			...super.getFetchOptions( headers ),
-			headers: {
-				...otherHeaders,
-				'api-user-agent': userAgent,
-			},
+			...super.getFetchOptions( fetchOptions ),
+			headers,
 		};
 	}
 

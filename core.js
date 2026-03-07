@@ -140,7 +140,7 @@
  * @param {Options} options The request options.
  * The retryUntil option is always set here,
  * and the error handler should not retry the request if this timestamp has already passed.
- * @param {InternalResponse} internalResponse The full response sent by the server.
+ * @param {Response} response The full response sent by the server.
  * @param {Object} error The specific error returned to the API that matched this handler.
  * @return {Object|null|Promise<Object|null>} A synchronous or asynchronous result.
  * If the handler returns an object (or a promise resolving to an object),
@@ -152,20 +152,6 @@
  * the error could not be handled;
  * m3api will call error handlers for the remaining errors (if any)
  * and eventually throw ApiErrors if none of them returned an object either.
- */
-
-/**
- * The internal representation of a full server response,
- * returned by {@link Session#internalGet} and {@link Session#internalPost}.
- *
- * @protected
- * @typedef InternalResponse
- * @type {Object}
- * @property {number} status The HTTP status code (e.g. 200 OK).
- * @property {Object} headers The response headers.
- * Header names must be all-lowercase.
- * (Set-Cookie is not expected to be included.)
- * @property {Object} body JSON-decoded response body.
  */
 
 /**
@@ -203,8 +189,8 @@ const DEFAULT_OPTIONS = {
 		setTimeout,
 	},
 	errorHandlers: {
-		maxlag: ( session, params, options, internalResponse, error ) => {
-			if ( 'retry-after' in internalResponse.headers ) {
+		maxlag: ( session, params, options, response, error ) => {
+			if ( response.headers.has( 'retry-after' ) ) {
 				return null; // header takes precedence over option
 			}
 			const { retryAfterMaxlagSeconds } = {
@@ -214,8 +200,8 @@ const DEFAULT_OPTIONS = {
 			};
 			return retryIfBefore( session, params, options, retryAfterMaxlagSeconds );
 		},
-		readonly: ( session, params, options, internalResponse, error ) => {
-			if ( 'retry-after' in internalResponse.headers ) {
+		readonly: ( session, params, options, response, error ) => {
+			if ( response.headers.has( 'retry-after' ) ) {
 				return null; // header takes precedence over option
 			}
 			const { retryAfterReadonlySeconds } = {
@@ -225,7 +211,7 @@ const DEFAULT_OPTIONS = {
 			};
 			return retryIfBefore( session, params, options, retryAfterReadonlySeconds );
 		},
-		badtoken: ( session, params, options, internalResponse, error ) => {
+		badtoken: ( session, params, options, response, error ) => {
 			const { tokenType } = {
 				...DEFAULT_OPTIONS,
 				...session.defaultOptions,
@@ -569,24 +555,44 @@ class Session {
 		} );
 		const requestHeaders = this.getRequestHeaders( options );
 
-		let result;
+		const url = new URL( this.apiUrl );
+		let requestBody = null;
+
 		if ( method === 'GET' ) {
-			result = this.internalGet( this.apiUrl, allParams, requestHeaders );
+			url.search = new URLSearchParams( allParams );
 		} else if ( method === 'POST' ) {
 			const [ urlParams, bodyParams ] = splitPostParameters( allParams );
-			result = this.internalPost( this.apiUrl, urlParams, bodyParams, requestHeaders );
+			url.search = new URLSearchParams( urlParams );
+			// try to send the body as application/x-www-form-urlencoded (URLSearchParams),
+			// because this is shorter (i.e. more efficient);
+			// fall back to multipart/form-data (FormData) if needed for e.g. file params
+			let body1 = new URLSearchParams();
+			const body2 = new FormData();
+			for ( const [ paramName, paramValue ] of Object.entries( bodyParams ) ) {
+				if ( body1 !== null && typeof paramValue === 'string' ) {
+					body1.append( paramName, paramValue );
+				} else {
+					body1 = null;
+				}
+				body2.append( paramName, paramValue );
+			}
+			requestBody = body1 !== null ? body1 : body2;
 		} else {
 			throw new Error( `Unknown request method: ${ method }` );
 		}
-		const internalResponse = await result;
+
+		const response = await this.fetch( url, {
+			method,
+			headers: requestHeaders,
+			body: requestBody,
+		} );
 		const {
 			status,
 			headers: responseHeaders,
-			body,
-		} = internalResponse;
+		} = response;
 
-		if ( 'retry-after' in responseHeaders ) {
-			const retryAfterSeconds = parseInt( responseHeaders[ 'retry-after' ] );
+		if ( responseHeaders.has( 'retry-after' ) ) {
+			const retryAfterSeconds = parseInt( responseHeaders.get( 'retry-after' ) );
 			const retryResult = await retryIfBefore(
 				this, params, retryOptions, retryAfterSeconds );
 			if ( retryResult !== null ) {
@@ -594,11 +600,13 @@ class Session {
 			}
 		}
 
-		if ( status !== 200 && !( 'mediawiki-api-error' in responseHeaders ) ) {
+		if ( status !== 200 && !responseHeaders.has( 'mediawiki-api-error' ) ) {
 			throw new Error( `API request returned non-200 HTTP status code: ${ status }` );
 		}
 
-		const errors = responseErrors( body );
+		const responseBody = await response.json();
+
+		const errors = responseErrors( responseBody );
 
 		for ( const error of errors ) {
 			const { [ error.code ]: handler } = {
@@ -608,7 +616,7 @@ class Session {
 			};
 			if ( handler ) {
 				const handlerResult = await handler(
-					this, params, retryOptions, internalResponse, error );
+					this, params, retryOptions, response, error );
 				if ( handlerResult !== null ) {
 					return handlerResult;
 				}
@@ -619,7 +627,7 @@ class Session {
 			throw new ApiErrors( errors );
 		}
 
-		const warnings = responseWarnings( body );
+		const warnings = responseWarnings( responseBody );
 		if ( warnings.length > 0 ) {
 			const actualWarn = dropTruncatedResultWarning ?
 				makeWarnDroppingTruncatedResultWarning( warn ) :
@@ -627,7 +635,7 @@ class Session {
 			actualWarn( new ApiWarnings( warnings ) );
 		}
 
-		return body;
+		return responseBody;
 	}
 
 	/**
@@ -887,32 +895,37 @@ class Session {
 	}
 
 	/**
-	 * Actually make a GET request.
+	 * Internal function to actually make a network request.
+	 * (You almost certainly want to use {@link Session#request} instead.)
+	 *
+	 * This represents a subset of the standard `fetch()` API,
+	 * with the following differences:
+	 *
+	 * 1. The `resource` must be a URL, not a string.
+	 * 2. The `fetchOptions` object is required.
+	 * 3. Only the following options are supported:
+	 *    - `method` (must be set)
+	 *    - `headers` (must be set and contain a User-Agent header)
+	 *    - `body` (only string, FormData and URLSearchParams values are supported)
+	 *
+	 * Implementations may support additional `fetch()` features
+	 * as long as they are part of the standard,
+	 * but they must not support nonstandard features;
+	 * they must ignore any unknown features.
+	 * Callers may pass in additional options,
+	 * as long as they are part of the standard,
+	 * but only if they are not required for the request to succeed;
+	 * they must not pass in nonstandard options.
 	 *
 	 * @abstract
 	 * @protected
-	 * @param {string} apiUrl
-	 * @param {Object} params
-	 * @param {Object} headers Header names must be all-lowercase.
-	 * @return {Promise<InternalResponse>}
+	 * @param {URL} resource
+	 * @param {RequestInit} fetchOptions (In the standard `fetch()` API,
+	 * this is just called “options”, but {@link Options} are something else in m3api.)
+	 * @return {Promise<Response>}
 	 */
-	internalGet( apiUrl, params, headers ) {
-		throw new Error( 'Abstract method internalGet not implemented!' );
-	}
-
-	/**
-	 * Actually make a POST request.
-	 *
-	 * @abstract
-	 * @protected
-	 * @param {string} apiUrl
-	 * @param {Object} urlParams
-	 * @param {Object} bodyParams
-	 * @param {Object} headers Header names must be all-lowercase.
-	 * @return {Promise<InternalResponse>}
-	 */
-	internalPost( apiUrl, urlParams, bodyParams, headers ) {
-		throw new Error( 'Abstract method internalPost not implemented!' );
+	fetch( resource, fetchOptions ) {
+		throw new Error( 'Abstract method fetch not implemented!' );
 	}
 
 }

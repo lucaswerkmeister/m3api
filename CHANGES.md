@@ -7,7 +7,15 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 ## next (not yet released)
 
-No changes yet.
+- Internal Breaking Change:
+  The internal network interface has been replaced.
+  Instead of `session.internalGet()` and `session.internalPost()`,
+  there is now a single `session.fetch()` method, modeled after the standard `fetch()` function;
+  `fetch-browser.js` tweaks it to rename the `User-Agent` request header to `Api-User-Agent`,
+  while `fetch-node.js` augments it with cookie handling.
+  This also means that the response passed into error handlers is now a standard `Response` instance,
+  rather than our previous custom `InternalResponse` type.
+  This change will enable the support of more request methods, bodies, and response types in [m3api-rest][].
 
 ## v1.0.4 (2026-03-07)
 

@@ -1,22 +1,13 @@
 export class FetchSession extends Session {
     /**
-     * Get the fetch() options for this request.
+     * Get the modified `fetch()` options for this request.
      *
      * @protected
-     * @param {Object} headers
-     * @return {Object}
+     * @param {RequestInit} fetchOptions Should not be modified.
+     * @return {RequestInit}
      */
-    protected getFetchOptions(headers: any): any;
-    internalGet(apiUrl: any, params: any, headers: any): Promise<{
-        status: any;
-        headers: {};
-        body: any;
-    }>;
-    internalPost(apiUrl: any, urlParams: any, bodyParams: any, headers: any): Promise<{
-        status: any;
-        headers: {};
-        body: any;
-    }>;
+    protected getFetchOptions(fetchOptions: RequestInit): RequestInit;
+    fetch(resource: any, fetchOptions: any): Promise<Response>;
 }
 import { Session } from './core.js';
 //# sourceMappingURL=fetch.d.ts.map

@@ -12,9 +12,9 @@ class FetchNodeSession extends FetchSession {
 		} );
 	}
 
-	getFetchOptions( headers ) {
+	getFetchOptions( fetchOptions ) {
 		return {
-			...super.getFetchOptions( headers ),
+			...fetchOptions,
 			dispatcher: this.agent,
 		};
 	}

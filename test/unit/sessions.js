@@ -1,4 +1,5 @@
 import { Session } from '../../core.js';
+import { File } from 'buffer'; // only available globally since Node 20
 import { expect } from 'chai';
 
 /**
@@ -18,83 +19,112 @@ export class BaseTestSession extends Session {
 		super( apiUrl, defaultParams, defaultOptions );
 	}
 
-	internalGet() {
-		throw new Error( 'internalGet() should not be called in this test' );
-	}
-
-	internalPost() {
-		throw new Error( 'internalPost() should not be called in this test' );
+	fetch() {
+		throw new Error( 'fetch() should not be called in this test' );
 	}
 
 }
 
 /**
  * Make a successful response from this body,
- * to be returned from {@link Session#internalGet} or {@link Session#internalPost}.
+ * to be returned from {@link Session#fetch}.
  *
  * @param {Object} body
- * @return {Object}
+ * @return {Response}
  */
 export function successfulResponse( body ) {
-	return {
-		status: 200,
-		headers: {},
-		body,
-	};
-}
-
-const isResponseKey = Set.prototype.has.bind(
-	new Set( Object.keys( successfulResponse( {} ) ) ),
-);
-
-function isResponse( bodyOrResponse ) {
-	return Object.keys( bodyOrResponse )
-		.every( isResponseKey );
+	const response = new Response();
+	// return the same body object (rather than constructing Response.json( body ))
+	// so that various test can use .equal() instead of .eql() when asserting it
+	response.json = async () => body;
+	return response;
 }
 
 /**
  * Make a response from the given body or response.
  *
- * @param {Object} bodyOrResponse Either a response,
- * to be returned from {@link Session#internalGet} or {@link Session#internalPost}
- * (with any body, status, and/or headers, but no other keys),
+ * @param {Response|Object} bodyOrResponse Either a Response,
+ * to be returned from {@link Session#fetch},
  * or just a response body, to be turned into a successful response.
- * Response objects may still omit parts of a full response,
- * to be completed with defaults from a successful response.
  * @return {Object}
  */
 export function makeResponse( bodyOrResponse ) {
-	if ( isResponse( bodyOrResponse ) ) {
-		return {
-			...successfulResponse( {} ),
-			...bodyOrResponse,
-		};
+	if ( bodyOrResponse instanceof Response ) {
+		return bodyOrResponse;
 	} else {
 		return successfulResponse( bodyOrResponse );
 	}
 }
 
 /**
- * Check that the URL and body parameters are disjoint,
- * that the URL parameters only include action/origin/crossorigin
- * and that the body paramaters don’t include those parameters.
+ * Extract the params from the given fetch() parameters,
+ * check them, and return them for further assertions.
  *
- * @param {Object} urlParams
- * @param {Object} bodyParams
+ * @param {string} resource
+ * @param {RequestInit} fetchOptions
+ * @return {Object}
  */
-function checkPostParams( urlParams, bodyParams ) {
-	const urlParamNames = Object.keys( urlParams );
-	const commonParamNames = urlParamNames.filter(
-		( name ) => name in bodyParams );
-	expect( commonParamNames ).to.be.empty;
+function extractParams( resource, fetchOptions ) {
+	expect( resource ).to.be.an.instanceof( URL );
 
-	const unexpectedUrlParamNames = urlParamNames.filter(
-		( name ) => name !== 'action' && name !== 'origin' && name !== 'crossorigin' );
-	expect( unexpectedUrlParamNames ).to.be.empty;
+	const urlParams = {};
+	for ( const [ key, value ] of resource.searchParams ) {
+		urlParams[ key ] = value;
+		if ( fetchOptions.method !== 'GET' ) {
+			expect( key, 'URL param for non-GET request' ).to.be.oneOf( [
+				'action',
+				'origin',
+				'crossorigin',
+			] );
+		}
+	}
 
-	expect( bodyParams ).not.to.have.keys( 'action' );
-	expect( bodyParams ).not.to.have.keys( 'origin' );
-	expect( bodyParams ).not.to.have.keys( 'crossorigin' );
+	const bodyParams = {};
+	for ( const [ key, value ] of fetchOptions.body || [] ) {
+		bodyParams[ key ] = value;
+		expect( key, 'body param' ).not.to.be.oneOf( [
+			'action',
+			'origin',
+			'crossorigin',
+		] );
+	}
+
+	if ( Object.keys( urlParams ).length > 0 && Object.keys( bodyParams ).length > 0 ) {
+		expect( bodyParams ).not.to.have.any.keys( urlParams );
+	}
+
+	return { ...urlParams, ...bodyParams };
+}
+
+/**
+ * Normalize the params for assertion purposes.
+ *
+ * This is necessary because FormData turns input Blob values into File values
+ * (see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#create-an-entry),
+ * and a new file’s lastModified time defaults to Date.now(),
+ * so if we don’t normalize Blob and File values to be File values with a static lastModified time,
+ * tests that try to use Blob and File params will fail.
+ *
+ * @param {Object} params Not modified.
+ * @return {Object} A normalized copy of the params.
+ */
+function normalizeParams( params ) {
+	const normalized = {};
+	for ( let [ key, value ] of Object.entries( params ) ) {
+		if ( value instanceof Blob && !( value instanceof File ) ) {
+			value = new File( [ value ], 'blob', {
+				type: 'text/plain',
+			} );
+		}
+		if ( value instanceof File ) {
+			value = new File( [ value ], value.name, {
+				type: value.type,
+				lastModified: 0,
+			} );
+		}
+		normalized[ key ] = value;
+	}
+	return normalized;
 }
 
 /**
@@ -110,20 +140,14 @@ export function singleRequestSession( expectedParams = {}, response = {}, method
 	expectedParams.format = 'json';
 	let called = false;
 	class TestSession extends BaseTestSession {
-		async internalGet( apiUrl, params ) {
-			expect( 'GET', `${ method } request expected` ).to.equal( method );
-			expect( called, 'internalGet already called' ).to.be.false;
+		async fetch( resource, fetchOptions ) {
+			expect( fetchOptions, 'fetchOptions' ).to.have.property( 'method', method );
+			expect( called, 'fetch already called' ).to.be.false;
 			called = true;
-			expect( params ).to.eql( expectedParams );
-			return makeResponse( response );
-		}
-
-		async internalPost( apiUrl, urlParams, bodyParams ) {
-			expect( 'POST', `${ method } request expected` ).to.equal( method );
-			expect( called, 'internalPost already called' ).to.be.false;
-			called = true;
-			expect( { ...urlParams, ...bodyParams } ).to.eql( expectedParams );
-			checkPostParams( urlParams, bodyParams );
+			const params = extractParams( resource, fetchOptions );
+			const normalizedParams = normalizeParams( params );
+			const normalizedExpectedParams = normalizeParams( expectedParams );
+			expect( normalizedParams ).to.eql( normalizedExpectedParams );
 			return makeResponse( response );
 		}
 	}
@@ -142,30 +166,19 @@ export function singleRequestSession( expectedParams = {}, response = {}, method
 export function sequentialRequestSession( expectedCalls ) {
 	expectedCalls.reverse();
 	class TestSession extends BaseTestSession {
-		async internalGet( apiUrl, params ) {
+		async fetch( resource, fetchOptions ) {
 			expect( expectedCalls ).to.not.be.empty;
 			const [ {
 				expectedParams = {},
 				response = {},
 				method = 'GET',
 			} ] = expectedCalls.splice( -1 );
-			expect( 'GET', `${ method } request expected` ).to.equal( method );
+			expect( fetchOptions, 'fetchOptions' ).to.have.property( 'method', method );
 			expectedParams.format = 'json';
-			expect( params ).to.eql( expectedParams );
-			return makeResponse( response );
-		}
-
-		async internalPost( apiUrl, urlParams, bodyParams ) {
-			expect( expectedCalls ).to.not.be.empty;
-			const [ {
-				expectedParams = {},
-				response = {},
-				method = 'GET',
-			} ] = expectedCalls.splice( -1 );
-			expect( 'POST', `${ method } request expected` ).to.equal( method );
-			expectedParams.format = 'json';
-			expect( { ...urlParams, ...bodyParams } ).to.eql( expectedParams );
-			checkPostParams( urlParams, bodyParams );
+			const params = extractParams( resource, fetchOptions );
+			const normalizedParams = normalizeParams( params );
+			const normalizedExpectedParams = normalizeParams( expectedParams );
+			expect( normalizedParams ).to.eql( normalizedExpectedParams );
 			return makeResponse( response );
 		}
 	}

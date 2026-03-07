@@ -435,7 +435,7 @@ describe( 'CombiningSession', () => {
 	it( 'propagates errors', async () => {
 		const error = new Error();
 		class TestSession extends BaseTestSession {
-			async internalGet() {
+			async fetch() {
 				throw error;
 			}
 		}
@@ -715,6 +715,7 @@ describe( 'CombiningSession', () => {
 		} );
 
 		it( 'different blobs', async () => {
+			const method = 'POST';
 			const blob1 = new Blob( [ '1' ], { type: 'text/plain' } );
 			const params1 = { file: blob1 };
 			const response1 = { upload: { filename: '1' } };
@@ -722,17 +723,18 @@ describe( 'CombiningSession', () => {
 			const params2 = { file: blob2 };
 			const response2 = { upload: { filename: '2' } };
 			const session = sequentialRequestSession( [
-				{ expectedParams: { file: blob1 }, response: response1 },
-				{ expectedParams: { file: blob2 }, response: response2 },
+				{ method, expectedParams: { file: blob1 }, response: response1 },
+				{ method, expectedParams: { file: blob2 }, response: response2 },
 			] );
-			const promise1 = session.request( params1 );
-			const promise2 = session.request( params2 );
+			const promise1 = session.request( params1, { method } );
+			const promise2 = session.request( params2, { method } );
 			const responses = await Promise.all( [ promise1, promise2 ] );
 			expect( responses[ 0 ] ).to.equal( response1 );
 			expect( responses[ 1 ] ).to.equal( response2 );
 		} );
 
 		it( 'different files', async () => {
+			const method = 'POST';
 			const file1 = new File( [ '1' ], '1', { type: 'text/plain' } );
 			const params1 = { file: file1 };
 			const response1 = { upload: { filename: '1' } };
@@ -740,11 +742,11 @@ describe( 'CombiningSession', () => {
 			const params2 = { file: file2 };
 			const response2 = { upload: { filename: '2' } };
 			const session = sequentialRequestSession( [
-				{ expectedParams: { file: file1 }, response: response1 },
-				{ expectedParams: { file: file2 }, response: response2 },
+				{ method, expectedParams: { file: file1 }, response: response1 },
+				{ method, expectedParams: { file: file2 }, response: response2 },
 			] );
-			const promise1 = session.request( params1 );
-			const promise2 = session.request( params2 );
+			const promise1 = session.request( params1, { method } );
+			const promise2 = session.request( params2, { method } );
 			const responses = await Promise.all( [ promise1, promise2 ] );
 			expect( responses[ 0 ] ).to.equal( response1 );
 			expect( responses[ 1 ] ).to.equal( response2 );

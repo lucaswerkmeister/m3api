@@ -156,27 +156,7 @@ export type Options = {
  * and the callback has been registered for that error code.
  * It may retry the request or perform any other action.
  */
-export type ErrorHandler = (session: Session, params: Params, options: Options, internalResponse: InternalResponse, error: any) => any | null | Promise<any | null>;
-/**
- * The internal representation of a full server response,
- * returned by {@link Session#internalGet} and {@link Session#internalPost}.
- */
-export type InternalResponse = {
-    /**
-     * The HTTP status code (e.g. 200 OK).
-     */
-    status: number;
-    /**
-     * The response headers.
-     * Header names must be all-lowercase.
-     * (Set-Cookie is not expected to be included.)
-     */
-    headers: any;
-    /**
-     * JSON-decoded response body.
-     */
-    body: any;
-};
+export type ErrorHandler = (session: Session, params: Params, options: Options, response: Response, error: any) => any | null | Promise<any | null>;
 /**
  * A request parameter value that can potentially be put in a list:
  * a title, user name, namespace number, etc.
@@ -309,7 +289,7 @@ export type InternalResponse = {
  * @param {Options} options The request options.
  * The retryUntil option is always set here,
  * and the error handler should not retry the request if this timestamp has already passed.
- * @param {InternalResponse} internalResponse The full response sent by the server.
+ * @param {Response} response The full response sent by the server.
  * @param {Object} error The specific error returned to the API that matched this handler.
  * @return {Object|null|Promise<Object|null>} A synchronous or asynchronous result.
  * If the handler returns an object (or a promise resolving to an object),
@@ -321,19 +301,6 @@ export type InternalResponse = {
  * the error could not be handled;
  * m3api will call error handlers for the remaining errors (if any)
  * and eventually throw ApiErrors if none of them returned an object either.
- */
-/**
- * The internal representation of a full server response,
- * returned by {@link Session#internalGet} and {@link Session#internalPost}.
- *
- * @protected
- * @typedef InternalResponse
- * @type {Object}
- * @property {number} status The HTTP status code (e.g. 200 OK).
- * @property {Object} headers The response headers.
- * Header names must be all-lowercase.
- * (Set-Cookie is not expected to be included.)
- * @property {Object} body JSON-decoded response body.
  */
 /**
  * Default options for requests across all sessions.
@@ -572,28 +539,36 @@ export class Session {
      */
     private transformParamSingle;
     /**
-     * Actually make a GET request.
+     * Internal function to actually make a network request.
+     * (You almost certainly want to use {@link Session#request} instead.)
+     *
+     * This represents a subset of the standard `fetch()` API,
+     * with the following differences:
+     *
+     * 1. The `resource` must be a URL, not a string.
+     * 2. The `fetchOptions` object is required.
+     * 3. Only the following options are supported:
+     *    - `method` (must be set)
+     *    - `headers` (must be set and contain a User-Agent header)
+     *    - `body` (only string, FormData and URLSearchParams values are supported)
+     *
+     * Implementations may support additional `fetch()` features
+     * as long as they are part of the standard,
+     * but they must not support nonstandard features;
+     * they must ignore any unknown features.
+     * Callers may pass in additional options,
+     * as long as they are part of the standard,
+     * but only if they are not required for the request to succeed;
+     * they must not pass in nonstandard options.
      *
      * @abstract
      * @protected
-     * @param {string} apiUrl
-     * @param {Object} params
-     * @param {Object} headers Header names must be all-lowercase.
-     * @return {Promise<InternalResponse>}
+     * @param {URL} resource
+     * @param {RequestInit} fetchOptions (In the standard `fetch()` API,
+     * this is just called “options”, but {@link Options} are something else in m3api.)
+     * @return {Promise<Response>}
      */
-    protected internalGet(apiUrl: string, params: any, headers: any): Promise<InternalResponse>;
-    /**
-     * Actually make a POST request.
-     *
-     * @abstract
-     * @protected
-     * @param {string} apiUrl
-     * @param {Object} urlParams
-     * @param {Object} bodyParams
-     * @param {Object} headers Header names must be all-lowercase.
-     * @return {Promise<InternalResponse>}
-     */
-    protected internalPost(apiUrl: string, urlParams: any, bodyParams: any, headers: any): Promise<InternalResponse>;
+    protected fetch(resource: URL, fetchOptions: RequestInit): Promise<Response>;
 }
 /**
  * Decorate the given warn handler so that warnings about truncated results are dropped.
