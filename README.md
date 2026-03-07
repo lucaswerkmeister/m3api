@@ -541,6 +541,8 @@ it should be possible to use m3api on older platforms as well.
 If you try this, feel free to send a merge request
 updating this paragraph with your experience.
 
+See also the note on changes to these versions below.
+
 ## Stability
 
 m3api follows a slightly modified version of semantic versioning.
@@ -582,6 +584,22 @@ using the words “BREAKING CHANGE” (in all caps).
 Incompatible changes to the internal interface will be mentioned using the words “Internal Breaking Change”,
 not necessarily at the beginning of the entry.
 
+Changes to the compatible Node.js versions are *not* considered breaking changes.
+m3api tries to maintain compatibility with older Node.js versions for some time,
+but past a certain point it becomes impractical to support them as other libraries we depend on,
+and eventually the CI infrastructure itself, drop support for end-of-life Node.js versions.
+If you need support for a certain version (or version range) of Node.js,
+you should specify it in the `engines` section of your own `package.json`
+and make sure to use the [engine-strict][] mode of npm
+(by putting `engine-strict=true` in your `.npmrc` file or using `npm --engine-strict`),
+which will make npm report an error if an m3api version is incompatible with your requirements.
+
+Whether changes to the compatible browsers are considered breaking changes or not is currently undefined.
+If you have a need for a reliable policy on how stable the browser requirements are,
+feel free to open an issue (see below) for discussion.
+That said, there is currently no known reason why m3api might have to
+drop support for some browser versions in the foreseeable future.
+
 ## Issues
 
 m3api issues are tracked on Wikimedia Phabricator,
@@ -617,4 +635,5 @@ you agree to publish your contribution under the same license.
 [m3api-rest]: https://www.npmjs.com/package/m3api-rest
 [bot password]: https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Bot_passwords
 [Vite]: https://vitejs.dev/
+[engine-strict]: https://docs.npmjs.com/cli/v11/using-npm/config#engine-strict
 [ISC License]: https://spdx.org/licenses/ISC.html

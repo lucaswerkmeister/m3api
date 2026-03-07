@@ -9,6 +9,8 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
 
 - Improved handling of `retry-after` responses
   (especially ones with HTTP status 429 Too Many Requests).
+- [README.md § stability](README.md#Stability) has been extended to state
+  that changes to the compatible Node.js versions are not considered breaking changes.
 
 ## v1.0.3 (2026-01-17)
 
