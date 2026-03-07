@@ -1,0 +1,27 @@
+body {
+    --body-margin: 8px; /* copied from Firefox */
+    margin: var( --body-margin );
+}
+
+.version-warning {
+    --version-warning-margin-y: 2px;
+    --version-warning-margin-x: 24px; /* matching other doc elements */
+    top: calc(var(--body-margin) + var(--version-warning-margin-y));
+    position: sticky;
+    padding: 0.5em 3em;
+    margin: var(--version-warning-margin-y) var(--version-warning-margin-x);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 16px; /* absolute px to match other doc elements */
+    color: #fff; /* Base100 */
+    background: repeating-linear-gradient(
+        135deg,
+        #36c 0px 56px, /* Accent50 */
+        #2a4b8d 56px 112px /* Accent30 */
+    );
+}
+
+.version-warning a {
+    color: #fff; /* Base100 */
+    text-decoration: underline;
+}
