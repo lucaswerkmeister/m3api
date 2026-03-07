@@ -12,6 +12,15 @@ For the release notes (for users), see [CHANGES.md](./CHANGES.md).
    by running `python -m http.server` and opening <http://localhost:8000/browser-test.html>.
    (Don’t use the `file:` protocol, it doesn’t work.)
 
+1. Check if the [access token](https://www.npmjs.com/settings/lucaswerkmeister/tokens)
+   used to publish the release from CI is still valid.
+   If it isn’t, generate a [new granular access token](https://www.npmjs.com/settings/lucaswerkmeister/tokens/granular-access-tokens/new)
+   named “m3api publish GitLab CI”, bypass 2FA enabled,
+   no allowed IP ranges ([because](https://github.com/orgs/community/discussions/186022)),
+   read and write access to all packages, no organizational access, expires as late as possible,
+   then add that to the [m3api group variables](https://gitlab.wikimedia.org/groups/repos/m3api/-/settings/ci_cd#ci-variables),
+   replacing the previous `NPM_ACCESS_TOKEN`.
+
 1. Reviewing `CHANGES.md`, decide on the new version number
    (i.e. whether the changes warrant a patch, minor, or major release).
 
