@@ -141,6 +141,13 @@ export type Options = {
      * This option is only part of the internal interface, not of the stable, public interface.
      */
     retryUntil?: number;
+    /**
+     * Internal option.
+     * Clock used for automatic retry, with a `setTimeout` function and a `performance` object.
+     * Defaults to the corresponding globals; configurable as an option only for testing purposes.
+     * This option is only part of the internal interface, not of the stable, public interface.
+     */
+    clock?: any;
 };
 /**
  * An error handler callback, which can be registered in the errorHandlers option.
@@ -283,6 +290,10 @@ export type InternalResponse = {
  * @property {number} [retryUntil] Internal option.
  * Retry until the given timestamp (in terms of the performance.now() clock).
  * Takes precedence over the maxRetriesSeconds option.
+ * This option is only part of the internal interface, not of the stable, public interface.
+ * @property {Object} [clock] Internal option.
+ * Clock used for automatic retry, with a `setTimeout` function and a `performance` object.
+ * Defaults to the corresponding globals; configurable as an option only for testing purposes.
  * This option is only part of the internal interface, not of the stable, public interface.
  */
 /**

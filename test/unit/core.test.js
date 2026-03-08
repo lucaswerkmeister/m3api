@@ -377,7 +377,7 @@ describe( 'Session', () => {
 			} );
 
 			it( 'uses retry options for token request', async () => {
-				const clock = FakeTimers.install();
+				const clock = FakeTimers.createClock();
 				await clock.tickAsync( 1000 ); // just so it doesn’t start at 0
 
 				try {
@@ -405,12 +405,12 @@ describe( 'Session', () => {
 						retryAfterMaxlagSeconds: 2,
 						retryAfterReadonlySeconds: 3,
 						tokenType: 'csrf',
+						clock,
 					} );
 					await clock.tickAsync( 5000 );
 					await expect( promise )
 						.to.be.rejectedWith( ApiErrors );
 				} finally {
-					clock.uninstall();
 					expect( clock.countTimers() ).to.equal( 0 );
 				}
 			} );
@@ -701,20 +701,9 @@ describe( 'Session', () => {
 
 			let clock;
 			beforeEach( () => {
-				clock = FakeTimers.install();
+				clock = FakeTimers.createClock();
 			} );
 			afterEach( () => {
-				/*
-				 * For some reason, since @sinonjs/fake-timers v13,
-				 * the first test in this block which runs (no matter which specific test it is)
-				 * creates a Node-internal afterWriteTick microtask / job
-				 * in between the test returning and the afterEach hook running,
-				 * which fails the countTimers expectation below unless we run it first.
-				 * It’s weird, but at least this keeps the tests working 🤷
-				 */
-				clock.runMicrotasks();
-
-				clock.uninstall();
 				expect( clock.countTimers() ).to.equal( 0 );
 			} );
 
@@ -726,7 +715,7 @@ describe( 'Session', () => {
 					} },
 					{ response: { response: true } },
 				] );
-				const promise = session.request( {} );
+				const promise = session.request( {}, { clock } );
 				await clock.tickAsync( 60000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
@@ -737,7 +726,7 @@ describe( 'Session', () => {
 					headers: { 'retry-after': '66' },
 					body: { error: { code: 'maxlag' } },
 				} );
-				await expect( session.request( {} ) )
+				await expect( session.request( {}, { clock } ) )
 					.to.be.rejectedWith( ApiErrors );
 			} );
 
@@ -757,7 +746,7 @@ describe( 'Session', () => {
 					} },
 					{ response: { response: true } },
 				] );
-				const promise = session.request( {} );
+				const promise = session.request( {}, { clock } );
 				await clock.tickAsync( 65000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
@@ -774,7 +763,7 @@ describe( 'Session', () => {
 						body: { error: { code: 'maxlag' } },
 					} },
 				] );
-				const promise = session.request( {}, { maxRetriesSeconds: 5 } );
+				const promise = session.request( {}, { maxRetriesSeconds: 5, clock } );
 				await clock.tickAsync( 5000 );
 				await expect( promise )
 					.to.be.rejectedWith( ApiErrors );
@@ -785,7 +774,7 @@ describe( 'Session', () => {
 					headers: { 'retry-after': '5' },
 					body: { response: true },
 				} );
-				const response = await session.request( {}, { maxRetriesSeconds: 0 } );
+				const response = await session.request( {}, { maxRetriesSeconds: 0, clock } );
 				expect( response ).to.eql( { response: true } );
 			} );
 
@@ -798,7 +787,7 @@ describe( 'Session', () => {
 					} },
 					{ response: { response: true } },
 				] );
-				const promise = session.request( {} );
+				const promise = session.request( {}, { clock } );
 				await clock.tickAsync( 60000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
@@ -812,6 +801,7 @@ describe( 'Session', () => {
 				await expect( session.request( {}, {
 					retryUntil: performance.now() + 4000, // not enough for retry-after: 5
 					maxRetriesSeconds: 6, // enough for retry-after: 5 but overridden by retryUntil
+					clock,
 				} ) ).to.be.rejectedWith( ApiErrors );
 			} );
 
@@ -820,7 +810,7 @@ describe( 'Session', () => {
 					{ response: { error: { code: 'maxlag' } } },
 					{ response: { response: true } },
 				] );
-				const promise = session.request( {} );
+				const promise = session.request( {}, { clock } );
 				await clock.tickAsync( 5000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
@@ -831,7 +821,7 @@ describe( 'Session', () => {
 					{ response: { error: { code: 'readonly' } } },
 					{ response: { response: true } },
 				] );
-				const promise = session.request( {} );
+				const promise = session.request( {}, { clock } );
 				await clock.tickAsync( 30000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
@@ -842,7 +832,7 @@ describe( 'Session', () => {
 					{ response: { error: { code: 'maxlag' } } },
 					{ response: { response: true } },
 				] );
-				const promise = session.request( {}, { retryAfterMaxlagSeconds: 2 } );
+				const promise = session.request( {}, { retryAfterMaxlagSeconds: 2, clock } );
 				await clock.tickAsync( 2000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );
@@ -853,7 +843,7 @@ describe( 'Session', () => {
 					{ response: { error: { code: 'readonly' } } },
 					{ response: { response: true } },
 				] );
-				const promise = session.request( {}, { retryAfterReadonlySeconds: 10 } );
+				const promise = session.request( {}, { retryAfterReadonlySeconds: 10, clock } );
 				await clock.tickAsync( 10000 );
 				const response = await promise;
 				expect( response ).to.eql( { response: true } );

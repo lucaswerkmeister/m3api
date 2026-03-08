@@ -121,6 +121,10 @@
  * Retry until the given timestamp (in terms of the performance.now() clock).
  * Takes precedence over the maxRetriesSeconds option.
  * This option is only part of the internal interface, not of the stable, public interface.
+ * @property {Object} [clock] Internal option.
+ * Clock used for automatic retry, with a `setTimeout` function and a `performance` object.
+ * Defaults to the corresponding globals; configurable as an option only for testing purposes.
+ * This option is only part of the internal interface, not of the stable, public interface.
  */
 
 /**
@@ -194,6 +198,10 @@ const DEFAULT_OPTIONS = {
 	dropTruncatedResultWarning: false,
 	accessToken: null,
 	authorization: null,
+	clock: {
+		performance,
+		setTimeout,
+	},
 	errorHandlers: {
 		maxlag: ( session, params, options, internalResponse, error ) => {
 			if ( 'retry-after' in internalResponse.headers ) {
@@ -263,6 +271,14 @@ function splitPostParameters( params ) {
  * @return {Promise<Object>|null}
  */
 function retryIfBefore( session, params, options, retryAfterSeconds ) {
+	const { clock: {
+		performance,
+		setTimeout,
+	} } = {
+		...DEFAULT_OPTIONS,
+		...session.defaultOptions,
+		...options,
+	};
 	const retryAfterMillis = 1000 * retryAfterSeconds;
 	if ( performance.now() + retryAfterMillis <= options.retryUntil ) {
 		return new Promise( ( resolve ) => {
@@ -529,6 +545,9 @@ class Session {
 			maxRetriesSeconds,
 			warn,
 			dropTruncatedResultWarning,
+			clock: {
+				performance,
+			},
 			retryUntil = performance.now() + maxRetriesSeconds * 1000,
 		} = {
 			...DEFAULT_OPTIONS,
