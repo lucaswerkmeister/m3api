@@ -117,6 +117,10 @@
  * @property {Object.<string, ErrorHandler>} [errorHandlers] Internal option.
  * Define handlers for API errors, which can retry the request if appropriate.
  * This option is only part of the internal interface, not of the stable, public interface.
+ * @property {HttpErrorHandler[]} [httpErrorHandlers] Internal option.
+ * Define handlers for HTTP errors, which can retry the request if appropriate.
+ * Handlers are called sequentially until one handles the error or the list is exhausted.
+ * This option is only part of the internal interface, not of the stable, public interface.
  * @property {number} [retryUntil] Internal option.
  * Retry until the given timestamp (in terms of the performance.now() clock).
  * Takes precedence over the maxRetriesSeconds option.
@@ -152,6 +156,31 @@
  * the error could not be handled;
  * m3api will call error handlers for the remaining errors (if any)
  * and eventually throw ApiErrors if none of them returned an object either.
+ */
+
+/**
+ * An HTTP error handler callback, which can be registered in the httpErrorHandlers option.
+ *
+ * The callback is called if an API request results in an HTTP-level error.
+ * It may retry the request or perform any other action.
+ *
+ * @callback HttpErrorHandler
+ * @param {Session} session The session to which the request belongs.
+ * @param {Params} params The request parameters.
+ * @param {Options} options The request options.
+ * The retryUntil option is always set here,
+ * and the error handler should not retry the request if this timestamp has already passed.
+ * @param {Response} response The full response sent by the server.
+ * @return {Object|null|Promise<Object|null>} A synchronous or asynchronous result.
+ * If the handler returns an object (or a promise resolving to an object),
+ * that object is used as the result of the API request;
+ * this can be used to retry the request
+ * (the handler makes another request to the session with the same params and options,
+ * and returns its result).
+ * If the handler returns null (or a promise resolving to null),
+ * the error could not be handled;
+ * m3api will call other HTTP error handlers (if any)
+ * and eventually throw an Error if none of them returned an object either.
  */
 
 /**
@@ -224,6 +253,7 @@ const DEFAULT_OPTIONS = {
 			return retryIfBefore( session, params, options, 0 /* no delay */ );
 		},
 	},
+	httpErrorHandlers: [],
 };
 
 const DEFAULT_USER_AGENT = 'm3api/1.0.4 (https://www.npmjs.com/package/m3api)';
@@ -601,6 +631,18 @@ class Session {
 		}
 
 		if ( status !== 200 && !responseHeaders.has( 'mediawiki-api-error' ) ) {
+			const httpErrorHandlers = [
+				...DEFAULT_OPTIONS.httpErrorHandlers || [],
+				...this.defaultOptions.httpErrorHandlers || [],
+				...options.httpErrorHandlers || [],
+			];
+			for ( const handler of httpErrorHandlers ) {
+				const handlerResult = await handler(
+					this, params, retryOptions, response );
+				if ( handlerResult !== null ) {
+					return handlerResult;
+				}
+			}
 			throw new Error( `API request returned non-200 HTTP status code: ${ status }` );
 		}
 

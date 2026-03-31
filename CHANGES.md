@@ -16,6 +16,10 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   This also means that the response passed into error handlers is now a standard `Response` instance,
   rather than our previous custom `InternalResponse` type.
   This change will enable the support of more request methods, bodies, and response types in [m3api-rest][].
+- New internal feature:
+  The new `httpErrorHandlers` option can be used to configure error handlers for HTTP-level errors,
+  similar to the `errorHandlers` option for API error handlers.
+  This is necessary to fix automatic refreshing of access tokens in [m3api-oauth2][].
 
 ## v1.0.4 (2026-03-07)
 

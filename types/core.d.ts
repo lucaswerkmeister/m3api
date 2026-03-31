@@ -136,6 +136,13 @@ export type Options = {
     };
     /**
      * Internal option.
+     * Define handlers for HTTP errors, which can retry the request if appropriate.
+     * Handlers are called sequentially until one handles the error or the list is exhausted.
+     * This option is only part of the internal interface, not of the stable, public interface.
+     */
+    httpErrorHandlers?: HttpErrorHandler[];
+    /**
+     * Internal option.
      * Retry until the given timestamp (in terms of the performance.now() clock).
      * Takes precedence over the maxRetriesSeconds option.
      * This option is only part of the internal interface, not of the stable, public interface.
@@ -157,6 +164,13 @@ export type Options = {
  * It may retry the request or perform any other action.
  */
 export type ErrorHandler = (session: Session, params: Params, options: Options, response: Response, error: any) => any | null | Promise<any | null>;
+/**
+ * An HTTP error handler callback, which can be registered in the httpErrorHandlers option.
+ *
+ * The callback is called if an API request results in an HTTP-level error.
+ * It may retry the request or perform any other action.
+ */
+export type HttpErrorHandler = (session: Session, params: Params, options: Options, response: Response) => any | null | Promise<any | null>;
 /**
  * A request parameter value that can potentially be put in a list:
  * a title, user name, namespace number, etc.
@@ -267,6 +281,10 @@ export type ErrorHandler = (session: Session, params: Params, options: Options, 
  * @property {Object.<string, ErrorHandler>} [errorHandlers] Internal option.
  * Define handlers for API errors, which can retry the request if appropriate.
  * This option is only part of the internal interface, not of the stable, public interface.
+ * @property {HttpErrorHandler[]} [httpErrorHandlers] Internal option.
+ * Define handlers for HTTP errors, which can retry the request if appropriate.
+ * Handlers are called sequentially until one handles the error or the list is exhausted.
+ * This option is only part of the internal interface, not of the stable, public interface.
  * @property {number} [retryUntil] Internal option.
  * Retry until the given timestamp (in terms of the performance.now() clock).
  * Takes precedence over the maxRetriesSeconds option.
@@ -301,6 +319,30 @@ export type ErrorHandler = (session: Session, params: Params, options: Options, 
  * the error could not be handled;
  * m3api will call error handlers for the remaining errors (if any)
  * and eventually throw ApiErrors if none of them returned an object either.
+ */
+/**
+ * An HTTP error handler callback, which can be registered in the httpErrorHandlers option.
+ *
+ * The callback is called if an API request results in an HTTP-level error.
+ * It may retry the request or perform any other action.
+ *
+ * @callback HttpErrorHandler
+ * @param {Session} session The session to which the request belongs.
+ * @param {Params} params The request parameters.
+ * @param {Options} options The request options.
+ * The retryUntil option is always set here,
+ * and the error handler should not retry the request if this timestamp has already passed.
+ * @param {Response} response The full response sent by the server.
+ * @return {Object|null|Promise<Object|null>} A synchronous or asynchronous result.
+ * If the handler returns an object (or a promise resolving to an object),
+ * that object is used as the result of the API request;
+ * this can be used to retry the request
+ * (the handler makes another request to the session with the same params and options,
+ * and returns its result).
+ * If the handler returns null (or a promise resolving to null),
+ * the error could not be handled;
+ * m3api will call other HTTP error handlers (if any)
+ * and eventually throw an Error if none of them returned an object either.
  */
 /**
  * Default options for requests across all sessions.

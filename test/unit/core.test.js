@@ -4,6 +4,7 @@ import {
 	ApiErrors,
 	ApiWarnings,
 	DefaultUserAgentWarning,
+	DEFAULT_OPTIONS,
 	responseBoolean,
 	set,
 } from '../../core.js';
@@ -1023,6 +1024,168 @@ describe( 'Session', () => {
 				expect( response ).to.eql( { response: true } );
 				expect( called2 ).to.be.true;
 				expect( called3 ).to.be.true;
+			} );
+
+		} );
+
+		describe( 'custom HTTP error handlers', () => {
+
+			it( 'handler returns object', async () => {
+				const session = singleRequestSession( {}, Response.json( {}, {
+					status: 400,
+					headers: {
+						'custom-unit-test-response': 'true',
+					},
+				} ) );
+				let called = false;
+				const response = await session.request( {}, {
+					httpErrorHandlers: [
+						( session_, params, options, response ) => {
+							expect( session_ ).to.equal( session );
+							expect( params ).to.eql( {} );
+							expect( options ).to.have.property( 'httpErrorHandlers' );
+							expect( options ).to.have.property( 'retryUntil' );
+							expect( response.headers.get( 'custom-unit-test-response' ) )
+								.to.equal( 'true' );
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return { response: true };
+						},
+					],
+				} );
+				expect( response ).to.eql( { response: true } );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'handler returns promise resolving to object', async () => {
+				const session = singleRequestSession( {}, Response.json( {}, {
+					status: 400,
+				} ) );
+				let called = false;
+				const response = await session.request( {}, {
+					httpErrorHandlers: [
+						async () => {
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return { response: true };
+						},
+					],
+				} );
+				expect( response ).to.eql( { response: true } );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'handler returns null', async () => {
+				const session = singleRequestSession( {}, Response.json( {}, {
+					status: 400,
+				} ) );
+				let called = false;
+				const promise = session.request( {}, {
+					httpErrorHandlers: [
+						() => {
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return null;
+						},
+					],
+				} );
+				await expect( promise ).to.be.rejectedWith( Error );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'handler returns promise resolving to null', async () => {
+				const session = singleRequestSession( {}, Response.json( {}, {
+					status: 400,
+				} ) );
+				let called = false;
+				const promise = session.request( {}, {
+					httpErrorHandlers: [
+						async () => {
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							return null;
+						},
+					],
+				} );
+				await expect( promise ).to.be.rejectedWith( Error );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'handler throws exception', async () => {
+				const exception = new Error( 'exception from error handler' );
+				const session = singleRequestSession( {}, Response.json( {}, {
+					status: 400,
+				} ) );
+				let called = false;
+				const promise = session.request( {}, {
+					httpErrorHandlers: [
+						() => {
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							throw exception;
+						},
+					],
+				} );
+				await expect( promise ).to.be.rejectedWith( exception );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'handler returns promise rejecting with exception', async () => {
+				const exception = new Error( 'exception from error handler' );
+				const session = singleRequestSession( {}, Response.json( {}, {
+					status: 400,
+				} ) );
+				let called = false;
+				const promise = session.request( {}, {
+					httpErrorHandlers: [
+						async () => {
+							expect( called, 'not called yet' ).to.be.false;
+							called = true;
+							throw exception;
+						},
+					],
+				} );
+				await expect( promise ).to.be.rejectedWith( exception );
+				expect( called ).to.be.true;
+			} );
+
+			it( 'falls through multiple handlers from different options', async () => {
+				const originalDefaultHttpErrorHandlers = DEFAULT_OPTIONS.httpErrorHandlers;
+				try {
+					let called1 = false, called2 = false, called3 = false;
+					DEFAULT_OPTIONS.httpErrorHandlers = [
+						() => {
+							expect( called1, 'not called yet' ).to.be.false;
+							called1 = true;
+							return null;
+						},
+					];
+					const session = singleRequestSession( {}, Response.json( {}, {
+						status: 400,
+					} ) );
+					session.defaultOptions.httpErrorHandlers = [
+						() => {
+							expect( called2, 'not called yet' ).to.be.false;
+							called2 = true;
+							return null;
+						},
+					];
+					const response = await session.request( {}, {
+						httpErrorHandlers: [
+							() => {
+								expect( called3, 'not called yet' ).to.be.false;
+								called3 = true;
+								return { response: true };
+							},
+						],
+					} );
+					expect( response ).to.eql( { response: true } );
+					expect( called1 ).to.be.true;
+					expect( called2 ).to.be.true;
+					expect( called3 ).to.be.true;
+				} finally {
+					DEFAULT_OPTIONS.httpErrorHandlers = originalDefaultHttpErrorHandlers;
+				}
 			} );
 
 		} );
