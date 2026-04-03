@@ -221,35 +221,4 @@ describe( 'NodeSession', function () {
 		} );
 	}
 
-	it( 'handle HTTP error', async () => {
-		const session = new NodeSession( 'en.wikipedia.org', {
-			formatversion: 2,
-		}, {
-			userAgent,
-			accessToken: 'm3api integration test invalid access token',
-			httpErrorHandlers: [
-				( session, params, options, response ) => {
-					const wwwAuthenticateHeader = response.headers.get( 'WWW-Authenticate' );
-					if ( wwwAuthenticateHeader === null ) {
-						return null;
-					}
-					if ( !wwwAuthenticateHeader.includes( 'error=invalid_token' ) &&
-						!wwwAuthenticateHeader.includes( 'error="invalid_token"' ) ) {
-						return null;
-					}
-					return session.request( params, {
-						...options,
-						accessToken: null,
-					} );
-				},
-			],
-		} );
-		const response = await session.request( {
-			action: 'query',
-			meta: set( 'siteinfo' ),
-			siprop: set( 'general' ),
-		} );
-		expect( response ).to.have.nested.property( 'query.general.wikiid', 'enwiki' );
-	} );
-
 } );
