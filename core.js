@@ -253,6 +253,7 @@ function splitPostParameters( params ) {
 	const urlParams = {};
 	const bodyParams = {};
 	for ( const [ key, value ] of Object.entries( params ) ) {
+		// 'action' should be in the URL (T421288), '(cross)origin' must be for CORS to work
 		if ( key === 'action' || key === 'origin' || key === 'crossorigin' ) {
 			urlParams[ key ] = value;
 		} else {
