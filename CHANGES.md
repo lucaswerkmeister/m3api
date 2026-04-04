@@ -20,6 +20,7 @@ but this file may sometimes contain later improvements (e.g. typo fixes).
   The new `httpErrorHandlers` option can be used to configure error handlers for HTTP-level errors,
   similar to the `errorHandlers` option for API error handlers.
   This is necessary to fix automatic refreshing of access tokens in [m3api-oauth2][].
+- Updated dependencies.
 
 ## v1.0.4 (2026-03-07)
 
