@@ -256,7 +256,7 @@ const DEFAULT_OPTIONS = {
 	httpErrorHandlers: [],
 };
 
-const DEFAULT_USER_AGENT = 'm3api/1.0.4 (https://www.npmjs.com/package/m3api)';
+const DEFAULT_USER_AGENT = 'm3api/1.1.0 (https://www.npmjs.com/package/m3api)';
 
 const TRUNCATED_RESULT = /^This result was truncated because it would otherwise  ?be larger than the limit of .* bytes\.?$/;
 
